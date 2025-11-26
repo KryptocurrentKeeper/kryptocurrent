@@ -310,7 +310,7 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-normal tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-semibold tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
             KRYPTOCURRENT
           </h1>
         </div>
