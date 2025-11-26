@@ -611,16 +611,19 @@ export default function CryptoAggregator() {
               ) : (
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
+                    <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                       <XAxis 
                         dataKey="time" 
                         stroke="#9ca3af"
                         style={{ fontSize: '12px' }}
+                        interval="preserveStartEnd"
+                        tickMargin={8}
                       />
                       <YAxis 
                         stroke="#9ca3af"
                         style={{ fontSize: '12px' }}
-                        tickFormatter={(value) => `$${value.toFixed(2)}`}
+                        tickFormatter={(value) => `${value.toFixed(2)}`}
+                        width={80}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -629,7 +632,7 @@ export default function CryptoAggregator() {
                           borderRadius: '8px',
                           color: '#fff'
                         }}
-                        formatter={(value) => [`$${value.toFixed(2)}`, 'Price']}
+                        formatter={(value) => [`${value.toFixed(2)}`, 'Price']}
                       />
                       <Line 
                         type="monotone" 
