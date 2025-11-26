@@ -25,7 +25,7 @@ export default function CryptoAggregator() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'videos' && videos.length === 0) {
+    if (activeTab === 'videos' && Object.keys(videos).length === 0) {
       fetchCryptoVideos();
     }
   }, [activeTab]);
@@ -300,11 +300,6 @@ export default function CryptoAggregator() {
     return `${Math.floor(seconds / 86400)} days ago`;
   };
 
-  const filteredPrices = cryptoPrices.filter(crypto => 
-    crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    crypto.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
@@ -553,29 +548,6 @@ export default function CryptoAggregator() {
           )}
         </div>
 
-        {/* Setup Instructions */}
-        <div className="mt-6 p-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl border border-purple-500/20">
-          <h3 className="text-xl font-bold mb-3">🚀 Quick Setup Guide</h3>
-          <div className="space-y-3 text-sm">
-            <div>
-              <strong className="text-purple-300">Step 1:</strong>
-              <span className="text-gray-300"> Prices are already working! (CoinGecko API)</span>
-            </div>
-            <div>
-              <strong className="text-purple-300">Step 2:</strong>
-              <span className="text-gray-300"> Get API keys for news & videos (see blue boxes above)</span>
-            </div>
-            <div>
-              <strong className="text-purple-300">Step 3:</strong>
-              <span className="text-gray-300"> Deploy to Vercel/Netlify (both have free plans)</span>
-            </div>
-            <div>
-              <strong className="text-purple-300">Step 4:</strong>
-              <span className="text-gray-300"> Add features: alerts, charts, favorites, portfolio tracking</span>
-            </div>
-          </div>
-        </div>
-
         {/* Chart Popup Modal */}
         {selectedCrypto && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeChart}>
@@ -642,7 +614,7 @@ export default function CryptoAggregator() {
                       <YAxis 
                         stroke="#9ca3af"
                         style={{ fontSize: '12px' }}
-                        tickFormatter={(value) => `${value.toFixed(2)}`}
+                        tickFormatter={(value) => `$${value.toFixed(2)}`}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -651,7 +623,7 @@ export default function CryptoAggregator() {
                           borderRadius: '8px',
                           color: '#fff'
                         }}
-                        formatter={(value) => [`${value.toFixed(2)}`, 'Price']}
+                        formatter={(value) => [`$${value.toFixed(2)}`, 'Price']}
                       />
                       <Line 
                         type="monotone" 
