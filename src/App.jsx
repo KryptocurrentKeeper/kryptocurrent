@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, Search, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, Search, RefreshCw, X } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CryptoAggregator() {
   const [activeTab, setActiveTab] = useState('prices');
@@ -8,6 +9,10 @@ export default function CryptoAggregator() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCrypto, setSelectedCrypto] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [videoCategory, setVideoCategory] = useState('bitcoin');
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -27,7 +32,9 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async () => {
     try {
-      const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1');
+      // Specific coin IDs for the requested cryptocurrencies
+      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale';
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc`);
       const data = await response.json();
       setCryptoPrices(data);
       setLoading(false);
@@ -39,56 +46,234 @@ export default function CryptoAggregator() {
 
   const fetchCryptoNews = async () => {
     try {
-      // Using CryptoPanic free API - no key required for basic usage
-      const response = await fetch('https://cryptopanic.com/api/v1/posts/?auth_token=free&public=true&kind=news');
-      const data = await response.json();
-      setNews(data.results || []);
+      // Curated news sources from X and crypto news sites
+      const curatedNews = [
+        { 
+          id: 1, 
+          title: "Latest Crypto Regulatory Updates", 
+          source: { title: "Eleanor Terrett" }, 
+          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          url: "https://x.com/EleanorTerrett"
+        },
+        { 
+          id: 2, 
+          title: "Macro Market Analysis & Crypto Outlook", 
+          source: { title: "Raoul Pal" }, 
+          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          url: "https://x.com/RaoulGMI"
+        },
+        { 
+          id: 3, 
+          title: "Ripple Company Updates & Announcements", 
+          source: { title: "Brad Garlinghouse" }, 
+          created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+          url: "https://x.com/bgarlinghouse"
+        },
+        { 
+          id: 4, 
+          title: "Coinbase Market Insights & Analysis", 
+          source: { title: "Coinbase" }, 
+          created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+          url: "https://www.coinbase.com/blog"
+        },
+        { 
+          id: 5, 
+          title: "Cryptocurrency Investment Analysis", 
+          source: { title: "The Motley Fool" }, 
+          created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+          url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/"
+        },
+        { 
+          id: 6, 
+          title: "Breaking Crypto News & Market Updates", 
+          source: { title: "Cointelegraph" }, 
+          created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+          url: "https://cointelegraph.com/"
+        }
+      ];
+      setNews(curatedNews);
     } catch (error) {
       console.error('Error fetching news:', error);
-      // Fallback to mock data if API fails
-      setNews([
-        { id: 1, title: "Bitcoin Reaches New Heights Amid Institutional Interest", source: { title: "CryptoNews" }, created_at: "2024-11-25T10:00:00Z", url: "#" },
-        { id: 2, title: "Ethereum 2.0 Upgrade Shows Promising Results", source: { title: "BlockchainDaily" }, created_at: "2024-11-25T08:00:00Z", url: "#" },
-        { id: 3, title: "DeFi Platforms See Surge in User Activity", source: { title: "CoinTelegraph" }, created_at: "2024-11-25T06:00:00Z", url: "#" }
-      ]);
     }
   };
 
   const fetchCryptoVideos = async () => {
     try {
-      // Note: This uses YouTube's public RSS feed (no API key needed)
-      // For production, get a YouTube API key from Google Cloud Console
-      const response = await fetch('https://www.youtube.com/feeds/videos.xml?channel_id=UCqK_GSMbpiV8spgD3ZGloSw');
-      // For this demo, we'll use sample data since RSS parsing requires additional setup
-      setVideos([
-        { 
-          id: 1, 
-          title: "Bitcoin Technical Analysis - What's Next?", 
-          channel: "Coin Bureau",
-          thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-          views: "125K views",
-          url: "https://youtube.com"
-        },
-        { 
-          id: 2, 
-          title: "Top 5 Altcoins for 2025", 
-          channel: "Crypto Banter",
-          thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-          views: "89K views",
-          url: "https://youtube.com"
-        },
-        { 
-          id: 3, 
-          title: "Understanding DeFi: Complete Guide", 
-          channel: "Whiteboard Crypto",
-          thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-          views: "203K views",
-          url: "https://youtube.com"
-        }
-      ]);
+      // Sample videos for each category
+      const videosByCategory = {
+        bitcoin: [
+          { 
+            id: 1, 
+            title: "Bitcoin Technical Analysis - What's Next?", 
+            channel: "Paul Barron",
+            views: "125K views",
+            url: "https://youtube.com/@PaulBarronNetwork/search?query=bitcoin"
+          },
+          { 
+            id: 2, 
+            title: "Bitcoin Market Update 2024", 
+            channel: "Andreas Antonopoulos",
+            views: "189K views",
+            url: "https://youtube.com/@aantonop/search?query=bitcoin"
+          },
+          { 
+            id: 3, 
+            title: "Understanding Bitcoin Mining", 
+            channel: "Coin Bureau",
+            views: "203K views",
+            url: "https://youtube.com/@CoinBureau/search?query=bitcoin"
+          },
+          { 
+            id: 4, 
+            title: "Bitcoin Deep Dive Interview", 
+            channel: "Laura Shin",
+            views: "156K views",
+            url: "https://youtube.com/@LauraShin/search?query=bitcoin"
+          }
+        ],
+        ethereum: [
+          { 
+            id: 4, 
+            title: "Ethereum 2.0 Complete Guide", 
+            channel: "Paul Barron",
+            views: "156K views",
+            url: "https://youtube.com/@PaulBarronNetwork/search?query=ethereum"
+          },
+          { 
+            id: 5, 
+            title: "ETH Price Prediction with Tom Lee", 
+            channel: "CNBC",
+            views: "192K views",
+            url: "https://youtube.com/results?search_query=tom+lee+ethereum"
+          },
+          { 
+            id: 6, 
+            title: "Ethereum Market Analysis - Paul Barron", 
+            channel: "Paul Barron",
+            views: "178K views",
+            url: "https://youtube.com/@PaulBarronNetwork/search?query=ethereum"
+          },
+          { 
+            id: 7, 
+            title: "Tom Lee on Crypto & Ethereum Future", 
+            channel: "Bloomberg",
+            views: "214K views",
+            url: "https://youtube.com/results?search_query=tom+lee+ethereum"
+          }
+        ],
+        xrp: [
+          { 
+            id: 7, 
+            title: "XRP Legal Victory Analysis", 
+            channel: "Zach Rector",
+            views: "234K views",
+            url: "https://youtube.com/@ZachRector/search?query=xrp"
+          },
+          { 
+            id: 8, 
+            title: "Ripple's Global Payment Network", 
+            channel: "Crypto Sensei",
+            views: "145K views",
+            url: "https://youtube.com/@CryptoSensei/search?query=xrp"
+          },
+          { 
+            id: 9, 
+            title: "XRP Price Analysis & Updates", 
+            channel: "Digital Outlook",
+            views: "167K views",
+            url: "https://youtube.com/@DigitalOutlook/search?query=xrp"
+          },
+          { 
+            id: 10, 
+            title: "XRP Market Developments", 
+            channel: "Chain of Blocks",
+            views: "189K views",
+            url: "https://youtube.com/@ChainofBlocks/search?query=xrp"
+          },
+          { 
+            id: 11, 
+            title: "XRP News & Market Updates", 
+            channel: "Mickle",
+            views: "212K views",
+            url: "https://youtube.com/@Mickle/search?query=xrp"
+          }
+        ],
+        altcoins: [
+          { 
+            id: 11, 
+            title: "Top Altcoins to Watch This Week", 
+            channel: "Altcoin Daily",
+            views: "198K views",
+            url: "https://youtube.com/@AltcoinDaily/videos"
+          },
+          { 
+            id: 12, 
+            title: "Altcoin Market Analysis & Predictions", 
+            channel: "Altcoin Daily",
+            views: "142K views",
+            url: "https://youtube.com/@AltcoinDaily/videos"
+          },
+          { 
+            id: 13, 
+            title: "Crypto Market Breakdown", 
+            channel: "Krypto with Klaus",
+            views: "176K views",
+            url: "https://youtube.com/@KryptowithKlaus/videos"
+          },
+          { 
+            id: 14, 
+            title: "Hidden Gem Altcoins", 
+            channel: "Krypto with Klaus",
+            views: "134K views",
+            url: "https://youtube.com/@KryptowithKlaus/videos"
+          },
+          { 
+            id: 15, 
+            title: "Best Altcoins for 2025", 
+            channel: "Apex Crypto",
+            views: "167K views",
+            url: "https://youtube.com/@ApexCrypto/videos"
+          },
+          { 
+            id: 16, 
+            title: "Altcoin News & Updates", 
+            channel: "Apex Crypto",
+            views: "145K views",
+            url: "https://youtube.com/@ApexCrypto/videos"
+          }
+        ]
+      };
+      setVideos(videosByCategory);
     } catch (error) {
       console.error('Error fetching videos:', error);
     }
+  };
+
+  const fetchChartData = async (coinId) => {
+    setChartLoading(true);
+    try {
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=7`);
+      const data = await response.json();
+      const formattedData = data.prices.map(([timestamp, price]) => ({
+        time: new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: price
+      }));
+      setChartData(formattedData);
+      setChartLoading(false);
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      setChartLoading(false);
+    }
+  };
+
+  const openChart = (crypto) => {
+    setSelectedCrypto(crypto);
+    fetchChartData(crypto.id);
+  };
+
+  const closeChart = () => {
+    setSelectedCrypto(null);
+    setChartData([]);
   };
 
   const getTimeAgo = (dateString) => {
@@ -107,11 +292,11 @@ export default function CryptoAggregator() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-4">
+    <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-light tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
             Kryptocurrent
           </h1>
           <p className="text-gray-400">Real-time prices, news & videos in one place</p>
@@ -138,7 +323,7 @@ export default function CryptoAggregator() {
           <button
             onClick={() => setActiveTab('prices')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === 'prices' ? 'bg-purple-600' : 'hover:bg-slate-700'
+              activeTab === 'prices' ? 'bg-green-600' : 'hover:bg-slate-700'
             }`}
           >
             <DollarSign size={18} />
@@ -147,7 +332,7 @@ export default function CryptoAggregator() {
           <button
             onClick={() => setActiveTab('news')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === 'news' ? 'bg-purple-600' : 'hover:bg-slate-700'
+              activeTab === 'news' ? 'bg-green-600' : 'hover:bg-slate-700'
             }`}
           >
             <Newspaper size={18} />
@@ -156,7 +341,7 @@ export default function CryptoAggregator() {
           <button
             onClick={() => setActiveTab('videos')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === 'videos' ? 'bg-purple-600' : 'hover:bg-slate-700'
+              activeTab === 'videos' ? 'bg-green-600' : 'hover:bg-slate-700'
             }`}
           >
             <Video size={18} />
@@ -173,7 +358,7 @@ export default function CryptoAggregator() {
                 <h2 className="text-2xl font-bold">Live Crypto Prices</h2>
                 <button 
                   onClick={fetchCryptoPrices}
-                  className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition"
+                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition"
                 >
                   <RefreshCw size={16} />
                   Refresh
@@ -185,22 +370,26 @@ export default function CryptoAggregator() {
                   <p className="text-gray-400">Loading prices...</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {filteredPrices.map((crypto) => (
-                    <div key={crypto.id} className="bg-slate-700/50 rounded-lg p-4 flex items-center justify-between hover:bg-slate-700 transition">
-                      <div className="flex items-center gap-3">
-                        <img src={crypto.image} alt={crypto.name} className="w-10 h-10" />
-                        <div>
-                          <h3 className="font-semibold">{crypto.name}</h3>
-                          <p className="text-sm text-gray-400">{crypto.symbol.toUpperCase()}</p>
+                    <div 
+                      key={crypto.id} 
+                      onClick={() => openChart(crypto)}
+                      className="bg-slate-700/50 rounded-lg p-3 hover:bg-slate-700 transition cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={crypto.image} alt={crypto.name} className="w-6 h-6" />
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{crypto.name}</h3>
+                          <p className="text-xs text-gray-400">{crypto.symbol.toUpperCase()}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold">${crypto.current_price.toLocaleString()}</p>
-                        <div className={`flex items-center gap-1 text-sm ${
+                      <div>
+                        <p className="text-base font-bold">${crypto.current_price.toLocaleString()}</p>
+                        <div className={`flex items-center gap-1 text-xs ${
                           crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
-                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                           {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                         </div>
                       </div>
@@ -213,6 +402,24 @@ export default function CryptoAggregator() {
                   ✅ <strong>Live data</strong> powered by CoinGecko API
                 </p>
               </div>
+
+              {/* ETF Tracker Section */}
+              <div className="mt-6 p-6 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-xl border border-green-500/20">
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                  📊 ETF Tracker
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  Track cryptocurrency ETF filings, approvals, and market impact
+                </p>
+                <a 
+                  href="https://xrp-insights.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition font-semibold"
+                >
+                  Visit ETF Tracker →
+                </a>
+              </div>
             </div>
           )}
 
@@ -223,7 +430,7 @@ export default function CryptoAggregator() {
                 <h2 className="text-2xl font-bold">Latest Crypto News</h2>
                 <button 
                   onClick={fetchCryptoNews}
-                  className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition"
+                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition"
                 >
                   <RefreshCw size={16} />
                   Refresh
@@ -263,9 +470,46 @@ export default function CryptoAggregator() {
           {/* Videos Tab */}
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-2xl font-bold mb-4">Trending Crypto Videos</h2>
+              <h2 className="text-2xl font-bold mb-4">Crypto Videos by Category</h2>
+              
+              {/* Video Category Tabs */}
+              <div className="flex gap-2 mb-6 overflow-x-auto">
+                <button
+                  onClick={() => setVideoCategory('bitcoin')}
+                  className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
+                    videoCategory === 'bitcoin' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  Bitcoin
+                </button>
+                <button
+                  onClick={() => setVideoCategory('ethereum')}
+                  className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
+                    videoCategory === 'ethereum' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  Ethereum
+                </button>
+                <button
+                  onClick={() => setVideoCategory('xrp')}
+                  className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
+                    videoCategory === 'xrp' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  XRP
+                </button>
+                <button
+                  onClick={() => setVideoCategory('xlm')}
+                  className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${
+                    videoCategory === 'xlm' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  Alt Coins
+                </button>
+              </div>
+
               <div className="space-y-4">
-                {videos.map((video) => (
+                {(videoCategory === 'xlm' ? videos.altcoins : videos[videoCategory])?.map((video) => (
                   <a
                     key={video.id}
                     href={video.url}
@@ -322,6 +566,93 @@ export default function CryptoAggregator() {
             </div>
           </div>
         </div>
+
+        {/* Chart Popup Modal */}
+        {selectedCrypto && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeChart}>
+            <div className="bg-slate-800 rounded-xl p-6 max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedCrypto.name}</h2>
+                    <p className="text-gray-400">{selectedCrypto.symbol.toUpperCase()}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={closeChart}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-3xl font-bold">${selectedCrypto.current_price.toLocaleString()}</div>
+                <div className={`flex items-center gap-2 text-lg ${
+                  selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                  {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
+                </div>
+              </div>
+
+              {chartLoading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <RefreshCw className="animate-spin" size={32} />
+                </div>
+              ) : (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <XAxis 
+                        dataKey="time" 
+                        stroke="#9ca3af"
+                        style={{ fontSize: '12px' }}
+                      />
+                      <YAxis 
+                        stroke="#9ca3af"
+                        style={{ fontSize: '12px' }}
+                        tickFormatter={(value) => `${value.toFixed(2)}`}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#1e293b', 
+                          border: 'none', 
+                          borderRadius: '8px',
+                          color: '#fff'
+                        }}
+                        formatter={(value) => [`${value.toFixed(2)}`, 'Price']}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="price" 
+                        stroke="#22c55e" 
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <div className="text-gray-400 mb-1">Market Cap</div>
+                  <div className="font-semibold">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</div>
+                </div>
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <div className="text-gray-400 mb-1">24h High</div>
+                  <div className="font-semibold">${selectedCrypto.high_24h?.toLocaleString()}</div>
+                </div>
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <div className="text-gray-400 mb-1">24h Low</div>
+                  <div className="font-semibold">${selectedCrypto.low_24h?.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
