@@ -184,16 +184,18 @@ export default function CryptoAggregator() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header with Logo */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-black text-white">
+      <div className="w-full bg-[#ffc93c] py-6 mb-8">
+        <div className="max-w-2xl mx-auto px-4">
           <img 
             src="/logo.png" 
             alt="Kryptocurrent Logo" 
             className="w-full"
           />
         </div>
+      </div>
+      
+      <div className="max-w-6xl mx-auto px-4">
 
         {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 bg-slate-800/50 p-2 rounded-lg backdrop-blur">
