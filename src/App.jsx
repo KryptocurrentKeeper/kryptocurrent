@@ -125,26 +125,36 @@ export default function CryptoAggregator() {
         'Mickle': 'UCJkdlLgC4UrQXx4MMEY5w5Q'
       };
 
+      // Calculate 24 hours ago timestamp
+      const yesterday = new Date();
+      yesterday.setHours(yesterday.getHours() - 24);
+      const publishedAfter = yesterday.toISOString();
+
       const allVideos = [];
       let videoId = 1;
 
-      // Fetch latest video from each channel
+      // Fetch videos from last 24 hours for each channel
       for (const [channelName, channelId] of Object.entries(channels)) {
         try {
           const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=2&type=video`
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=10&type=video&publishedAfter=${publishedAfter}`
           );
           const data = await response.json();
           
-          if (data.items) {
+          if (data.items && data.items.length > 0) {
             data.items.forEach(item => {
+              const publishedDate = new Date(item.snippet.publishedAt);
+              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+              
               allVideos.push({
                 id: videoId++,
                 title: item.snippet.title,
                 channel: channelName,
-                views: 'Recent',
+                views: timeAgo,
                 url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                thumbnail: item.snippet.thumbnails.medium.url
+                thumbnail: item.snippet.thumbnails.medium.url,
+                publishedAt: item.snippet.publishedAt
               });
             });
           }
@@ -153,21 +163,24 @@ export default function CryptoAggregator() {
         }
       }
 
+      // Sort all videos by publish date (newest first)
+      allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
       setVideos(allVideos);
     } catch (error) {
       // Fallback to sample data if API fails
       const fallbackVideos = [
-        { id: 1, title: "Latest Crypto Analysis", channel: "Zach Rector", views: "Recent", url: "https://youtube.com/@ZachRector/videos" },
-        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "Recent", url: "https://youtube.com/@CryptoSensei/videos" },
-        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "Recent", url: "https://youtube.com/@ChainofBlocks/videos" },
-        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "Recent", url: "https://youtube.com/@PaulBarronNetwork/videos" },
-        { id: 5, title: "DeFi Review", channel: "Jake Claver", views: "Recent", url: "https://youtube.com/@JakeClaver/videos" },
-        { id: 6, title: "Market Trends", channel: "Digital Outlook", views: "Recent", url: "https://youtube.com/@DigitalOutlook/videos" },
-        { id: 7, title: "Altcoin News", channel: "Apex Crypto", views: "Recent", url: "https://youtube.com/@ApexCrypto/videos" },
-        { id: 8, title: "Daily Update", channel: "Altcoin Daily", views: "Recent", url: "https://youtube.com/@AltcoinDaily/videos" },
-        { id: 9, title: "Evening Report", channel: "Good Evening Crypto", views: "Recent", url: "https://youtube.com/@GoodEveningCrypto/videos" },
-        { id: 10, title: "Portfolio Tips", channel: "Krypto with Klaus", views: "Recent", url: "https://youtube.com/@KryptowithKlaus/videos" },
-        { id: 11, title: "Market Insights", channel: "Mickle", views: "Recent", url: "https://youtube.com/@Mickle/videos" }
+        { id: 1, title: "Latest Crypto Analysis", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@ZachRector/videos" },
+        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSensei/videos" },
+        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@ChainofBlocks/videos" },
+        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos" },
+        { id: 5, title: "DeFi Review", channel: "Jake Claver", views: "10h ago", url: "https://youtube.com/@JakeClaver/videos" },
+        { id: 6, title: "Market Trends", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlook/videos" },
+        { id: 7, title: "Altcoin News", channel: "Apex Crypto", views: "14h ago", url: "https://youtube.com/@ApexCrypto/videos" },
+        { id: 8, title: "Daily Update", channel: "Altcoin Daily", views: "16h ago", url: "https://youtube.com/@AltcoinDaily/videos" },
+        { id: 9, title: "Evening Report", channel: "Good Evening Crypto", views: "18h ago", url: "https://youtube.com/@GoodEveningCrypto/videos" },
+        { id: 10, title: "Portfolio Tips", channel: "Krypto with Klaus", views: "20h ago", url: "https://youtube.com/@KryptowithKlaus/videos" },
+        { id: 11, title: "Market Insights", channel: "Mickle", views: "22h ago", url: "https://youtube.com/@Mickle/videos" }
       ];
       setVideos(fallbackVideos);
     }
