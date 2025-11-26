@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, Search, RefreshCw, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, RefreshCw, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CryptoAggregator() {
@@ -8,11 +8,11 @@ export default function CryptoAggregator() {
   const [news, setNews] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [videoCategory, setVideoCategory] = useState('bitcoin');
+  const [chartTimeframe, setChartTimeframe] = useState('7');
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -46,12 +46,13 @@ export default function CryptoAggregator() {
 
   const fetchCryptoNews = async () => {
     try {
-      // Curated news sources from X and crypto news sites
+      // Curated news sources from X and crypto news sites with logos
       const curatedNews = [
         { 
           id: 1, 
           title: "Latest Crypto Regulatory Updates", 
           source: { title: "Eleanor Terrett" }, 
+          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
           created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           url: "https://x.com/EleanorTerrett"
         },
@@ -59,6 +60,7 @@ export default function CryptoAggregator() {
           id: 2, 
           title: "Macro Market Analysis & Crypto Outlook", 
           source: { title: "Raoul Pal" }, 
+          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
           created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
           url: "https://x.com/RaoulGMI"
         },
@@ -66,6 +68,7 @@ export default function CryptoAggregator() {
           id: 3, 
           title: "Ripple Company Updates & Announcements", 
           source: { title: "Brad Garlinghouse" }, 
+          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
           created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
           url: "https://x.com/bgarlinghouse"
         },
@@ -73,6 +76,7 @@ export default function CryptoAggregator() {
           id: 4, 
           title: "Coinbase Market Insights & Analysis", 
           source: { title: "Coinbase" }, 
+          logo: "https://images.ctfassets.net/c5bd0wqjc7v0/4Y1RS9zV0FhoXfYdVm7vK7/dd9d2e5999e588b30e0c41e8ec4bb77f/coinbase-logo.png",
           created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
           url: "https://www.coinbase.com/blog"
         },
@@ -80,6 +84,7 @@ export default function CryptoAggregator() {
           id: 5, 
           title: "Cryptocurrency Investment Analysis", 
           source: { title: "The Motley Fool" }, 
+          logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png",
           created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
           url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/"
         },
@@ -87,6 +92,7 @@ export default function CryptoAggregator() {
           id: 6, 
           title: "Breaking Crypto News & Market Updates", 
           source: { title: "Cointelegraph" }, 
+          logo: "https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png",
           created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
           url: "https://cointelegraph.com/"
         }
@@ -249,13 +255,15 @@ export default function CryptoAggregator() {
     }
   };
 
-  const fetchChartData = async (coinId) => {
+  const fetchChartData = async (coinId, days = '7') => {
     setChartLoading(true);
     try {
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=7`);
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
       const data = await response.json();
       const formattedData = data.prices.map(([timestamp, price]) => ({
-        time: new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        time: days === '1' 
+          ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         price: price
       }));
       setChartData(formattedData);
@@ -268,7 +276,13 @@ export default function CryptoAggregator() {
 
   const openChart = (crypto) => {
     setSelectedCrypto(crypto);
-    fetchChartData(crypto.id);
+    setChartTimeframe('7');
+    fetchChartData(crypto.id, '7');
+  };
+
+  const changeChartTimeframe = (days) => {
+    setChartTimeframe(days);
+    fetchChartData(selectedCrypto.id, days);
   };
 
   const closeChart = () => {
@@ -296,27 +310,10 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-light tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-            Kryptocurrent
+          <h1 className="text-5xl font-normal tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+            KRYPTOCURRENT
           </h1>
-          <p className="text-gray-400">Real-time prices, news & videos in one place</p>
         </div>
-
-        {/* Search Bar */}
-        {activeTab === 'prices' && (
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search cryptocurrencies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-800/50 backdrop-blur rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 bg-slate-800/50 p-2 rounded-lg backdrop-blur">
@@ -371,7 +368,7 @@ export default function CryptoAggregator() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {filteredPrices.map((crypto) => (
+                  {cryptoPrices.map((crypto) => (
                     <div 
                       key={crypto.id} 
                       onClick={() => openChart(crypto)}
@@ -436,7 +433,7 @@ export default function CryptoAggregator() {
                   Refresh
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {news.map((article) => (
                   <a 
                     key={article.id} 
@@ -445,11 +442,23 @@ export default function CryptoAggregator() {
                     rel="noopener noreferrer"
                     className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
                   >
-                    <h3 className="font-semibold mb-2">{article.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <span>{article.source?.title || 'CryptoNews'}</span>
-                      <span>•</span>
-                      <span>{getTimeAgo(article.created_at)}</span>
+                    <div className="flex items-start gap-3">
+                      <img 
+                        src={article.logo} 
+                        alt={article.source?.title}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-white/10"
+                        onError={(e) => {
+                          e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold mb-2">{article.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <span>{article.source?.title || 'CryptoNews'}</span>
+                          <span>•</span>
+                          <span>{getTimeAgo(article.created_at)}</span>
+                        </div>
+                      </div>
                     </div>
                   </a>
                 ))}
@@ -595,6 +604,26 @@ export default function CryptoAggregator() {
                   {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                   {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
                 </div>
+              </div>
+
+              {/* Chart Timeframe Toggle */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => changeChartTimeframe('1')}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    chartTimeframe === '1' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  1 Day
+                </button>
+                <button
+                  onClick={() => changeChartTimeframe('7')}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    chartTimeframe === '7' ? 'bg-green-600' : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                >
+                  1 Week
+                </button>
               </div>
 
               {chartLoading ? (
