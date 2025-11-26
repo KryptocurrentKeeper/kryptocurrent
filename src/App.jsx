@@ -112,17 +112,18 @@ export default function CryptoAggregator() {
       
       // Channel IDs for each creator
       const channels = {
-        'Digital Outlook': 'UCTqj3gfZpSUslRFg16BjJWg',
-        'Crypto Sensei': 'UCKb8JHy7hP_PFCojfZ-E7Pw',
-        'Mickle': 'UCJkdlLgC4UrQXx4MMEY5w5Q',
-        'Chain of Blocks': 'UCxiLraXqj5FDXGqQE0jLnXA',
-        'Zach Rector': 'UCxKvakTZfp8L9I2exFMKeSA',
-        'Jake Claver': 'UCxHNzlGRq8lTqXYKKS0Y_jQ',
-        'Altcoin Daily': 'UCbLhGKVY-bJPcawebgtNfbw',
-        'Paul Barron': 'UCIs3yDj10gQqTZeHkXdLKNw',
-        'Apex Crypto': 'UC5gZx8EBGGJgECBpfNJuG0g',
-        'Good Evening Crypto': 'UCp4k9Gq_iDFPD8VqGSlNZvw',
-        'Family Hobbies and Cards': 'UCOb8ZvB7CK7-IEf-8RmhULg'
+        'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
+        'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
+        'Mickle': 'UCso1Kc8PyU4KyUpkmNnABqQ',
+        'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
+        'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
+        'Jake Claver': 'UCso1Kc8PyU4KyUpkmNnABqQ',
+        'Altcoin Daily': 'UC7KjtEJT6HvI3kBcF2I4vXg',
+        'Paul Barron': 'UC4VPa7EOvObpyCRI4YKRQRw',
+        'Apex Crypto': 'UCszbTlu2HnXA94LGBWMAfug',
+        'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
+        'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
+        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
       };
 
       // Calculate 24 hours ago timestamp
