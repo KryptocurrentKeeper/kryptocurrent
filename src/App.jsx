@@ -187,12 +187,11 @@ export default function CryptoAggregator() {
     <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header with Logo */}
-        <div className="text-center mb-8 pt-8">
+        <div className="mb-8">
           <img 
             src="/logo.png" 
             alt="Kryptocurrent Logo" 
-            className="mx-auto mb-4"
-            style={{ maxWidth: '600px', width: '100%' }}
+            className="w-full"
           />
         </div>
 
@@ -227,7 +226,7 @@ export default function CryptoAggregator() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {cryptoPrices.map((crypto) => (
-                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-3 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-3 hover:bg-slate-700 transition cursor-pointer">
                       <div className="flex items-center gap-2 mb-2">
                         <img src={crypto.image} alt={crypto.name} className="w-6 h-6" />
                         <div className="min-w-0">
@@ -248,7 +247,7 @@ export default function CryptoAggregator() {
               )}
 
               {/* ETF Tracker Section */}
-              <div className="mt-6 p-6 bg-slate-700/50 rounded-xl border-2 border-[#ffc93c]">
+              <div className="mt-6 p-6 bg-slate-700/50 rounded-xl">
                 <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-white">📊 ETF Tracker</h3>
                 <p className="mb-4 text-gray-300">Track ETF stats, filings and how much crypto is locked up</p>
                 <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold">
@@ -268,7 +267,7 @@ export default function CryptoAggregator() {
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 {news.map((article) => (
-                  <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
+                  <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                     <div className="flex items-start gap-3">
                       <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-white/10" onError={(e) => { e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png'; }} />
                       <div className="flex-1 min-w-0">
@@ -283,7 +282,7 @@ export default function CryptoAggregator() {
                   </a>
                 ))}
               </div>
-              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg border-2 border-[#ffc93c]">
+              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
                 <p className="text-sm text-[#ffc93c] font-semibold mb-2">To get real news:</p>
                 <ul className="text-xs text-gray-300 space-y-1 ml-4">
                   <li>• CryptoPanic API (free tier available)</li>
@@ -305,7 +304,7 @@ export default function CryptoAggregator() {
               </div>
               <div className="space-y-4">
                 {(videoCategory === 'xlm' ? videos.altcoins : videos[videoCategory])?.map((video) => (
-                  <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
+                  <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                     <div className="flex gap-4">
                       <div className="w-40 h-24 bg-slate-600 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                         <Video size={32} className="text-[#ffc93c]" />
@@ -319,7 +318,7 @@ export default function CryptoAggregator() {
                   </a>
                 ))}
               </div>
-              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg border-2 border-[#ffc93c]">
+              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
                 <p className="text-sm text-[#ffc93c] font-semibold mb-2">To get real videos:</p>
                 <ol className="text-xs text-gray-300 space-y-1 ml-4">
                   <li>1. Get YouTube Data API key (free from Google Cloud)</li>
