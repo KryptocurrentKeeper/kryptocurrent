@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, RefreshCw, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Import Bebas Neue font
+const styleTag = document.createElement('style');
+styleTag.innerHTML = `
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+  .bebas-title {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.05em;
+  }
+`;
+document.head.appendChild(styleTag);
+
 export default function CryptoAggregator() {
   const [activeTab, setActiveTab] = useState('prices');
   const [cryptoPrices, setCryptoPrices] = useState([]);
@@ -305,7 +316,7 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-5xl font-semibold tracking-wide mb-2 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+          <h1 className="bebas-title text-6xl tracking-tight mb-2 bg-gradient-to-r from-green-400 to-white bg-clip-text text-transparent">
             KRYPTOCURRENT
           </h1>
         </div>
@@ -347,12 +358,12 @@ export default function CryptoAggregator() {
           {activeTab === 'prices' && (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Live Crypto Prices</h2>
+                <h2 className="text-xl font-bold">Live Crypto Prices</h2>
                 <button 
                   onClick={fetchCryptoPrices}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition"
+                  className="flex items-center gap-1 px-2 py-1.5 text-sm bg-green-600 hover:bg-green-700 rounded-lg transition"
                 >
-                  <RefreshCw size={16} />
+                  <RefreshCw size={14} />
                   Refresh
                 </button>
               </div>
@@ -389,11 +400,6 @@ export default function CryptoAggregator() {
                   ))}
                 </div>
               )}
-              <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <p className="text-sm text-blue-300">
-                  ✅ <strong>Live data</strong> powered by CoinGecko API
-                </p>
-              </div>
 
               {/* ETF Tracker Section */}
               <div className="mt-6 p-6 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-xl border border-green-500/20">
@@ -401,7 +407,7 @@ export default function CryptoAggregator() {
                   📊 ETF Tracker
                 </h3>
                 <p className="text-gray-300 mb-4">
-                  Track cryptocurrency ETF filings, approvals, and market impact
+                  Track ETF stats, filings and how much crypto is locked up
                 </p>
                 <a 
                   href="https://xrp-insights.com" 
@@ -419,12 +425,12 @@ export default function CryptoAggregator() {
           {activeTab === 'news' && (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Latest Crypto News</h2>
+                <h2 className="text-xl font-bold">Latest Crypto News</h2>
                 <button 
                   onClick={fetchCryptoNews}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition"
+                  className="flex items-center gap-1 px-2 py-1.5 text-sm bg-green-600 hover:bg-green-700 rounded-lg transition"
                 >
-                  <RefreshCw size={16} />
+                  <RefreshCw size={14} />
                   Refresh
                 </button>
               </div>
@@ -474,7 +480,7 @@ export default function CryptoAggregator() {
           {/* Videos Tab */}
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-2xl font-bold mb-4">Crypto Videos by Category</h2>
+              <h2 className="text-xl font-bold mb-4">Crypto Videos by Category</h2>
               
               {/* Video Category Tabs */}
               <div className="flex gap-2 mb-6 overflow-x-auto">
