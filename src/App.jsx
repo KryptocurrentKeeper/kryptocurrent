@@ -11,7 +11,6 @@ export default function CryptoAggregator() {
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
-  const [videoCategory, setVideoCategory] = useState('bitcoin');
   const [chartTimeframe, setChartTimeframe] = useState('7');
 
   useEffect(() => {
@@ -25,7 +24,7 @@ export default function CryptoAggregator() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'videos' && Object.keys(videos).length === 0) {
+    if (activeTab === 'videos' && videos.length === 0) {
       fetchCryptoVideos();
     }
   }, [activeTab]);
@@ -103,36 +102,25 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      const videosByCategory = {
-        bitcoin: [
-          { id: 1, title: "Bitcoin Technical Analysis - What's Next?", channel: "Paul Barron", views: "125K views", url: "https://youtube.com/@PaulBarronNetwork/search?query=bitcoin" },
-          { id: 2, title: "Bitcoin Market Update 2024", channel: "Andreas Antonopoulos", views: "189K views", url: "https://youtube.com/@aantonop/search?query=bitcoin" },
-          { id: 3, title: "Understanding Bitcoin Mining", channel: "Coin Bureau", views: "203K views", url: "https://youtube.com/@CoinBureau/search?query=bitcoin" },
-          { id: 4, title: "Bitcoin Deep Dive Interview", channel: "Laura Shin", views: "156K views", url: "https://youtube.com/@LauraShin/search?query=bitcoin" }
-        ],
-        ethereum: [
-          { id: 4, title: "Ethereum 2.0 Complete Guide", channel: "Paul Barron", views: "156K views", url: "https://youtube.com/@PaulBarronNetwork/search?query=ethereum" },
-          { id: 5, title: "ETH Price Prediction with Tom Lee", channel: "CNBC", views: "192K views", url: "https://youtube.com/results?search_query=tom+lee+ethereum" },
-          { id: 6, title: "Ethereum Market Analysis - Paul Barron", channel: "Paul Barron", views: "178K views", url: "https://youtube.com/@PaulBarronNetwork/search?query=ethereum" },
-          { id: 7, title: "Tom Lee on Crypto & Ethereum Future", channel: "Bloomberg", views: "214K views", url: "https://youtube.com/results?search_query=tom+lee+ethereum" }
-        ],
-        xrp: [
-          { id: 7, title: "XRP Legal Victory Analysis", channel: "Zach Rector", views: "234K views", url: "https://youtube.com/@ZachRector/search?query=xrp" },
-          { id: 8, title: "Ripple's Global Payment Network", channel: "Crypto Sensei", views: "145K views", url: "https://youtube.com/@CryptoSensei/search?query=xrp" },
-          { id: 9, title: "XRP Price Analysis & Updates", channel: "Digital Outlook", views: "167K views", url: "https://youtube.com/@DigitalOutlook/search?query=xrp" },
-          { id: 10, title: "XRP Market Developments", channel: "Chain of Blocks", views: "189K views", url: "https://youtube.com/@ChainofBlocks/search?query=xrp" },
-          { id: 11, title: "XRP News & Market Updates", channel: "Mickle", views: "212K views", url: "https://youtube.com/@Mickle/search?query=xrp" }
-        ],
-        altcoins: [
-          { id: 11, title: "Top Altcoins to Watch This Week", channel: "Altcoin Daily", views: "198K views", url: "https://youtube.com/@AltcoinDaily/videos" },
-          { id: 12, title: "Altcoin Market Analysis & Predictions", channel: "Altcoin Daily", views: "142K views", url: "https://youtube.com/@AltcoinDaily/videos" },
-          { id: 13, title: "Crypto Market Breakdown", channel: "Krypto with Klaus", views: "176K views", url: "https://youtube.com/@KryptowithKlaus/videos" },
-          { id: 14, title: "Hidden Gem Altcoins", channel: "Krypto with Klaus", views: "134K views", url: "https://youtube.com/@KryptowithKlaus/videos" },
-          { id: 15, title: "Best Altcoins for 2025", channel: "Apex Crypto", views: "167K views", url: "https://youtube.com/@ApexCrypto/videos" },
-          { id: 16, title: "Altcoin News & Updates", channel: "Apex Crypto", views: "145K views", url: "https://youtube.com/@ApexCrypto/videos" }
-        ]
-      };
-      setVideos(videosByCategory);
+      const allVideos = [
+        { id: 1, title: "XRP Legal Victory Analysis", channel: "Zach Rector", views: "234K views", url: "https://youtube.com/@ZachRector/videos" },
+        { id: 2, title: "Crypto Market Update", channel: "Crypto Sensei", views: "145K views", url: "https://youtube.com/@CryptoSensei/videos" },
+        { id: 3, title: "Blockchain Technology Explained", channel: "Chain of Blocks", views: "189K views", url: "https://youtube.com/@ChainofBlocks/videos" },
+        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "125K views", url: "https://youtube.com/@PaulBarronNetwork/videos" },
+        { id: 5, title: "DeFi Projects Review", channel: "Jake Claver", views: "98K views", url: "https://youtube.com/@JakeClaver/videos" },
+        { id: 6, title: "Market Trends Analysis", channel: "Digital Outlook", views: "167K views", url: "https://youtube.com/@DigitalOutlook/videos" },
+        { id: 7, title: "Top Altcoins This Week", channel: "Apex Crypto", views: "156K views", url: "https://youtube.com/@ApexCrypto/videos" },
+        { id: 8, title: "Crypto News Roundup", channel: "Altcoin Daily", views: "198K views", url: "https://youtube.com/@AltcoinDaily/videos" },
+        { id: 9, title: "Evening Market Report", channel: "Good Evening Crypto", views: "112K views", url: "https://youtube.com/@GoodEveningCrypto/videos" },
+        { id: 10, title: "Portfolio Strategy", channel: "Krypto with Klaus", views: "134K views", url: "https://youtube.com/@KryptowithKlaus/videos" },
+        { id: 11, title: "Crypto Market Insights", channel: "Mickle", views: "176K views", url: "https://youtube.com/@Mickle/videos" },
+        { id: 12, title: "Latest XRP News", channel: "Zach Rector", views: "201K views", url: "https://youtube.com/@ZachRector/videos" },
+        { id: 13, title: "Technical Analysis", channel: "Crypto Sensei", views: "143K views", url: "https://youtube.com/@CryptoSensei/videos" },
+        { id: 14, title: "Crypto Trading Tips", channel: "Chain of Blocks", views: "165K views", url: "https://youtube.com/@ChainofBlocks/videos" },
+        { id: 15, title: "Bitcoin Price Prediction", channel: "Paul Barron", views: "189K views", url: "https://youtube.com/@PaulBarronNetwork/videos" },
+        { id: 16, title: "NFT Market Update", channel: "Jake Claver", views: "87K views", url: "https://youtube.com/@JakeClaver/videos" }
+      ];
+      setVideos(allVideos);
     } catch (error) {
       console.error('Error fetching videos:', error);
     }
@@ -185,17 +173,16 @@ export default function CryptoAggregator() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="w-full bg-[#ffc93c] py-6 mb-8">
-        <div className="max-w-2xl mx-auto px-4">
-          <img 
-            src="/logo.png" 
-            alt="Kryptocurrent Logo" 
-            className="w-full"
-          />
-        </div>
-      </div>
-      
       <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-[#ffc93c] py-6 mb-8">
+          <div className="max-w-2xl mx-auto px-4">
+            <img 
+              src="/logo.png" 
+              alt="Kryptocurrent Logo" 
+              className="w-full"
+            />
+          </div>
+        </div>
 
         {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 bg-slate-800/50 p-2 rounded-lg backdrop-blur">
@@ -297,23 +284,18 @@ export default function CryptoAggregator() {
 
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-xl font-bold mb-4 text-white">Crypto Videos by Category</h2>
-              <div className="flex gap-2 mb-6 overflow-x-auto">
-                <button onClick={() => setVideoCategory('bitcoin')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'bitcoin' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Bitcoin</button>
-                <button onClick={() => setVideoCategory('ethereum')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'ethereum' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Ethereum</button>
-                <button onClick={() => setVideoCategory('xrp')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xrp' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>XRP</button>
-                <button onClick={() => setVideoCategory('xlm')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xlm' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Alt Coins</button>
-              </div>
-              <div className="space-y-4">
-                {(videoCategory === 'xlm' ? videos.altcoins : videos[videoCategory])?.map((video) => (
+              <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                {videos.map((video) => (
                   <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                     <div className="flex gap-4">
-                      <div className="w-40 h-24 bg-slate-600 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <Video size={32} className="text-[#ffc93c]" />
+                      <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <Video size={28} className="text-[#ffc93c]" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold mb-2 line-clamp-2">{video.title}</h3>
-                        <p className="text-sm opacity-70">{video.channel}</p>
+                        <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
+                        <p className="text-xs opacity-70">{video.channel}</p>
                         <p className="text-xs opacity-60 mt-1">{video.views}</p>
                       </div>
                     </div>
