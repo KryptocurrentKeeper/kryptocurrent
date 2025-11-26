@@ -184,7 +184,7 @@ export default function CryptoAggregator() {
   };
 
   return (
-    <div className="min-h-screen bg-[#ffc93c] text-[#155263] p-4">
+    <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header with Logo */}
         <div className="text-center mb-8 pt-8">
@@ -197,37 +197,37 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 bg-white/30 p-2 rounded-lg backdrop-blur">
-          <button onClick={() => setActiveTab('prices')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'prices' ? 'bg-[#155263] text-white' : 'hover:bg-white/50 text-[#155263]'}`}>
+        <div className="flex gap-2 mb-6 bg-slate-800/50 p-2 rounded-lg backdrop-blur">
+          <button onClick={() => setActiveTab('prices')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'prices' ? 'bg-[#ffc93c] text-black' : 'hover:bg-slate-700 text-white'}`}>
             <DollarSign size={18} />Prices
           </button>
-          <button onClick={() => setActiveTab('news')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'news' ? 'bg-[#155263] text-white' : 'hover:bg-white/50 text-[#155263]'}`}>
+          <button onClick={() => setActiveTab('news')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'news' ? 'bg-[#ffc93c] text-black' : 'hover:bg-slate-700 text-white'}`}>
             <Newspaper size={18} />News
           </button>
-          <button onClick={() => setActiveTab('videos')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'videos' ? 'bg-[#155263] text-white' : 'hover:bg-white/50 text-[#155263]'}`}>
+          <button onClick={() => setActiveTab('videos')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'videos' ? 'bg-[#ffc93c] text-black' : 'hover:bg-slate-700 text-white'}`}>
             <Video size={18} />Videos
           </button>
         </div>
 
         {/* Content Area */}
-        <div className="bg-white/50 backdrop-blur rounded-xl p-6">
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6">
           {activeTab === 'prices' && (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-[#155263]">Live Crypto Prices</h2>
-                <button onClick={fetchCryptoPrices} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#155263] text-white hover:bg-[#1a6b7f] rounded-lg transition">
+                <h2 className="text-xl font-bold text-white">Live Crypto Prices</h2>
+                <button onClick={fetchCryptoPrices} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
                   <RefreshCw size={14} />Refresh
                 </button>
               </div>
               {loading ? (
                 <div className="text-center py-12">
-                  <RefreshCw className="animate-spin mx-auto mb-2 text-[#155263]" size={32} />
-                  <p className="text-[#155263]">Loading prices...</p>
+                  <RefreshCw className="animate-spin mx-auto mb-2 text-[#ffc93c]" size={32} />
+                  <p className="text-gray-400">Loading prices...</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {cryptoPrices.map((crypto) => (
-                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-white rounded-lg p-3 hover:bg-[#155263] hover:text-white transition cursor-pointer border-2 border-[#155263]">
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-3 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
                       <div className="flex items-center gap-2 mb-2">
                         <img src={crypto.image} alt={crypto.name} className="w-6 h-6" />
                         <div className="min-w-0">
@@ -248,10 +248,10 @@ export default function CryptoAggregator() {
               )}
 
               {/* ETF Tracker Section */}
-              <div className="mt-6 p-6 bg-[#155263] text-white rounded-xl">
-                <h3 className="text-xl font-bold mb-3 flex items-center gap-2">📊 ETF Tracker</h3>
-                <p className="mb-4 opacity-90">Track ETF stats, filings and how much crypto is locked up</p>
-                <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#ffc93c] text-[#155263] hover:bg-[#ffb700] rounded-lg transition font-semibold">
+              <div className="mt-6 p-6 bg-slate-700/50 rounded-xl border-2 border-[#ffc93c]">
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-white">📊 ETF Tracker</h3>
+                <p className="mb-4 text-gray-300">Track ETF stats, filings and how much crypto is locked up</p>
+                <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold">
                   Visit ETF Tracker →
                 </a>
               </div>
@@ -261,14 +261,14 @@ export default function CryptoAggregator() {
           {activeTab === 'news' && (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-[#155263]">Latest Crypto News</h2>
-                <button onClick={fetchCryptoNews} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#155263] text-white hover:bg-[#1a6b7f] rounded-lg transition">
+                <h2 className="text-xl font-bold text-white">Latest Crypto News</h2>
+                <button onClick={fetchCryptoNews} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
                   <RefreshCw size={14} />Refresh
                 </button>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 {news.map((article) => (
-                  <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-white rounded-lg p-4 hover:bg-[#155263] hover:text-white transition cursor-pointer border-2 border-[#155263]">
+                  <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
                     <div className="flex items-start gap-3">
                       <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-white/10" onError={(e) => { e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png'; }} />
                       <div className="flex-1 min-w-0">
@@ -283,9 +283,9 @@ export default function CryptoAggregator() {
                   </a>
                 ))}
               </div>
-              <div className="mt-4 p-4 bg-white rounded-lg border-2 border-[#155263]">
-                <p className="text-sm text-[#155263] font-semibold mb-2">To get real news:</p>
-                <ul className="text-xs text-[#155263] space-y-1 ml-4 opacity-80">
+              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg border-2 border-[#ffc93c]">
+                <p className="text-sm text-[#ffc93c] font-semibold mb-2">To get real news:</p>
+                <ul className="text-xs text-gray-300 space-y-1 ml-4">
                   <li>• CryptoPanic API (free tier available)</li>
                   <li>• NewsAPI.org ($0 for dev, $449/mo for production)</li>
                   <li>• RSS feeds from CoinDesk, CoinTelegraph</li>
@@ -296,19 +296,19 @@ export default function CryptoAggregator() {
 
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-xl font-bold mb-4 text-[#155263]">Crypto Videos by Category</h2>
+              <h2 className="text-xl font-bold mb-4 text-white">Crypto Videos by Category</h2>
               <div className="flex gap-2 mb-6 overflow-x-auto">
-                <button onClick={() => setVideoCategory('bitcoin')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'bitcoin' ? 'bg-[#155263] text-white' : 'bg-white hover:bg-[#155263] hover:text-white text-[#155263]'}`}>Bitcoin</button>
-                <button onClick={() => setVideoCategory('ethereum')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'ethereum' ? 'bg-[#155263] text-white' : 'bg-white hover:bg-[#155263] hover:text-white text-[#155263]'}`}>Ethereum</button>
-                <button onClick={() => setVideoCategory('xrp')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xrp' ? 'bg-[#155263] text-white' : 'bg-white hover:bg-[#155263] hover:text-white text-[#155263]'}`}>XRP</button>
-                <button onClick={() => setVideoCategory('xlm')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xlm' ? 'bg-[#155263] text-white' : 'bg-white hover:bg-[#155263] hover:text-white text-[#155263]'}`}>Alt Coins</button>
+                <button onClick={() => setVideoCategory('bitcoin')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'bitcoin' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Bitcoin</button>
+                <button onClick={() => setVideoCategory('ethereum')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'ethereum' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Ethereum</button>
+                <button onClick={() => setVideoCategory('xrp')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xrp' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>XRP</button>
+                <button onClick={() => setVideoCategory('xlm')} className={`px-4 py-2 rounded-lg transition whitespace-nowrap ${videoCategory === 'xlm' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Alt Coins</button>
               </div>
               <div className="space-y-4">
                 {(videoCategory === 'xlm' ? videos.altcoins : videos[videoCategory])?.map((video) => (
-                  <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-white rounded-lg p-4 hover:bg-[#155263] hover:text-white transition cursor-pointer border-2 border-[#155263]">
+                  <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer border-2 border-[#ffc93c]">
                     <div className="flex gap-4">
-                      <div className="w-40 h-24 bg-[#155263] rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <Video size={32} className="text-white" />
+                      <div className="w-40 h-24 bg-slate-600 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <Video size={32} className="text-[#ffc93c]" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold mb-2 line-clamp-2">{video.title}</h3>
@@ -319,11 +319,11 @@ export default function CryptoAggregator() {
                   </a>
                 ))}
               </div>
-              <div className="mt-4 p-4 bg-white rounded-lg border-2 border-[#155263]">
-                <p className="text-sm text-[#155263] font-semibold mb-2">To get real videos:</p>
-                <ol className="text-xs text-[#155263] space-y-1 ml-4 opacity-80">
+              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg border-2 border-[#ffc93c]">
+                <p className="text-sm text-[#ffc93c] font-semibold mb-2">To get real videos:</p>
+                <ol className="text-xs text-gray-300 space-y-1 ml-4">
                   <li>1. Get YouTube Data API key (free from Google Cloud)</li>
-                  <li>2. Search for crypto videos: <code className="bg-[#ffc93c] px-1 rounded">search?q=cryptocurrency&type=video</code></li>
+                  <li>2. Search for crypto videos: <code className="bg-slate-600 px-1 rounded">search?q=cryptocurrency&type=video</code></li>
                   <li>3. Free tier: 10,000 requests/day</li>
                 </ol>
               </div>
@@ -357,8 +357,8 @@ export default function CryptoAggregator() {
               </div>
 
               <div className="flex gap-2 mb-4">
-                <button onClick={() => changeChartTimeframe('1')} className={`px-4 py-2 rounded-lg transition ${chartTimeframe === '1' ? 'bg-[#155263] text-white' : 'bg-gray-100 hover:bg-gray-200 text-[#155263]'}`}>1 Day</button>
-                <button onClick={() => changeChartTimeframe('7')} className={`px-4 py-2 rounded-lg transition ${chartTimeframe === '7' ? 'bg-[#155263] text-white' : 'bg-gray-100 hover:bg-gray-200 text-[#155263]'}`}>1 Week</button>
+                <button onClick={() => changeChartTimeframe('1')} className={`px-4 py-2 rounded-lg transition ${chartTimeframe === '1' ? 'bg-[#ffc93c] text-black' : 'bg-gray-100 hover:bg-gray-200 text-black'}`}>1 Day</button>
+                <button onClick={() => changeChartTimeframe('7')} className={`px-4 py-2 rounded-lg transition ${chartTimeframe === '7' ? 'bg-[#ffc93c] text-black' : 'bg-gray-100 hover:bg-gray-200 text-black'}`}>1 Week</button>
               </div>
 
               {chartLoading ? (
@@ -372,7 +372,7 @@ export default function CryptoAggregator() {
                       <XAxis dataKey="time" stroke="#155263" style={{ fontSize: '11px' }} interval="preserveStartEnd" tickMargin={5} minTickGap={50} />
                       <YAxis stroke="#155263" style={{ fontSize: '11px' }} tickFormatter={(value) => `$${value.toFixed(2)}`} width={70} domain={['auto', 'auto']} scale="linear" />
                       <Tooltip contentStyle={{ backgroundColor: '#155263', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} />
-                      <Line type="monotone" dataKey="price" stroke="#155263" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="price" stroke="#ffc93c" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
