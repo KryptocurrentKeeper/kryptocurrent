@@ -102,27 +102,74 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      const allVideos = [
-        { id: 1, title: "XRP Legal Victory Analysis", channel: "Zach Rector", views: "234K views", url: "https://youtube.com/@ZachRector/videos" },
-        { id: 2, title: "Crypto Market Update", channel: "Crypto Sensei", views: "145K views", url: "https://youtube.com/@CryptoSensei/videos" },
-        { id: 3, title: "Blockchain Technology Explained", channel: "Chain of Blocks", views: "189K views", url: "https://youtube.com/@ChainofBlocks/videos" },
-        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "125K views", url: "https://youtube.com/@PaulBarronNetwork/videos" },
-        { id: 5, title: "DeFi Projects Review", channel: "Jake Claver", views: "98K views", url: "https://youtube.com/@JakeClaver/videos" },
-        { id: 6, title: "Market Trends Analysis", channel: "Digital Outlook", views: "167K views", url: "https://youtube.com/@DigitalOutlook/videos" },
-        { id: 7, title: "Top Altcoins This Week", channel: "Apex Crypto", views: "156K views", url: "https://youtube.com/@ApexCrypto/videos" },
-        { id: 8, title: "Crypto News Roundup", channel: "Altcoin Daily", views: "198K views", url: "https://youtube.com/@AltcoinDaily/videos" },
-        { id: 9, title: "Evening Market Report", channel: "Good Evening Crypto", views: "112K views", url: "https://youtube.com/@GoodEveningCrypto/videos" },
-        { id: 10, title: "Portfolio Strategy", channel: "Krypto with Klaus", views: "134K views", url: "https://youtube.com/@KryptowithKlaus/videos" },
-        { id: 11, title: "Crypto Market Insights", channel: "Mickle", views: "176K views", url: "https://youtube.com/@Mickle/videos" },
-        { id: 12, title: "Latest XRP News", channel: "Zach Rector", views: "201K views", url: "https://youtube.com/@ZachRector/videos" },
-        { id: 13, title: "Technical Analysis", channel: "Crypto Sensei", views: "143K views", url: "https://youtube.com/@CryptoSensei/videos" },
-        { id: 14, title: "Crypto Trading Tips", channel: "Chain of Blocks", views: "165K views", url: "https://youtube.com/@ChainofBlocks/videos" },
-        { id: 15, title: "Bitcoin Price Prediction", channel: "Paul Barron", views: "189K views", url: "https://youtube.com/@PaulBarronNetwork/videos" },
-        { id: 16, title: "NFT Market Update", channel: "Jake Claver", views: "87K views", url: "https://youtube.com/@JakeClaver/videos" }
-      ];
+      // This will work when deployed with environment variables
+      // Using fallback data in preview
+      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      
+      if (!API_KEY) {
+        throw new Error('Using fallback data');
+      }
+      
+      // Channel IDs for each creator
+      const channels = {
+        'Zach Rector': 'UCxKvakTZfp8L9I2exFMKeSA',
+        'Crypto Sensei': 'UCKb8JHy7hP_PFCojfZ-E7Pw',
+        'Chain of Blocks': 'UCxiLraXqj5FDXGqQE0jLnXA',
+        'Paul Barron': 'UCIs3yDj10gQqTZeHkXdLKNw',
+        'Jake Claver': 'UCxHNzlGRq8lTqXYKKS0Y_jQ',
+        'Digital Outlook': 'UCTqj3gfZpSUslRFg16BjJWg',
+        'Apex Crypto': 'UC5gZx8EBGGJgECBpfNJuG0g',
+        'Altcoin Daily': 'UCbLhGKVY-bJPcawebgtNfbw',
+        'Good Evening Crypto': 'UCp4k9Gq_iDFPD8VqGSlNZvw',
+        'Krypto with Klaus': 'UCxKA2Df-lZ7fZSNF7BwQ1Qg',
+        'Mickle': 'UCJkdlLgC4UrQXx4MMEY5w5Q'
+      };
+
+      const allVideos = [];
+      let videoId = 1;
+
+      // Fetch latest video from each channel
+      for (const [channelName, channelId] of Object.entries(channels)) {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=2&type=video`
+          );
+          const data = await response.json();
+          
+          if (data.items) {
+            data.items.forEach(item => {
+              allVideos.push({
+                id: videoId++,
+                title: item.snippet.title,
+                channel: channelName,
+                views: 'Recent',
+                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                thumbnail: item.snippet.thumbnails.medium.url
+              });
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching videos for ${channelName}:`, error);
+        }
+      }
+
       setVideos(allVideos);
     } catch (error) {
-      console.error('Error fetching videos:', error);
+      // Fallback to sample data if API fails
+      const fallbackVideos = [
+        { id: 1, title: "Latest Crypto Analysis", channel: "Zach Rector", views: "Recent", url: "https://youtube.com/@ZachRector/videos" },
+        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "Recent", url: "https://youtube.com/@CryptoSensei/videos" },
+        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "Recent", url: "https://youtube.com/@ChainofBlocks/videos" },
+        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "Recent", url: "https://youtube.com/@PaulBarronNetwork/videos" },
+        { id: 5, title: "DeFi Review", channel: "Jake Claver", views: "Recent", url: "https://youtube.com/@JakeClaver/videos" },
+        { id: 6, title: "Market Trends", channel: "Digital Outlook", views: "Recent", url: "https://youtube.com/@DigitalOutlook/videos" },
+        { id: 7, title: "Altcoin News", channel: "Apex Crypto", views: "Recent", url: "https://youtube.com/@ApexCrypto/videos" },
+        { id: 8, title: "Daily Update", channel: "Altcoin Daily", views: "Recent", url: "https://youtube.com/@AltcoinDaily/videos" },
+        { id: 9, title: "Evening Report", channel: "Good Evening Crypto", views: "Recent", url: "https://youtube.com/@GoodEveningCrypto/videos" },
+        { id: 10, title: "Portfolio Tips", channel: "Krypto with Klaus", views: "Recent", url: "https://youtube.com/@KryptowithKlaus/videos" },
+        { id: 11, title: "Market Insights", channel: "Mickle", views: "Recent", url: "https://youtube.com/@Mickle/videos" }
+      ];
+      setVideos(fallbackVideos);
     }
   };
 
@@ -291,7 +338,11 @@ export default function CryptoAggregator() {
                   <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                     <div className="flex gap-4">
                       <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <Video size={28} className="text-[#ffc93c]" />
+                        {video.thumbnail ? (
+                          <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <Video size={28} className="text-[#ffc93c]" />
+                        )}
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
