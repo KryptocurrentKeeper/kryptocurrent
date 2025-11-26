@@ -298,8 +298,11 @@ export default function CryptoAggregator() {
 
               {/* ETF Tracker Section */}
               <div className="mt-6 p-6 bg-slate-700/50 rounded-xl">
-                <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-white">📊 ETF Tracker</h3>
-                <p className="mb-4 text-gray-300">Track ETF stats, filings and how much crypto is locked up</p>
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-white">
+                  <img src="/xrp-icon.png" alt="XRP" className="w-6 h-6" />
+                  XRP ETF Tracker
+                </h3>
+                <p className="mb-4 text-gray-300">Track ETF stats, filings and how much XRP is locked up thanks to our friends at XRP-Insights.com</p>
                 <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold">
                   Visit ETF Tracker →
                 </a>
@@ -366,14 +369,6 @@ export default function CryptoAggregator() {
                     </div>
                   </a>
                 ))}
-              </div>
-              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-[#ffc93c] font-semibold mb-2">To get real videos:</p>
-                <ol className="text-xs text-gray-300 space-y-1 ml-4">
-                  <li>1. Get YouTube Data API key (free from Google Cloud)</li>
-                  <li>2. Search for crypto videos: <code className="bg-slate-600 px-1 rounded">search?q=cryptocurrency&type=video</code></li>
-                  <li>3. Free tier: 10,000 requests/day</li>
-                </ol>
               </div>
             </div>
           )}
