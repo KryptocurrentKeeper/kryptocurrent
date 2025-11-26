@@ -621,9 +621,11 @@ export default function CryptoAggregator() {
                       />
                       <YAxis 
                         stroke="#9ca3af"
-                        style={{ fontSize: '12px' }}
-                        tickFormatter={(value) => `${value.toFixed(2)}`}
-                        width={80}
+                        style={{ fontSize: '11px' }}
+                        tickFormatter={(value) => `$${value.toFixed(2)}`}
+                        width={70}
+                        domain={['auto', 'auto']}
+                        scale="linear"
                       />
                       <Tooltip 
                         contentStyle={{ 
