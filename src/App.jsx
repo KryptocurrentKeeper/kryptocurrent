@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Newspaper, Video, RefreshCw, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Import Bebas Neue font
+// Updated chart zoom
 const styleTag = document.createElement('style');
 styleTag.innerHTML = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
