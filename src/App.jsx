@@ -104,7 +104,7 @@ export default function CryptoAggregator() {
     try {
       // This will work when deployed with environment variables
       // Using fallback data in preview
-      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      const API_KEY = null; // Will be replaced with import.meta.env.VITE_YOUTUBE_API_KEY in your actual deployment
       
       if (!API_KEY) {
         throw new Error('Using fallback data');
