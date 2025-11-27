@@ -45,54 +45,12 @@ export default function CryptoAggregator() {
   const fetchCryptoNews = async () => {
     try {
       const curatedNews = [
-        { 
-          id: 1, 
-          title: "Latest Crypto Regulatory Updates", 
-          source: { title: "Eleanor Terrett" }, 
-          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          url: "https://x.com/EleanorTerrett"
-        },
-        { 
-          id: 2, 
-          title: "Macro Market Analysis & Crypto Outlook", 
-          source: { title: "Raoul Pal" }, 
-          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          url: "https://x.com/RaoulGMI"
-        },
-        { 
-          id: 3, 
-          title: "Ripple Company Updates & Announcements", 
-          source: { title: "Brad Garlinghouse" }, 
-          logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
-          created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          url: "https://x.com/bgarlinghouse"
-        },
-        { 
-          id: 4, 
-          title: "Coinbase Market Insights & Analysis", 
-          source: { title: "Coinbase" }, 
-          logo: "https://images.ctfassets.net/c5bd0wqjc7v0/4Y1RS9zV0FhoXfYdVm7vK7/dd9d2e5999e588b30e0c41e8ec4bb77f/coinbase-logo.png",
-          created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-          url: "https://www.coinbase.com/blog"
-        },
-        { 
-          id: 5, 
-          title: "Cryptocurrency Investment Analysis", 
-          source: { title: "The Motley Fool" }, 
-          logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png",
-          created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
-          url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/"
-        },
-        { 
-          id: 6, 
-          title: "Breaking Crypto News & Market Updates", 
-          source: { title: "Cointelegraph" }, 
-          logo: "https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png",
-          created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          url: "https://cointelegraph.com/"
-        }
+        { id: 1, title: "Latest Crypto Regulatory Updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
+        { id: 2, title: "Macro Market Analysis & Crypto Outlook", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
+        { id: 3, title: "Ripple Company Updates & Announcements", source: { title: "Brad Garlinghouse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/bgarlinghouse" },
+        { id: 4, title: "Coinbase Market Insights & Analysis", source: { title: "Coinbase" }, logo: "https://images.ctfassets.net/c5bd0wqjc7v0/4Y1RS9zV0FhoXfYdVm7vK7/dd9d2e5999e588b30e0c41e8ec4bb77f/coinbase-logo.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coinbase.com/blog" },
+        { id: 5, title: "Cryptocurrency Investment Analysis", source: { title: "The Motley Fool" }, logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
+        { id: 6, title: "Breaking Crypto News & Market Updates", source: { title: "Cointelegraph" }, logo: "https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png", created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" }
       ];
       setNews(curatedNews);
     } catch (error) {
@@ -102,15 +60,12 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      // This will work when deployed with environment variables
-      // Using fallback data in preview
-      const API_KEY = null; // Will be replaced with import.meta.env.VITE_YOUTUBE_API_KEY in your actual deployment
+      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
       
       if (!API_KEY) {
         throw new Error('Using fallback data');
       }
       
-      // Channel IDs for each creator
       const channels = {
         'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
         'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
@@ -126,7 +81,6 @@ export default function CryptoAggregator() {
         'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
       };
 
-      // Calculate 24 hours ago timestamp
       const yesterday = new Date();
       yesterday.setHours(yesterday.getHours() - 24);
       const publishedAfter = yesterday.toISOString();
@@ -134,7 +88,6 @@ export default function CryptoAggregator() {
       const allVideos = [];
       let videoId = 1;
 
-      // Fetch videos from last 24 hours for each channel
       for (const [channelName, channelId] of Object.entries(channels)) {
         try {
           const response = await fetch(
@@ -164,24 +117,14 @@ export default function CryptoAggregator() {
         }
       }
 
-      // Sort all videos by publish date (newest first)
       allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-
       setVideos(allVideos);
     } catch (error) {
-      // Fallback to sample data if API fails
       const fallbackVideos = [
-        { id: 1, title: "Latest Crypto Analysis", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@ZachRector/videos" },
-        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSensei/videos" },
-        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@ChainofBlocks/videos" },
-        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos" },
-        { id: 5, title: "DeFi Review", channel: "Jake Claver", views: "10h ago", url: "https://youtube.com/@JakeClaver/videos" },
-        { id: 6, title: "Market Trends", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlook/videos" },
-        { id: 7, title: "Altcoin News", channel: "Apex Crypto", views: "14h ago", url: "https://youtube.com/@ApexCrypto/videos" },
-        { id: 8, title: "Daily Update", channel: "Altcoin Daily", views: "16h ago", url: "https://youtube.com/@AltcoinDaily/videos" },
-        { id: 9, title: "Evening Report", channel: "Good Evening Crypto", views: "18h ago", url: "https://youtube.com/@GoodEveningCrypto/videos" },
-        { id: 10, title: "Portfolio Tips", channel: "Krypto with Klaus", views: "20h ago", url: "https://youtube.com/@KryptowithKlaus/videos" },
-        { id: 11, title: "Market Insights", channel: "Mickle", views: "22h ago", url: "https://youtube.com/@Mickle/videos" }
+        { id: 1, title: "Latest Crypto Analysis", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos" },
+        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos" },
+        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos" },
+        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos" }
       ];
       setVideos(fallbackVideos);
     }
@@ -193,9 +136,7 @@ export default function CryptoAggregator() {
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
       const data = await response.json();
       const formattedData = data.prices.map(([timestamp, price]) => ({
-        time: days === '1' 
-          ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        time: days === '1' ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         price: price
       }));
       setChartData(formattedData);
@@ -226,7 +167,6 @@ export default function CryptoAggregator() {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
     return `${Math.floor(seconds / 86400)} days ago`;
@@ -237,15 +177,10 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="bg-[#ffc93c] py-6 mb-8">
           <div className="max-w-2xl mx-auto px-4">
-            <img 
-              src="/logo.png" 
-              alt="Kryptocurrent Logo" 
-              className="w-full"
-            />
+            <img src="/logo.png" alt="Kryptocurrent Logo" className="w-full" />
           </div>
         </div>
 
-        {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 bg-slate-800/50 p-2 rounded-lg backdrop-blur">
           <button onClick={() => setActiveTab('prices')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${activeTab === 'prices' ? 'bg-[#ffc93c] text-black' : 'hover:bg-slate-700 text-white'}`}>
             <DollarSign size={18} />Prices
@@ -258,7 +193,6 @@ export default function CryptoAggregator() {
           </button>
         </div>
 
-        {/* Content Area */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6">
           {activeTab === 'prices' && (
             <div>
@@ -276,19 +210,20 @@ export default function CryptoAggregator() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {cryptoPrices.map((crypto) => (
-                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-3 hover:bg-slate-700 transition cursor-pointer">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={crypto.image} alt={crypto.name} className="w-6 h-6" />
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{crypto.name}</h3>
-                          <p className="text-xs opacity-70">{crypto.symbol.toUpperCase()}</p>
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition cursor-pointer">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <img src={crypto.image} alt={crypto.name} className="w-5 h-5 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-base font-bold">${crypto.current_price.toLocaleString()}</p>
-                        <div className={`flex items-center gap-1 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                          {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                        <div className="text-right">
+                          <p className="text-sm font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                          <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                            {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -296,7 +231,6 @@ export default function CryptoAggregator() {
                 </div>
               )}
 
-              {/* ETF Tracker Section */}
               <div className="mt-6 p-6 bg-slate-700/50 rounded-xl">
                 <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-white">
                   <img src="/xrp-icon.png" alt="XRP" className="w-6 h-6" />
@@ -349,7 +283,6 @@ export default function CryptoAggregator() {
           {activeTab === 'videos' && (
             <div>
               <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
-              
               <div className="grid md:grid-cols-2 gap-4">
                 {videos.map((video) => (
                   <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
@@ -374,7 +307,6 @@ export default function CryptoAggregator() {
           )}
         </div>
 
-        {/* Chart Popup Modal */}
         {selectedCrypto && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeChart}>
             <div className="bg-white rounded-xl p-6 max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
@@ -382,17 +314,17 @@ export default function CryptoAggregator() {
                 <div className="flex items-center gap-3">
                   <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
                   <div>
-                    <h2 className="text-2xl font-bold text-[#155263]">{selectedCrypto.name}</h2>
+                    <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
                     <p className="text-gray-600">{selectedCrypto.symbol.toUpperCase()}</p>
                   </div>
                 </div>
                 <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg transition">
-                  <X size={24} className="text-[#155263]" />
+                  <X size={24} className="text-black" />
                 </button>
               </div>
 
               <div className="mb-4">
-                <div className="text-3xl font-bold text-[#155263]">${selectedCrypto.current_price.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
                 <div className={`flex items-center gap-2 text-lg ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                   {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
@@ -406,15 +338,15 @@ export default function CryptoAggregator() {
 
               {chartLoading ? (
                 <div className="h-64 flex items-center justify-center">
-                  <RefreshCw className="animate-spin text-[#155263]" size={32} />
+                  <RefreshCw className="animate-spin text-[#ffc93c]" size={32} />
                 </div>
               ) : (
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="time" stroke="#155263" style={{ fontSize: '11px' }} interval="preserveStartEnd" tickMargin={5} minTickGap={50} />
-                      <YAxis stroke="#155263" style={{ fontSize: '11px' }} tickFormatter={(value) => `$${value.toFixed(2)}`} width={70} domain={['auto', 'auto']} scale="linear" />
-                      <Tooltip contentStyle={{ backgroundColor: '#155263', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} />
+                      <XAxis dataKey="time" stroke="#000" style={{ fontSize: '11px' }} interval="preserveStartEnd" tickMargin={5} minTickGap={50} />
+                      <YAxis stroke="#000" style={{ fontSize: '11px' }} tickFormatter={(value) => `$${value.toFixed(2)}`} width={70} domain={['auto', 'auto']} scale="linear" />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} />
                       <Line type="monotone" dataKey="price" stroke="#ffc93c" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -423,20 +355,20 @@ export default function CryptoAggregator() {
 
               <div className="mt-6 grid grid-cols-4 gap-4 text-sm">
                 <div className="bg-[#ffc93c] p-3 rounded-lg">
-                  <div className="text-[#155263] opacity-70 mb-1">Market Cap</div>
-                  <div className="font-semibold text-[#155263]">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</div>
+                  <div className="text-black opacity-70 mb-1">Market Cap</div>
+                  <div className="font-semibold text-black">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</div>
                 </div>
                 <div className="bg-[#ffc93c] p-3 rounded-lg">
-                  <div className="text-[#155263] opacity-70 mb-1">24h High</div>
-                  <div className="font-semibold text-[#155263]">${selectedCrypto.high_24h?.toLocaleString()}</div>
+                  <div className="text-black opacity-70 mb-1">24h High</div>
+                  <div className="font-semibold text-black">${selectedCrypto.high_24h?.toLocaleString()}</div>
                 </div>
                 <div className="bg-[#ffc93c] p-3 rounded-lg">
-                  <div className="text-[#155263] opacity-70 mb-1">24h Low</div>
-                  <div className="font-semibold text-[#155263]">${selectedCrypto.low_24h?.toLocaleString()}</div>
+                  <div className="text-black opacity-70 mb-1">24h Low</div>
+                  <div className="font-semibold text-black">${selectedCrypto.low_24h?.toLocaleString()}</div>
                 </div>
                 <div className="bg-[#ffc93c] p-3 rounded-lg">
-                  <div className="text-[#155263] opacity-70 mb-1">All-Time High</div>
-                  <div className="font-semibold text-[#155263]">${selectedCrypto.ath?.toLocaleString()}</div>
+                  <div className="text-black opacity-70 mb-1">All-Time High</div>
+                  <div className="font-semibold text-black">${selectedCrypto.ath?.toLocaleString()}</div>
                 </div>
               </div>
             </div>
