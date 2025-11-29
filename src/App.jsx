@@ -45,7 +45,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      const API_KEY = null; // Will be replaced with import.meta.env.VITE_YOUTUBE_API_KEY in your actual deployment
+      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
       
       if (!API_KEY) {
         throw new Error('Using fallback data');
