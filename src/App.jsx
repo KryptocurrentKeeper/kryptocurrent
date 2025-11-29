@@ -46,9 +46,10 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      import.meta.env.VITE_YOUTUBE_API_KEY;
       
       if (!API_KEY) {
+        console.log('No API key, using fallback videos');
         throw new Error('Using fallback data');
       }
       
@@ -75,44 +76,41 @@ export default function CryptoAggregator() {
       let videoId = 1;
 
       for (const [channelName, channelId] of Object.entries(channels)) {
-        try {
-          const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=10&type=video&publishedAfter=${publishedAfter}`
-          );
-          const data = await response.json();
-          
-          if (data.items && data.items.length > 0) {
-            data.items.forEach(item => {
-              const publishedDate = new Date(item.snippet.publishedAt);
-              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-              
-              allVideos.push({
-                id: videoId++,
-                title: item.snippet.title,
-                channel: channelName,
-                views: timeAgo,
-                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                thumbnail: item.snippet.thumbnails.medium.url,
-                publishedAt: item.snippet.publishedAt
-              });
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=10&type=video&publishedAfter=${publishedAfter}`
+        );
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(item => {
+            const publishedDate = new Date(item.snippet.publishedAt);
+            const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+            const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+            
+            allVideos.push({
+              id: videoId++,
+              title: item.snippet.title,
+              channel: channelName,
+              views: timeAgo,
+              url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+              thumbnail: item.snippet.thumbnails.medium.url,
+              publishedAt: item.snippet.publishedAt
             });
-          }
-        } catch (error) {
-          console.error(`Error fetching videos for ${channelName}:`, error);
+          });
         }
       }
 
       allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
       setVideos(allVideos);
     } catch (error) {
+      console.log('Using fallback videos:', error.message);
       const fallbackVideos = [
-        { id: 1, title: "Latest XRP Analysis", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos" },
-        { id: 2, title: "Market Update", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos" },
-        { id: 3, title: "Blockchain News", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos" },
-        { id: 4, title: "Bitcoin Analysis", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos" },
-        { id: 5, title: "Altcoin Review", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos" },
-        { id: 6, title: "Market Trends", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos" }
+        { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: null },
+        { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
+        { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: null },
+        { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: null },
+        { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: null },
+        { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null }
       ];
       setVideos(fallbackVideos);
     }
@@ -185,8 +183,40 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {(pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 4)).map((crypto) => (
+              {/* Mobile: Show 4 with expand button */}
+              <div className="md:hidden">
+                <div className="grid grid-cols-2 gap-2">
+                  {(pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 4)).map((crypto) => (
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
+                          <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                          <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+                            <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {cryptoPrices.length > 4 && (
+                  <button 
+                    onClick={() => setPricesExpanded(!pricesExpanded)}
+                    className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                  >
+                    {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
+                  </button>
+                )}
+              </div>
+
+              {/* Desktop: Show all prices */}
+              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {cryptoPrices.map((crypto) => (
                   <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
                     <div className="flex items-center justify-between gap-1">
                       <div className="flex items-center gap-1 min-w-0">
@@ -204,14 +234,6 @@ export default function CryptoAggregator() {
                   </div>
                 ))}
               </div>
-              {cryptoPrices.length > 4 && (
-                <button 
-                  onClick={() => setPricesExpanded(!pricesExpanded)}
-                  className="mt-3 w-full md:hidden px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
-                >
-                  {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
-                </button>
-              )}
             </>
           )}
 
