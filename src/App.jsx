@@ -45,7 +45,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      const API_KEY = null; // Will be replaced with import.meta.env.VITE_YOUTUBE_API_KEY in your actual deployment
       
       if (!API_KEY) {
         throw new Error('Using fallback data');
@@ -205,12 +205,19 @@ export default function CryptoAggregator() {
           )}
 
           {/* ETF Tracker */}
-          <div className="mt-6 p-6 bg-slate-700/50 rounded-xl">
-            <h3 className="text-xl font-bold mb-3 text-white">📊 XRP ETF Tracker</h3>
-            <p className="mb-4 text-gray-300">Track ETF stats, filings and how much XRP is locked up</p>
-            <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold">
-              Visit ETF Tracker →
-            </a>
+          <div className="mt-6 p-4 bg-slate-700/50 rounded-xl">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
+                <div>
+                  <h3 className="text-lg font-bold text-white">XRP ETF Tracker</h3>
+                  <p className="text-sm text-gray-300">Track spot ETF stats from our good friends at XRP Insights</p>
+                </div>
+              </div>
+              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap">
+                Visit Tracker →
+              </a>
+            </div>
           </div>
         </div>
 
