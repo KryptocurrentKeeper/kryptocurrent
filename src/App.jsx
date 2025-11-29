@@ -47,12 +47,28 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoVideos = async () => {
+    const fallbackVideos = [
+      { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=XRP+Analysis" },
+      { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Market+Update" },
+      { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Blockchain" },
+      { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Bitcoin+Analysis" },
+      { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Altcoins" },
+      { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Trading+Signals" },
+      { id: 7, title: "Mickle's Crypto Insights", channel: "Mickle", views: "14h ago", url: "https://youtube.com/@MickleXRP/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Mickle" },
+      { id: 8, title: "Jake Claver Market Review", channel: "Jake Claver", views: "16h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Jake+Claver" },
+      { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Apex+Crypto" },
+      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Good+Evening" },
+      { id: 11, title: "Black Swan Market Analysis", channel: "Black Swan Capitalist", views: "22h ago", url: "https://youtube.com/@BlackSwanCapitalist/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Black+Swan" },
+      { id: 12, title: "Klaus Crypto Updates", channel: "Crypto with Klaus", views: "1d ago", url: "https://youtube.com/@FamilyHobbiesandCards/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Klaus" }
+    ];
+
     try {
       const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
       
       if (!API_KEY) {
         console.log('No API key, using fallback videos');
-        throw new Error('Using fallback data');
+        setVideos(fallbackVideos);
+        return;
       }
       
       const channels = {
@@ -103,17 +119,14 @@ export default function CryptoAggregator() {
       }
 
       allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-      setVideos(allVideos);
+      
+      if (allVideos.length > 0) {
+        setVideos(allVideos);
+      } else {
+        setVideos(fallbackVideos);
+      }
     } catch (error) {
-      console.log('Using fallback videos:', error.message);
-      const fallbackVideos = [
-        { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=XRP+Analysis" },
-        { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Market+Update" },
-        { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Blockchain" },
-        { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Bitcoin+Analysis" },
-        { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Altcoins" },
-        { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Trading+Signals" }
-      ];
+      console.log('Error fetching videos, using fallback:', error.message);
       setVideos(fallbackVideos);
     }
   };
