@@ -12,6 +12,8 @@ export default function CryptoAggregator() {
   const [chartLoading, setChartLoading] = useState(false);
   const [chartTimeframe, setChartTimeframe] = useState('7');
   const [pricesExpanded, setPricesExpanded] = useState(false);
+  const [newsExpanded, setNewsExpanded] = useState(false);
+  const [videosExpanded, setVideosExpanded] = useState(false);
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -21,7 +23,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async () => {
     try {
-      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale,chainlink,litecoin,binancecoin,avalanche-2,tron,sui,bittensor,near,internet-computer,filecoin,crypto-com-chain,bonk,pepe';
+      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale,chainlink,litecoin,binancecoin,avalanche-2,tron,sui,bittensor,near,internet-computer,filecoin,crypto-com-chain,bonk,pepe,bitcoin-cash,polkadot,zcash';
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc`);
       const data = await response.json();
       setCryptoPrices(data);
@@ -46,7 +48,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      import.meta.env.VITE_YOUTUBE_API_KEY;
+      import.meta.env.VITE_YOUTUBE_API_KEY
       
       if (!API_KEY) {
         console.log('No API key, using fallback videos');
