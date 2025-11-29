@@ -48,7 +48,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoVideos = async () => {
     try {
-      import.meta.env.VITE_YOUTUBE_API_KEY
+      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
       
       if (!API_KEY) {
         console.log('No API key, using fallback videos');
@@ -107,12 +107,12 @@ export default function CryptoAggregator() {
     } catch (error) {
       console.log('Using fallback videos:', error.message);
       const fallbackVideos = [
-        { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: null },
-        { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
-        { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: null },
-        { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: null },
-        { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: null },
-        { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null }
+        { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=XRP+Analysis" },
+        { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Market+Update" },
+        { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Blockchain" },
+        { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Bitcoin+Analysis" },
+        { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Altcoins" },
+        { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Trading+Signals" }
       ];
       setVideos(fallbackVideos);
     }
@@ -159,6 +159,10 @@ export default function CryptoAggregator() {
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
     return `${Math.floor(seconds / 86400)} days ago`;
   };
+
+  // Mobile: show only 3 news/videos unless expanded
+  const displayedNews = newsExpanded ? news : news.slice(0, 3);
+  const displayedVideos = videosExpanded ? videos : videos.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -256,7 +260,7 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* News Section - 2 Columns */}
+        {/* News Section - 2 Columns on Desktop, Expandable on Mobile */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Latest Crypto News</h2>
@@ -264,7 +268,38 @@ export default function CryptoAggregator() {
               <RefreshCw size={14} />Refresh
             </button>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          
+          {/* Mobile: Show 3 with expand button */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-1 gap-4">
+              {displayedNews.map((article) => (
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <div className="flex items-center gap-2 text-sm opacity-70">
+                        <span>{article.source?.title}</span>
+                        <span>•</span>
+                        <span>{getTimeAgo(article.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {news.length > 3 && (
+              <button 
+                onClick={() => setNewsExpanded(!newsExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {newsExpanded ? 'Show Less' : `Show All ${news.length} Articles`}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop: Show all in 2 columns */}
+          <div className="hidden md:grid md:grid-cols-2 gap-4">
             {news.map((article) => (
               <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                 <div className="flex items-start gap-3">
@@ -283,10 +318,44 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Videos Section - 2 Columns */}
+        {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Mobile: Show 3 with expand button */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-1 gap-4">
+              {displayedVideos.map((video) => (
+                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex gap-4">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {video.thumbnail ? (
+                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl">▶️</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
+                      <p className="text-xs opacity-70">{video.channel}</p>
+                      <p className="text-xs opacity-60 mt-1">{video.views}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {videos.length > 3 && (
+              <button 
+                onClick={() => setVideosExpanded(!videosExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {videosExpanded ? 'Show Less' : `Show All ${videos.length} Videos`}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop: Show all in 2 columns */}
+          <div className="hidden md:grid md:grid-cols-2 gap-4">
             {videos.map((video) => (
               <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                 <div className="flex gap-4">
@@ -339,15 +408,56 @@ export default function CryptoAggregator() {
               <button onClick={() => changeChartTimeframe('7')} className={`px-4 py-2 rounded-lg ${chartTimeframe === '7' ? 'bg-[#ffc93c] text-black' : 'bg-gray-100 text-black'}`}>1 Week</button>
             </div>
 
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis dataKey="time" stroke="#000" style={{ fontSize: '11px' }} />
-                  <YAxis stroke="#000" style={{ fontSize: '11px' }} tickFormatter={(v) => `$${v.toFixed(2)}`} width={70} domain={['auto', 'auto']} />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(v) => [`$${v.toFixed(2)}`, 'Price']} />
-                  <Line type="monotone" dataKey="price" stroke="#ffc93c" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="h-64 mb-4">
+              {chartLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <RefreshCw className="animate-spin text-[#ffc93c]" size={32} />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#9ca3af" 
+                      style={{ fontSize: '11px' }} 
+                      interval="preserveStartEnd"
+                      tickMargin={8}
+                    />
+                    <YAxis 
+                      stroke="#9ca3af" 
+                      style={{ fontSize: '11px' }} 
+                      tickFormatter={(value) => `$${value.toFixed(2)}`} 
+                      width={70}
+                      domain={['auto', 'auto']}
+                      scale="linear"
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} 
+                      formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} 
+                    />
+                    <Line type="monotone" dataKey="price" stroke="#10b981" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="bg-gray-100 rounded-lg p-3">
+                <p className="text-gray-600 text-xs mb-1">Market Cap</p>
+                <p className="font-bold text-black">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</p>
+              </div>
+              <div className="bg-gray-100 rounded-lg p-3">
+                <p className="text-gray-600 text-xs mb-1">24h High</p>
+                <p className="font-bold text-black">${selectedCrypto.high_24h?.toLocaleString()}</p>
+              </div>
+              <div className="bg-gray-100 rounded-lg p-3">
+                <p className="text-gray-600 text-xs mb-1">24h Low</p>
+                <p className="font-bold text-black">${selectedCrypto.low_24h?.toLocaleString()}</p>
+              </div>
+              <div className="bg-gray-100 rounded-lg p-3">
+                <p className="text-gray-600 text-xs mb-1">All-Time High</p>
+                <p className="font-bold text-black">${selectedCrypto.ath?.toLocaleString()}</p>
+              </div>
             </div>
           </div>
         </div>
