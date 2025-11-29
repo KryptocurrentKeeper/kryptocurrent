@@ -11,6 +11,7 @@ export default function CryptoAggregator() {
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [chartTimeframe, setChartTimeframe] = useState('7');
+  const [pricesExpanded, setPricesExpanded] = useState(false);
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -20,7 +21,7 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async () => {
     try {
-      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale';
+      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale,chainlink,litecoin,binancecoin,avalanche-2,tron,sui,bittensor,near,internet-computer,filecoin,crypto-com-chain,bonk,pepe';
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc`);
       const data = await response.json();
       setCryptoPrices(data);
@@ -183,25 +184,35 @@ export default function CryptoAggregator() {
               <p className="text-gray-400">Loading prices...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-              {cryptoPrices.map((crypto) => (
-                <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
-                  <div className="flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-1 min-w-0">
-                      <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
-                      <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
-                      <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
-                        <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {(pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 4)).map((crypto) => (
+                  <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1 min-w-0">
+                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
+                        <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                        <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+                          <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              {cryptoPrices.length > 4 && (
+                <button 
+                  onClick={() => setPricesExpanded(!pricesExpanded)}
+                  className="mt-3 w-full md:hidden px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                >
+                  {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
+                </button>
+              )}
+            </>
           )}
 
           {/* ETF Tracker */}
@@ -211,11 +222,11 @@ export default function CryptoAggregator() {
                 <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
                 <div>
                   <h3 className="text-lg font-bold text-white">XRP ETF Tracker</h3>
-                  <p className="text-sm text-gray-300">Track spot ETF stats from our good friends at XRP Insights</p>
+                  <p className="text-sm text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
                 </div>
               </div>
-              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap">
-                Visit Tracker →
+              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-4 md:px-6 py-2 md:py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-sm md:text-base">
+                Visit →
               </a>
             </div>
           </div>
@@ -251,14 +262,18 @@ export default function CryptoAggregator() {
         {/* Videos Section - 2 Columns */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {videos.map((video) => (
               <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
                 <div className="flex gap-4">
-                  <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">▶️</span>
+                  <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {video.thumbnail ? (
+                      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">▶️</span>
+                    )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
                     <p className="text-xs opacity-70">{video.channel}</p>
                     <p className="text-xs opacity-60 mt-1">{video.views}</p>
