@@ -165,9 +165,7 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="bg-[#ffc93c] py-6 mb-8">
           <div className="max-w-2xl mx-auto px-4">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-[#155263]">KRYPTOCURRENT</h1>
-            </div>
+            <img src="/logo.png" alt="Kryptocurrent Logo" className="w-full" />
           </div>
         </div>
 
@@ -185,7 +183,7 @@ export default function CryptoAggregator() {
               <p className="text-gray-400">Loading prices...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {cryptoPrices.map((crypto) => (
                 <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
                   <div className="flex items-center justify-between gap-1">
