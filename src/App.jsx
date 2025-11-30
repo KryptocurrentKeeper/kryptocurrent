@@ -46,7 +46,11 @@ export default function CryptoAggregator() {
       { id: 5, title: "Macro Market Insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
       { id: 6, title: "Crypto Legal Updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
       { id: 7, title: "DeFi & Crypto Insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
-      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
+      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" },
+      { id: 9, title: "Market Updates & Analysis", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
+      { id: 10, title: "Blockchain Developments", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
+      { id: 11, title: "Trading Insights", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 11 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
+      { id: 12, title: "Crypto Market Commentary", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }
     ];
     setNews(xUpdates);
   };
@@ -396,7 +400,7 @@ export default function CryptoAggregator() {
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {newsExpanded ? 'Show Less' : `Show All ${news.length} Articles`}
+                {newsExpanded ? 'Show Less' : 'Show more posts'}
               </button>
             )}
           </div>
@@ -425,7 +429,7 @@ export default function CryptoAggregator() {
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {newsExpanded ? 'Show Less' : `Show All ${news.length} Articles`}
+                {newsExpanded ? 'Show Less' : 'Show more posts'}
               </button>
             )}
           </div>
@@ -462,7 +466,7 @@ export default function CryptoAggregator() {
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {videosExpanded ? 'Show Less' : `Show All ${videos.length} Videos`}
+                {videosExpanded ? 'Show Less' : 'Show more videos'}
               </button>
             )}
           </div>
@@ -494,7 +498,7 @@ export default function CryptoAggregator() {
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {videosExpanded ? 'Show Less' : `Show All ${videos.length} Videos`}
+                {videosExpanded ? 'Show Less' : 'Show more videos'}
               </button>
             )}
           </div>
@@ -533,7 +537,7 @@ export default function CryptoAggregator() {
                 onClick={() => setArticlesExpanded(!articlesExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {articlesExpanded ? 'Show Less' : `Show All ${articles.length} Articles`}
+                {articlesExpanded ? 'Show Less' : 'Show more articles'}
               </button>
             )}
           </div>
@@ -562,7 +566,7 @@ export default function CryptoAggregator() {
                 onClick={() => setArticlesExpanded(!articlesExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
-                {articlesExpanded ? 'Show Less' : `Show All ${articles.length} Articles`}
+                {articlesExpanded ? 'Show Less' : 'Show more articles'}
               </button>
             )}
           </div>
