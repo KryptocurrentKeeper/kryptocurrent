@@ -92,37 +92,62 @@ export default function CryptoAggregator() {
 
       const allVideos = [];
       let videoId = 1;
+      let successfulChannels = 0;
+      let failedChannels = 0;
 
       for (const [channelName, channelId] of Object.entries(channels)) {
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=10&type=video&publishedAfter=${publishedAfter}`
-        );
-        const data = await response.json();
-        
-        if (data.items && data.items.length > 0) {
-          data.items.forEach(item => {
-            const publishedDate = new Date(item.snippet.publishedAt);
-            const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-            const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-            
-            allVideos.push({
-              id: videoId++,
-              title: item.snippet.title,
-              channel: channelName,
-              views: timeAgo,
-              url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-              thumbnail: item.snippet.thumbnails.medium.url,
-              publishedAt: item.snippet.publishedAt
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}`
+          );
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`YouTube API error for ${channelName}:`, response.status, errorData);
+            failedChannels++;
+            continue;
+          }
+          
+          const data = await response.json();
+          
+          if (data.items && data.items.length > 0) {
+            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h`);
+            data.items.forEach(item => {
+              const publishedDate = new Date(item.snippet.publishedAt);
+              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+              
+              allVideos.push({
+                id: videoId++,
+                title: item.snippet.title,
+                channel: channelName,
+                views: timeAgo,
+                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                thumbnail: item.snippet.thumbnails.medium.url,
+                publishedAt: item.snippet.publishedAt
+              });
             });
-          });
+            successfulChannels++;
+          } else {
+            console.log(`- No videos from ${channelName} in last 24h`);
+            successfulChannels++;
+          }
+        } catch (channelError) {
+          console.error(`Error fetching ${channelName}:`, channelError);
+          failedChannels++;
         }
       }
+      
+      console.log(`Total: ${allVideos.length} videos from ${successfulChannels}/${channels.length} channels (${failedChannels} failed)`);
 
       allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      
+      console.log(`Fetched ${allVideos.length} videos from YouTube API`);
       
       if (allVideos.length > 0) {
         setVideos(allVideos);
       } else {
+        console.log('No videos found from API, using fallback');
         setVideos(fallbackVideos);
       }
     } catch (error) {
