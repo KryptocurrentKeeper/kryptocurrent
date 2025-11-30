@@ -439,26 +439,186 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Unified Timeline from Twitter List */}
+        {/* Updates from X Section - Individual Feeds */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
-            <p className="text-sm text-gray-400">Live feed • Auto-updating</p>
+            <p className="text-sm text-gray-400">Latest posts from crypto experts</p>
           </div>
           
-          {/* Single unified timeline showing all accounts sorted by latest */}
-          <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-            <a 
-              className="twitter-timeline" 
-              data-height={newsExpanded ? "800" : "600"}
-              data-theme="dark"
-              data-chrome="noborders transparent"
-              data-tweet-limit={newsExpanded ? "30" : "15"}
-              href="https://twitter.com/i/lists/1995266467663921449?ref_src=twsrc%5Etfw"
-            >
-              Latest Crypto Updates from our curated list
-            </a>
+          {/* Show 2 feeds side by side to reduce rate limiting */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Eleanor Terrett */}
+            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                  @EleanorTerrett
+                </a>
+                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                  View Profile →
+                </a>
+              </div>
+              <a 
+                className="twitter-timeline" 
+                data-height="500"
+                data-theme="dark"
+                href="https://twitter.com/EleanorTerrett?ref_src=twsrc%5Etfw"
+              >
+                Posts by @EleanorTerrett
+              </a>
+            </div>
+
+            {/* CryptoWendyO */}
+            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                  @CryptoWendyO
+                </a>
+                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                  View Profile →
+                </a>
+              </div>
+              <a 
+                className="twitter-timeline" 
+                data-height="500"
+                data-theme="dark"
+                href="https://twitter.com/CryptoWendyO?ref_src=twsrc%5Etfw"
+              >
+                Posts by @CryptoWendyO
+              </a>
+            </div>
           </div>
+
+          {/* More feeds when expanded */}
+          {newsExpanded && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* The Crypto Geek */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/the_Cryptogeek" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @the_Cryptogeek
+                    </a>
+                    <a href="https://twitter.com/the_Cryptogeek" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/the_Cryptogeek?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @the_Cryptogeek
+                  </a>
+                </div>
+
+                {/* Raoul Pal */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/RaoulGMI" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @RaoulGMI
+                    </a>
+                    <a href="https://twitter.com/RaoulGMI" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/RaoulGMI?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @RaoulGMI
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* RyleXRP */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/RuleXRP" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @RyleXRP
+                    </a>
+                    <a href="https://twitter.com/RuleXRP" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/RuleXRP?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @RyleXRP
+                  </a>
+                </div>
+
+                {/* Brian Armstrong */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/brian_armstrong" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @brian_armstrong
+                    </a>
+                    <a href="https://twitter.com/brian_armstrong" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/brian_armstrong?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @brian_armstrong
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Intocryptoverse */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/intocryptoverse" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @intocryptoverse
+                    </a>
+                    <a href="https://twitter.com/intocryptoverse" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/intocryptoverse?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @intocryptoverse
+                  </a>
+                </div>
+
+                {/* CryptoLawUS */}
+                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
+                    <a href="https://twitter.com/CryptoLawUS" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
+                      @CryptoLawUS
+                    </a>
+                    <a href="https://twitter.com/CryptoLawUS" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
+                      View Profile →
+                    </a>
+                  </div>
+                  <a 
+                    className="twitter-timeline" 
+                    data-height="500"
+                    data-theme="dark"
+                    href="https://twitter.com/CryptoLawUS?ref_src=twsrc%5Etfw"
+                  >
+                    Posts by @CryptoLawUS
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Expand button */}
           <button 
@@ -469,7 +629,7 @@ export default function CryptoAggregator() {
                 if (window.twttr && window.twttr.widgets) {
                   window.twttr.widgets.load();
                 }
-              }, 100);
+              }, 200);
             }}
             className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
           >
