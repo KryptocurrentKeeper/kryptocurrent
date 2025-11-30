@@ -23,10 +23,29 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async () => {
     try {
-      // Fetch top 100 cryptocurrencies by market cap
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1`);
+      // Fetch top 150 cryptocurrencies by market cap, then we'll filter to most popular ones on Kraken
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=150&page=1`);
       const data = await response.json();
-      setCryptoPrices(data);
+      
+      // Most popular cryptocurrencies on Kraken (102 tokens) - sorted by market cap
+      const krakenPopularIds = [
+        'bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana', 'usd-coin', 'ripple', 'dogecoin', 'cardano', 'tron',
+        'avalanche-2', 'shiba-inu', 'polkadot', 'chainlink', 'bitcoin-cash', 'litecoin', 'near', 'uniswap', 'internet-computer',
+        'ethereum-classic', 'stellar', 'monero', 'kaspa', 'cronos', 'filecoin', 'cosmos', 'aptos', 'okb', 'hedera-hashgraph',
+        'vechain', 'optimism', 'the-graph', 'algorand', 'fantom', 'theta-token', 'tezos', 'eos', 'flow', 'aave', 'elrond-ether',
+        'decentraland', 'the-sandbox', 'axie-infinity', 'zcash', 'chiliz', 'maker', 'neo', 'pancakeswap-token', 'curve-dao-token',
+        'kava', 'compound-governance-token', 'dash', 'kusama', 'iota', 'qtum', 'enjincoin', '1inch', 'basic-attention-token',
+        'synthetix-network-token', 'yearn-finance', 'loopring', 'uma', 'omisego', 'sushiswap', 'storj', 'gnosis', 'bancor',
+        'balancer', 'amp-token', 'ankr', 'origin-protocol', 'fetch-ai', 'ocean-protocol', 'kyber-network-crystal', 'perpetual-protocol',
+        'dydx', 'livepeer', 'radicle', 'reef', 'keep-network', 'numeraire', 'civic', 'skale', 'band-protocol', 'injective-protocol',
+        'karura', 'ren', 'quant-network', 'lisk', 'dent', 'golem', 'ravencoin', 'digibyte', 'nano', 'verge', 'waves', 'zilliqa',
+        'icon', 'ontology', 'decred', 'rif-token', 'wax', 'stacks', 'gala', 'trust-wallet-token'
+      ];
+      
+      // Filter data to only include Kraken popular coins and limit to 102
+      const krakenCoins = data.filter(coin => krakenPopularIds.includes(coin.id)).slice(0, 102);
+      
+      setCryptoPrices(krakenCoins);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching prices:', error);
@@ -200,10 +219,10 @@ export default function CryptoAggregator() {
 
   // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
   // News: show 4 unless expanded
-  // Videos: show 6 unless expanded
+  // Videos: show 12 unless expanded
   const displayedPrices = pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 24);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
-  const displayedVideos = videosExpanded ? videos : videos.slice(0, 6);
+  const displayedVideos = videosExpanded ? videos : videos.slice(0, 12);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -241,7 +260,11 @@ export default function CryptoAggregator() {
                           <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                          <p className="text-xs font-bold whitespace-nowrap">
+                            ${crypto.current_price < 0.01 
+                              ? crypto.current_price.toFixed(8) 
+                              : crypto.current_price.toLocaleString()}
+                          </p>
                           <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
                             <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
@@ -256,7 +279,7 @@ export default function CryptoAggregator() {
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
-                    {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
+                    {pricesExpanded ? 'Show Less' : 'Show Top 100'}
                   </button>
                 )}
               </div>
@@ -272,7 +295,11 @@ export default function CryptoAggregator() {
                           <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                          <p className="text-xs font-bold whitespace-nowrap">
+                            ${crypto.current_price < 0.01 
+                              ? crypto.current_price.toFixed(8) 
+                              : crypto.current_price.toLocaleString()}
+                          </p>
                           <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
                             <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
@@ -287,7 +314,7 @@ export default function CryptoAggregator() {
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
-                    {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
+                    {pricesExpanded ? 'Show Less' : 'Show Top 100'}
                   </button>
                 )}
               </div>
@@ -383,7 +410,7 @@ export default function CryptoAggregator() {
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
           
-          {/* Mobile: Show 6 with expand button */}
+          {/* Mobile: Show 12 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedVideos.map((video) => (
@@ -405,7 +432,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 6 && (
+            {videos.length > 12 && (
               <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -415,7 +442,7 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 6 in 2 columns with expand button */}
+          {/* Desktop: Show 12 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
               {displayedVideos.map((video) => (
@@ -437,7 +464,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 6 && (
+            {videos.length > 12 && (
               <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
