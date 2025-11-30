@@ -443,7 +443,16 @@ export default function CryptoAggregator() {
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
-            <p className="text-sm text-gray-400">Latest posts from crypto experts</p>
+            <button 
+              onClick={() => {
+                if (window.twttr && window.twttr.widgets) {
+                  window.twttr.widgets.load();
+                }
+              }}
+              className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition"
+            >
+              <RefreshCw size={14} />Refresh
+            </button>
           </div>
           
           {/* Show 2 feeds side by side to reduce rate limiting */}
