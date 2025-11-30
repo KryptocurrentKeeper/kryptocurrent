@@ -94,10 +94,9 @@ export default function CryptoAggregator() {
   const fetchCryptoArticles = async () => {
     try {
       const rssFeeds = [
-        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
-        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
-        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png' },
-        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk Markets', logo: 'https://www.coindesk.com/favicon.ico' }
+        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png' },
+        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg' },
+        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.png' }
       ];
 
       const allArticles = [];
@@ -152,16 +151,16 @@ export default function CryptoAggregator() {
 
   const getFallbackArticles = () => {
     return [
-      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
+      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
       { id: 2, title: "Ethereum Price Prediction", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
       { id: 3, title: "Crypto Trading Tips", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
-      { id: 4, title: "Blockchain Technology News", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
-      { id: 5, title: "DeFi Market Updates", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
+      { id: 4, title: "Blockchain Technology News", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
+      { id: 5, title: "DeFi Market Updates", source: "Crypto News", logo: "https://crypto.news/app/uploads/2023/11/cn-favicon.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
       { id: 6, title: "NFT Market Trends", source: "Cointribune", logo: "https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
-      { id: 7, title: "Altcoin Investment Guide", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
+      { id: 7, title: "Altcoin Investment Guide", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
       { id: 8, title: "Crypto Regulation News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
-      { id: 9, title: "Market Analysis Report", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/price/" },
-      { id: 10, title: "Latest Crypto Insights", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" }
+      { id: 9, title: "Market Analysis Report", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/price/" },
+      { id: 10, title: "Latest Crypto Insights", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" }
     ];
   };
 
