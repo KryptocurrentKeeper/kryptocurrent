@@ -52,10 +52,11 @@ export default function CryptoAggregator() {
 
   // Separate effect to reload widgets when news section expands
   useEffect(() => {
-    if (window.twttr && window.twttr.widgets) {
+    if (newsExpanded && window.twttr && window.twttr.widgets) {
+      // Only load additional widgets when expanded
       setTimeout(() => {
         window.twttr.widgets.load();
-      }, 100);
+      }, 300);
     }
   }, [newsExpanded]);
 
@@ -658,16 +659,10 @@ export default function CryptoAggregator() {
           <button 
             onClick={() => {
               setNewsExpanded(!newsExpanded);
-              // Reload Twitter widgets after expanding
-              setTimeout(() => {
-                if (window.twttr && window.twttr.widgets) {
-                  window.twttr.widgets.load();
-                }
-              }, 200);
             }}
             className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
           >
-            {newsExpanded ? 'Show Less' : 'Show more posts'}
+            {newsExpanded ? 'Show Less' : 'Show more posts (6 more accounts)'}
           </button>
         </div>
 
