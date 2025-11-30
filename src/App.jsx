@@ -6,6 +6,7 @@ export default function CryptoAggregator() {
   const [cryptoPrices, setCryptoPrices] = useState([]);
   const [news, setNews] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -14,11 +15,13 @@ export default function CryptoAggregator() {
   const [pricesExpanded, setPricesExpanded] = useState(false);
   const [newsExpanded, setNewsExpanded] = useState(false);
   const [videosExpanded, setVideosExpanded] = useState(false);
+  const [articlesExpanded, setArticlesExpanded] = useState(false);
 
   useEffect(() => {
     fetchCryptoPrices();
     fetchCryptoNews();
     fetchCryptoVideos();
+    fetchCryptoArticles();
   }, []);
 
   const fetchCryptoPrices = async () => {
@@ -35,31 +38,66 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoNews = async () => {
-    const curatedNews = [
-      { id: 1, title: "Latest Crypto Regulatory Updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
-      { id: 2, title: "Macro Market Analysis & Crypto Outlook", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
-      { id: 3, title: "Ripple Company Updates", source: { title: "Brad Garlinghouse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/bgarlinghouse" },
-      { id: 4, title: "Coinbase Market Insights", source: { title: "Coinbase" }, logo: "https://images.ctfassets.net/c5bd0wqjc7v0/4Y1RS9zV0FhoXfYdVm7vK7/dd9d2e5999e588b30e0c41e8ec4bb77f/coinbase-logo.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coinbase.com/blog" },
-      { id: 5, title: "Investment Analysis", source: { title: "The Motley Fool" }, logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com" },
-      { id: 6, title: "Breaking Crypto News", source: { title: "Cointelegraph" }, logo: "https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png", created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" }
+    const xUpdates = [
+      { id: 1, title: "Latest Crypto Updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
+      { id: 2, title: "Crypto Technology Insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
+      { id: 3, title: "Crypto Market Analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
+      { id: 4, title: "XRP News & Updates", source: { title: "RyleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" },
+      { id: 5, title: "Macro Market Insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
+      { id: 6, title: "Crypto Legal Updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
+      { id: 7, title: "DeFi & Crypto Insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
+      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
     ];
-    setNews(curatedNews);
+    setNews(xUpdates);
+  };
+
+  const fetchCryptoArticles = async () => {
+    const cryptoArticles = [
+      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
+      { id: 2, title: "Ethereum Price Prediction", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
+      { id: 3, title: "Crypto Trading Tips", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
+      { id: 4, title: "Blockchain Technology News", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
+      { id: 5, title: "DeFi Market Updates", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
+      { id: 6, title: "NFT Market Trends", source: "Cointribune", logo: "https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
+      { id: 7, title: "Altcoin Investment Guide", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
+      { id: 8, title: "Crypto Regulation News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
+      { id: 9, title: "Market Analysis Report", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/price/" },
+      { id: 10, title: "Latest Crypto Insights", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" }
+    ];
+    setArticles(cryptoArticles);
   };
 
   const fetchCryptoVideos = async () => {
+    // Check if we have cached videos that are less than 60 minutes old
+    const cachedData = localStorage.getItem('kryptocurrent_videos');
+    const cacheTimestamp = localStorage.getItem('kryptocurrent_videos_timestamp');
+    
+    if (cachedData && cacheTimestamp) {
+      const cacheAge = Date.now() - parseInt(cacheTimestamp);
+      const sixtyMinutes = 60 * 60 * 1000; // 60 minutes in milliseconds
+      
+      if (cacheAge < sixtyMinutes) {
+        console.log(`✓ Using cached videos (${Math.floor(cacheAge / 60000)} minutes old)`);
+        setVideos(JSON.parse(cachedData));
+        return;
+      } else {
+        console.log('Cache expired (>60 min), fetching fresh videos...');
+      }
+    }
+    
     const fallbackVideos = [
-      { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=XRP+Analysis" },
-      { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Market+Update" },
-      { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Blockchain" },
-      { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Bitcoin+Analysis" },
-      { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Altcoins" },
-      { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Trading+Signals" },
-      { id: 7, title: "Mickle's Crypto Insights", channel: "Mickle", views: "14h ago", url: "https://youtube.com/@MickleXRP/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Mickle" },
-      { id: 8, title: "Jake Claver Market Review", channel: "Jake Claver", views: "16h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Jake+Claver" },
-      { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Apex+Crypto" },
-      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Good+Evening" },
-      { id: 11, title: "Black Swan Market Analysis", channel: "Black Swan Capitalist", views: "22h ago", url: "https://youtube.com/@BlackSwanCapitalist/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Black+Swan" },
-      { id: 12, title: "Klaus Crypto Updates", channel: "Crypto with Klaus", views: "1d ago", url: "https://youtube.com/@FamilyHobbiesandCards/videos", thumbnail: "https://via.placeholder.com/320x180/ffc93c/000000?text=Klaus" }
+      { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: null },
+      { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
+      { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: null },
+      { id: 4, title: "Bitcoin Price Analysis & Predictions", channel: "Paul Barron", views: "8h ago", url: "https://youtube.com/@PaulBarronNetwork/videos", thumbnail: null },
+      { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: null },
+      { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null },
+      { id: 7, title: "Mickle's Crypto Insights", channel: "Mickle", views: "14h ago", url: "https://youtube.com/@MickleXRP/videos", thumbnail: null },
+      { id: 8, title: "Jake Claver Market Review", channel: "Jake Claver", views: "16h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: null },
+      { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: null },
+      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null },
+      { id: 11, title: "Black Swan Market Analysis", channel: "Black Swan Capitalist", views: "22h ago", url: "https://youtube.com/@BlackSwanCapitalist/videos", thumbnail: null },
+      { id: 12, title: "Klaus Crypto Updates", channel: "Crypto with Klaus", views: "1d ago", url: "https://youtube.com/@FamilyHobbiesandCards/videos", thumbnail: null }
     ];
 
     try {
@@ -103,7 +141,11 @@ export default function CryptoAggregator() {
           
           if (!response.ok) {
             const errorData = await response.json();
-            console.error(`YouTube API error for ${channelName}:`, response.status, errorData);
+            console.error(`❌ YouTube API error for ${channelName}:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorData
+            });
             failedChannels++;
             continue;
           }
@@ -133,7 +175,7 @@ export default function CryptoAggregator() {
             successfulChannels++;
           }
         } catch (channelError) {
-          console.error(`Error fetching ${channelName}:`, channelError);
+          console.error(`❌ Error fetching ${channelName}:`, channelError);
           failedChannels++;
         }
       }
@@ -200,10 +242,12 @@ export default function CryptoAggregator() {
 
   // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
   // News: show 4 unless expanded
-  // Videos: show 12 unless expanded
+  // Videos: show 4 unless expanded
+  // Articles: show 4 unless expanded
   const displayedPrices = pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 24);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
-  const displayedVideos = videosExpanded ? videos : videos.slice(0, 12);
+  const displayedVideos = videosExpanded ? videos : videos.slice(0, 4);
+  const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -319,10 +363,10 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* News Section - 2 Columns on Desktop, Expandable on Mobile */}
+        {/* Updates from X Section - 2 Columns on Desktop, Expandable on Mobile */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Latest Crypto News</h2>
+            <h2 className="text-xl font-bold text-white">Updates from X</h2>
             <button onClick={fetchCryptoNews} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
               <RefreshCw size={14} />Refresh
             </button>
@@ -391,7 +435,7 @@ export default function CryptoAggregator() {
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
           
-          {/* Mobile: Show 12 with expand button */}
+          {/* Mobile: Show 4 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedVideos.map((video) => (
@@ -413,7 +457,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 12 && (
+            {videos.length > 4 && (
               <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -423,7 +467,7 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 12 in 2 columns with expand button */}
+          {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
               {displayedVideos.map((video) => (
@@ -445,12 +489,80 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 12 && (
+            {videos.length > 4 && (
               <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {videosExpanded ? 'Show Less' : `Show All ${videos.length} Videos`}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Articles Section - 2 Columns on Desktop, Expandable on Mobile */}
+        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Crypto Articles</h2>
+            <button onClick={fetchCryptoArticles} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
+              <RefreshCw size={14} />Refresh
+            </button>
+          </div>
+          
+          {/* Mobile: Show 4 with expand button */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-1 gap-4">
+              {displayedArticles.map((article) => (
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <img src={article.logo} alt={article.source} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <div className="flex items-center gap-2 text-sm opacity-70">
+                        <span>{article.source}</span>
+                        <span>•</span>
+                        <span>{getTimeAgo(article.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {articles.length > 4 && (
+              <button 
+                onClick={() => setArticlesExpanded(!articlesExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {articlesExpanded ? 'Show Less' : `Show All ${articles.length} Articles`}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop: Show 4 in 2 columns with expand button */}
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-2 gap-4">
+              {displayedArticles.map((article) => (
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <img src={article.logo} alt={article.source} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <div className="flex items-center gap-2 text-sm opacity-70">
+                        <span>{article.source}</span>
+                        <span>•</span>
+                        <span>{getTimeAgo(article.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {articles.length > 4 && (
+              <button 
+                onClick={() => setArticlesExpanded(!articlesExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {articlesExpanded ? 'Show Less' : `Show All ${articles.length} Articles`}
               </button>
             )}
           </div>
