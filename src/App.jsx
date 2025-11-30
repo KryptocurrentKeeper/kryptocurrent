@@ -23,8 +23,8 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async () => {
     try {
-      const coinIds = 'bitcoin,ethereum,ripple,stellar,solana,hedera-hashgraph,cardano,quant-network,ondo-finance,algorand,dogecoin,shiba-inu,pudgy-penguins,xdce-crowd-sale,chainlink,litecoin,binancecoin,avalanche-2,tron,sui,bittensor,near,internet-computer,filecoin,crypto-com-chain,bonk,pepe,bitcoin-cash,polkadot,zcash';
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc`);
+      // Fetch top 100 cryptocurrencies by market cap
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1`);
       const data = await response.json();
       setCryptoPrices(data);
       setLoading(false);
@@ -74,11 +74,11 @@ export default function CryptoAggregator() {
       const channels = {
         'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
         'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
-        'Mickle': 'UCso1Kc8PyU4KyUpkmNnABqQ',
+        'Mickle': '7iKKWzbfiVB8vbrBoJUd9A',
         'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'UCso1Kc8PyU4KyUpkmNnABqQ',
-        'Altcoin Daily': 'UC7KjtEJT6HvI3kBcF2I4vXg',
+        'Jake Claver': 'MKpWPzAdXJQ4UsE59iy3Pg',
+        'Altcoin Daily': 'ZHhX2grf1d3fS_jmXqGNpQ',
         'Paul Barron': 'UC4VPa7EOvObpyCRI4YKRQRw',
         'Apex Crypto': 'UCszbTlu2HnXA94LGBWMAfug',
         'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
@@ -198,9 +198,12 @@ export default function CryptoAggregator() {
     return `${Math.floor(seconds / 86400)} days ago`;
   };
 
-  // Mobile: show only 3 news/videos unless expanded
-  const displayedNews = newsExpanded ? news : news.slice(0, 3);
-  const displayedVideos = videosExpanded ? videos : videos.slice(0, 3);
+  // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
+  // News: show 4 unless expanded
+  // Videos: show 6 unless expanded
+  const displayedPrices = pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 24);
+  const displayedNews = newsExpanded ? news : news.slice(0, 4);
+  const displayedVideos = videosExpanded ? videos : videos.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -258,25 +261,35 @@ export default function CryptoAggregator() {
                 )}
               </div>
 
-              {/* Desktop: Show all prices */}
-              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {cryptoPrices.map((crypto) => (
-                  <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1 min-w-0">
-                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
-                        <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
-                        <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
-                          <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+              {/* Desktop: Show 24 with expand button */}
+              <div className="hidden md:block">
+                <div className="grid md:grid-cols-4 lg:grid-cols-6 gap-2">
+                  {displayedPrices.map((crypto) => (
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
+                          <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold whitespace-nowrap">${crypto.current_price.toLocaleString()}</p>
+                          <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+                            <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {cryptoPrices.length > 24 && (
+                  <button 
+                    onClick={() => setPricesExpanded(!pricesExpanded)}
+                    className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                  >
+                    {pricesExpanded ? 'Show Less' : `Show All ${cryptoPrices.length} Prices`}
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -307,7 +320,7 @@ export default function CryptoAggregator() {
             </button>
           </div>
           
-          {/* Mobile: Show 3 with expand button */}
+          {/* Mobile: Show 4 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedNews.map((article) => (
@@ -326,7 +339,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {news.length > 3 && (
+            {news.length > 4 && (
               <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -336,23 +349,33 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show all in 2 columns */}
-          <div className="hidden md:grid md:grid-cols-2 gap-4">
-            {news.map((article) => (
-              <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
-                <div className="flex items-start gap-3">
-                  <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold mb-2">{article.title}</h3>
-                    <div className="flex items-center gap-2 text-sm opacity-70">
-                      <span>{article.source?.title}</span>
-                      <span>•</span>
-                      <span>{getTimeAgo(article.created_at)}</span>
+          {/* Desktop: Show 4 in 2 columns with expand button */}
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-2 gap-4">
+              {displayedNews.map((article) => (
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <div className="flex items-center gap-2 text-sm opacity-70">
+                        <span>{article.source?.title}</span>
+                        <span>•</span>
+                        <span>{getTimeAgo(article.created_at)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
+            {news.length > 4 && (
+              <button 
+                onClick={() => setNewsExpanded(!newsExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {newsExpanded ? 'Show Less' : `Show All ${news.length} Articles`}
+              </button>
+            )}
           </div>
         </div>
 
@@ -360,7 +383,7 @@ export default function CryptoAggregator() {
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
           
-          {/* Mobile: Show 3 with expand button */}
+          {/* Mobile: Show 6 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedVideos.map((video) => (
@@ -382,7 +405,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 3 && (
+            {videos.length > 6 && (
               <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -392,26 +415,36 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show all in 2 columns */}
-          <div className="hidden md:grid md:grid-cols-2 gap-4">
-            {videos.map((video) => (
-              <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
-                <div className="flex gap-4">
-                  <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {video.thumbnail ? (
-                      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl">▶️</span>
-                    )}
+          {/* Desktop: Show 6 in 2 columns with expand button */}
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-2 gap-4">
+              {displayedVideos.map((video) => (
+                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                  <div className="flex gap-4">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {video.thumbnail ? (
+                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl">▶️</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
+                      <p className="text-xs opacity-70">{video.channel}</p>
+                      <p className="text-xs opacity-60 mt-1">{video.views}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
-                    <p className="text-xs opacity-70">{video.channel}</p>
-                    <p className="text-xs opacity-60 mt-1">{video.views}</p>
-                  </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
+            {videos.length > 6 && (
+              <button 
+                onClick={() => setVideosExpanded(!videosExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {videosExpanded ? 'Show Less' : `Show All ${videos.length} Videos`}
+              </button>
+            )}
           </div>
         </div>
       </div>
