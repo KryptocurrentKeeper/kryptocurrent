@@ -28,6 +28,18 @@ export default function CryptoAggregator() {
     script.src = 'https://platform.twitter.com/widgets.js';
     script.async = true;
     script.charset = 'utf-8';
+    
+    script.onload = () => {
+      console.log('Twitter widgets script loaded');
+      // Force widget initialization after script loads with a small delay
+      setTimeout(() => {
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load();
+          console.log('Twitter widgets initialized');
+        }
+      }, 500);
+    };
+    
     document.body.appendChild(script);
     
     return () => {
@@ -37,6 +49,15 @@ export default function CryptoAggregator() {
       }
     };
   }, []);
+
+  // Separate effect to reload widgets when news section expands
+  useEffect(() => {
+    if (window.twttr && window.twttr.widgets) {
+      setTimeout(() => {
+        window.twttr.widgets.load();
+      }, 100);
+    }
+  }, [newsExpanded]);
 
   const fetchCryptoPrices = async () => {
     try {
@@ -445,8 +466,12 @@ export default function CryptoAggregator() {
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
             <button 
               onClick={() => {
+                console.log('Refreshing Twitter widgets...');
                 if (window.twttr && window.twttr.widgets) {
                   window.twttr.widgets.load();
+                  console.log('Twitter widgets reloaded');
+                } else {
+                  console.error('Twitter widgets not available');
                 }
               }}
               className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition"
