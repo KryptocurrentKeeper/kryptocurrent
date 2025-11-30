@@ -72,15 +72,15 @@ export default function CryptoAggregator() {
       }
       
       const channels = {
-        'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
-        'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
-        'Mickle': '7iKKWzbfiVB8vbrBoJUd9A',
-        'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
+        'Digital Outlook': 'UC8oW_3rV35rZ3oU1F_n9cjg',
+        'Crypto Sensei': 'UC_x5XG1OV2P6uZZ5FSM9Ttw',
+        'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
+        'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'MKpWPzAdXJQ4UsE59iy3Pg',
-        'Altcoin Daily': 'ZHhX2grf1d3fS_jmXqGNpQ',
-        'Paul Barron': 'UC4VPa7EOvObpyCRI4YKRQRw',
-        'Apex Crypto': 'UCszbTlu2HnXA94LGBWMAfug',
+        'Jake Claver': 'UC0zq9i-Um0YB-ssHQoz_qUg',
+        'Altcoin Daily': 'UCVm8QxSChzT63-zF2A7AWEQ',
+        'Paul Barron': 'UCwB6d4tB5-S1tZc1r3_B-fQ',
+        'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
         'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
         'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
         'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
