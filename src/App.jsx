@@ -22,6 +22,20 @@ export default function CryptoAggregator() {
     fetchCryptoNews();
     fetchCryptoVideos();
     fetchCryptoArticles();
+    
+    // Load Twitter widgets script
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    script.charset = 'utf-8';
+    document.body.appendChild(script);
+    
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
   }, []);
 
   const fetchCryptoPrices = async () => {
@@ -56,7 +70,66 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoArticles = async () => {
-    const cryptoArticles = [
+    try {
+      const rssFeeds = [
+        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
+        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
+        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://s3.cointelegraph.com/storage/uploads/view/d34ab2c53068c7d5f3d796b8e95dddb9.png' },
+        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk Markets', logo: 'https://www.coindesk.com/favicon.ico' }
+      ];
+
+      const allArticles = [];
+      let articleId = 1;
+
+      // Fetch from each RSS feed using RSS2JSON
+      for (const feed of rssFeeds) {
+        try {
+          const response = await fetch(
+            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=4kwuv0gvyduofgawlqiuzgbbhxfoxztfabatqows&count=10`
+          );
+          
+          if (!response.ok) continue;
+          
+          const data = await response.json();
+          
+          if (data.status === 'ok' && data.items) {
+            data.items.forEach(item => {
+              allArticles.push({
+                id: articleId++,
+                title: item.title,
+                source: feed.source,
+                logo: feed.logo,
+                created_at: item.pubDate,
+                url: item.link
+              });
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching ${feed.source}:`, error);
+        }
+      }
+
+      // Sort by latest
+      allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Take top 10
+      const topArticles = allArticles.slice(0, 10);
+      
+      if (topArticles.length > 0) {
+        setArticles(topArticles);
+        console.log(`✓ Fetched ${topArticles.length} articles from RSS feeds`);
+      } else {
+        // Fallback to static articles if RSS fails
+        setArticles(getFallbackArticles());
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      setArticles(getFallbackArticles());
+    }
+  };
+
+  const getFallbackArticles = () => {
+    return [
       { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
       { id: 2, title: "Ethereum Price Prediction", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
       { id: 3, title: "Crypto Trading Tips", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
@@ -68,7 +141,6 @@ export default function CryptoAggregator() {
       { id: 9, title: "Market Analysis Report", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/price/" },
       { id: 10, title: "Latest Crypto Insights", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" }
     ];
-    setArticles(cryptoArticles);
   };
 
   const fetchCryptoVideos = async () => {
@@ -367,72 +439,42 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - 2 Columns on Desktop, Expandable on Mobile */}
+        {/* Updates from X Section - Unified Timeline from Twitter List */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
-            <button onClick={fetchCryptoNews} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
-              <RefreshCw size={14} />Refresh
-            </button>
+            <p className="text-sm text-gray-400">Live feed • Auto-updating</p>
           </div>
           
-          {/* Mobile: Show 4 with expand button */}
-          <div className="md:hidden">
-            <div className="grid grid-cols-1 gap-4">
-              {displayedNews.map((article) => (
-                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
-                  <div className="flex items-start gap-3">
-                    <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-2">{article.title}</h3>
-                      <div className="flex items-center gap-2 text-sm opacity-70">
-                        <span>{article.source?.title}</span>
-                        <span>•</span>
-                        <span>{getTimeAgo(article.created_at)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-            {news.length > 4 && (
-              <button 
-                onClick={() => setNewsExpanded(!newsExpanded)}
-                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
-              >
-                {newsExpanded ? 'Show Less' : 'Show more posts'}
-              </button>
-            )}
+          {/* Single unified timeline showing all accounts sorted by latest */}
+          <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+            <a 
+              className="twitter-timeline" 
+              data-height={newsExpanded ? "800" : "600"}
+              data-theme="dark"
+              data-chrome="noborders transparent"
+              data-tweet-limit={newsExpanded ? "30" : "15"}
+              href="https://twitter.com/i/lists/1995266467663921449?ref_src=twsrc%5Etfw"
+            >
+              Latest Crypto Updates from our curated list
+            </a>
           </div>
 
-          {/* Desktop: Show 4 in 2 columns with expand button */}
-          <div className="hidden md:block">
-            <div className="grid md:grid-cols-2 gap-4">
-              {displayedNews.map((article) => (
-                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
-                  <div className="flex items-start gap-3">
-                    <img src={article.logo} alt={article.source?.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-2">{article.title}</h3>
-                      <div className="flex items-center gap-2 text-sm opacity-70">
-                        <span>{article.source?.title}</span>
-                        <span>•</span>
-                        <span>{getTimeAgo(article.created_at)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-            {news.length > 4 && (
-              <button 
-                onClick={() => setNewsExpanded(!newsExpanded)}
-                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
-              >
-                {newsExpanded ? 'Show Less' : 'Show more posts'}
-              </button>
-            )}
-          </div>
+          {/* Expand button */}
+          <button 
+            onClick={() => {
+              setNewsExpanded(!newsExpanded);
+              // Reload Twitter widgets after expanding
+              setTimeout(() => {
+                if (window.twttr && window.twttr.widgets) {
+                  window.twttr.widgets.load();
+                }
+              }, 100);
+            }}
+            className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+          >
+            {newsExpanded ? 'Show Less' : 'Show more posts'}
+          </button>
         </div>
 
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
