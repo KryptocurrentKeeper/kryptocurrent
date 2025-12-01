@@ -16,6 +16,7 @@ export default function CryptoAggregator() {
   const [newsExpanded, setNewsExpanded] = useState(false);
   const [videosExpanded, setVideosExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
+  const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'altcoins', 'ai', 'meme'
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -60,11 +61,37 @@ export default function CryptoAggregator() {
     }
   }, [newsExpanded]);
 
-  const fetchCryptoPrices = async () => {
+  // Fetch prices when category changes
+  useEffect(() => {
+    fetchCryptoPrices(priceCategory);
+  }, [priceCategory]);
+
+  const fetchCryptoPrices = async (category = 'top100') => {
     try {
-      // Fetch top 102 most popular cryptocurrencies by market cap from CoinGecko
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1`);
-      const data = await response.json();
+      let url = '';
+
+      if (category === 'top100') {
+        // Top 100 by market cap
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1`;
+      } else if (category === 'altcoins') {
+        // Top 30 altcoins (excluding Bitcoin and Ethereum)
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=32&page=1`;
+      } else if (category === 'ai') {
+        // Top 30 AI coins - using category filter
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1`;
+      } else if (category === 'meme') {
+        // Top 30 Meme coins - using category filter
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1`;
+      }
+
+      const response = await fetch(url);
+      let data = await response.json();
+      
+      // For altcoins, filter out Bitcoin and Ethereum
+      if (category === 'altcoins') {
+        data = data.filter(coin => coin.id !== 'bitcoin' && coin.id !== 'ethereum').slice(0, 30);
+      }
+      
       setCryptoPrices(data);
       setLoading(false);
     } catch (error) {
@@ -360,11 +387,57 @@ export default function CryptoAggregator() {
 
         {/* Prices Section */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Live Crypto Prices</h2>
-            <button onClick={fetchCryptoPrices} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
-              <RefreshCw size={14} />Refresh
-            </button>
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Live Crypto Prices</h2>
+              <button onClick={() => fetchCryptoPrices(priceCategory)} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
+                <RefreshCw size={14} />Refresh
+              </button>
+            </div>
+            
+            {/* Category Toggle Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setPriceCategory('top100')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'top100'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
+              >
+                Top 100
+              </button>
+              <button
+                onClick={() => setPriceCategory('altcoins')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'altcoins'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
+              >
+                Top Alt Coins
+              </button>
+              <button
+                onClick={() => setPriceCategory('ai')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'ai'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
+              >
+                Top AI Coins
+              </button>
+              <button
+                onClick={() => setPriceCategory('meme')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'meme'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
+              >
+                Top Meme Coins
+              </button>
+            </div>
           </div>
           {loading ? (
             <div className="text-center py-12">
