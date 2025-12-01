@@ -95,8 +95,12 @@ export default function CryptoAggregator() {
     try {
       const rssFeeds = [
         { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png' },
+        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.png' },
         { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg' },
-        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.png' }
+        { url: 'https://finance.yahoo.com/news/rssindex', source: 'Yahoo Finance', logo: 'https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico' },
+        { url: 'https://www.fool.com/feeds/index.aspx', source: 'The Motley Fool', logo: 'https://g.foolcdn.com/art/companylogos/mark/MF.png' },
+        { url: 'https://crypto.news/feed/', source: 'Crypto News', logo: 'https://crypto.news/app/uploads/2023/11/cn-favicon.png' },
+        { url: 'https://www.cointribune.com/en/feed/', source: 'Cointribune', logo: 'https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png' }
       ];
 
       const allArticles = [];
@@ -106,7 +110,7 @@ export default function CryptoAggregator() {
       for (const feed of rssFeeds) {
         try {
           const response = await fetch(
-            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=4kwuv0gvyduofgawlqiuzgbbhxfoxztfabatqows&count=10`
+            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=10`
           );
           
           if (!response.ok) continue;
@@ -152,33 +156,33 @@ export default function CryptoAggregator() {
   const getFallbackArticles = () => {
     return [
       { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
-      { id: 2, title: "Ethereum Price Prediction", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
-      { id: 3, title: "Crypto Trading Tips", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
-      { id: 4, title: "Blockchain Technology News", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
-      { id: 5, title: "DeFi Market Updates", source: "Crypto News", logo: "https://crypto.news/app/uploads/2023/11/cn-favicon.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
-      { id: 6, title: "NFT Market Trends", source: "Cointribune", logo: "https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
-      { id: 7, title: "Altcoin Investment Guide", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
-      { id: 8, title: "Crypto Regulation News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
-      { id: 9, title: "Market Analysis Report", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/price/" },
-      { id: 10, title: "Latest Crypto Insights", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" }
+      { id: 2, title: "Ethereum Price Prediction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
+      { id: 3, title: "Crypto Trading Tips", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
+      { id: 4, title: "Blockchain Technology News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
+      { id: 5, title: "DeFi Market Updates", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
+      { id: 6, title: "NFT Market Trends", source: "Crypto News", logo: "https://crypto.news/app/uploads/2023/11/cn-favicon.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
+      { id: 7, title: "Altcoin Investment Guide", source: "Cointribune", logo: "https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
+      { id: 8, title: "Crypto Regulation News", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
+      { id: 9, title: "Market Analysis Report", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
+      { id: 10, title: "Latest Crypto Insights", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" }
     ];
   };
 
   const fetchCryptoVideos = async () => {
-    // Check if we have cached videos that are less than 60 minutes old
+    // Check if we have cached videos that are less than 3 hours old
     const cachedData = localStorage.getItem('kryptocurrent_videos');
     const cacheTimestamp = localStorage.getItem('kryptocurrent_videos_timestamp');
     
     if (cachedData && cacheTimestamp) {
       const cacheAge = Date.now() - parseInt(cacheTimestamp);
-      const sixtyMinutes = 60 * 60 * 1000; // 60 minutes in milliseconds
+      const threeHours = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
       
-      if (cacheAge < sixtyMinutes) {
+      if (cacheAge < threeHours) {
         console.log(`✓ Using cached videos (${Math.floor(cacheAge / 60000)} minutes old)`);
         setVideos(JSON.parse(cachedData));
         return;
       } else {
-        console.log('Cache expired (>60 min), fetching fresh videos...');
+        console.log('Cache expired (>3 hours), fetching fresh videos...');
       }
     }
     
@@ -192,9 +196,7 @@ export default function CryptoAggregator() {
       { id: 7, title: "Mickle's Crypto Insights", channel: "Mickle", views: "14h ago", url: "https://youtube.com/@MickleXRP/videos", thumbnail: null },
       { id: 8, title: "Jake Claver Market Review", channel: "Jake Claver", views: "16h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: null },
       { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: null },
-      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null },
-      { id: 11, title: "Black Swan Market Analysis", channel: "Black Swan Capitalist", views: "22h ago", url: "https://youtube.com/@BlackSwanCapitalist/videos", thumbnail: null },
-      { id: 12, title: "Klaus Crypto Updates", channel: "Crypto with Klaus", views: "1d ago", url: "https://youtube.com/@FamilyHobbiesandCards/videos", thumbnail: null }
+      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null }
     ];
 
     try {
@@ -339,11 +341,11 @@ export default function CryptoAggregator() {
 
   // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
   // News: show 4 unless expanded
-  // Videos: show 4 unless expanded
+  // Videos: show 4 unless expanded, 10 when expanded
   // Articles: show 4 unless expanded
   const displayedPrices = pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 24);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
-  const displayedVideos = videosExpanded ? videos : videos.slice(0, 4);
+  const displayedVideos = videosExpanded ? videos.slice(0, 10) : videos.slice(0, 4);
   const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
 
   return (
@@ -460,7 +462,7 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Individual Feeds */}
+        {/* Updates from X Section - Twitter List Timeline */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
@@ -480,179 +482,17 @@ export default function CryptoAggregator() {
             </button>
           </div>
           
-          {/* Show 2 feeds side by side to reduce rate limiting */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Eleanor Terrett */}
-            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                  @EleanorTerrett
-                </a>
-                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                  View Profile →
-                </a>
-              </div>
-              <a 
-                className="twitter-timeline" 
-                data-height="500"
-                data-theme="dark"
-                href="https://twitter.com/EleanorTerrett?ref_src=twsrc%5Etfw"
-              >
-                Posts by @EleanorTerrett
-              </a>
-            </div>
-
-            {/* CryptoWendyO */}
-            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                  @CryptoWendyO
-                </a>
-                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                  View Profile →
-                </a>
-              </div>
-              <a 
-                className="twitter-timeline" 
-                data-height="500"
-                data-theme="dark"
-                href="https://twitter.com/CryptoWendyO?ref_src=twsrc%5Etfw"
-              >
-                Posts by @CryptoWendyO
-              </a>
-            </div>
+          {/* Single unified timeline from Twitter List - sorted by latest */}
+          <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+            <a 
+              className="twitter-timeline" 
+              data-height={newsExpanded ? "800" : "600"}
+              data-theme="dark"
+              href="https://twitter.com/i/lists/1995266467663921449?ref_src=twsrc%5Etfw"
+            >
+              Latest posts from our crypto experts
+            </a>
           </div>
-
-          {/* More feeds when expanded */}
-          {newsExpanded && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* The Crypto Geek */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/the_Cryptogeek" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @the_Cryptogeek
-                    </a>
-                    <a href="https://twitter.com/the_Cryptogeek" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/the_Cryptogeek?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @the_Cryptogeek
-                  </a>
-                </div>
-
-                {/* Raoul Pal */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/RaoulGMI" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @RaoulGMI
-                    </a>
-                    <a href="https://twitter.com/RaoulGMI" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/RaoulGMI?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @RaoulGMI
-                  </a>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* RyleXRP */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/RuleXRP" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @RyleXRP
-                    </a>
-                    <a href="https://twitter.com/RuleXRP" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/RuleXRP?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @RyleXRP
-                  </a>
-                </div>
-
-                {/* Brian Armstrong */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/brian_armstrong" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @brian_armstrong
-                    </a>
-                    <a href="https://twitter.com/brian_armstrong" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/brian_armstrong?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @brian_armstrong
-                  </a>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Intocryptoverse */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/intocryptoverse" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @intocryptoverse
-                    </a>
-                    <a href="https://twitter.com/intocryptoverse" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/intocryptoverse?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @intocryptoverse
-                  </a>
-                </div>
-
-                {/* CryptoLawUS */}
-                <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                    <a href="https://twitter.com/CryptoLawUS" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                      @CryptoLawUS
-                    </a>
-                    <a href="https://twitter.com/CryptoLawUS" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                      View Profile →
-                    </a>
-                  </div>
-                  <a 
-                    className="twitter-timeline" 
-                    data-height="500"
-                    data-theme="dark"
-                    href="https://twitter.com/CryptoLawUS?ref_src=twsrc%5Etfw"
-                  >
-                    Posts by @CryptoLawUS
-                  </a>
-                </div>
-              </div>
-            </>
-          )}
 
           {/* Expand button */}
           <button 
@@ -661,7 +501,7 @@ export default function CryptoAggregator() {
             }}
             className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
           >
-            {newsExpanded ? 'Show Less' : 'Show more posts (6 more accounts)'}
+            {newsExpanded ? 'Show Less' : 'Show more posts'}
           </button>
         </div>
 
