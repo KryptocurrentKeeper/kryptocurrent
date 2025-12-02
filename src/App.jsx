@@ -16,7 +16,7 @@ export default function CryptoAggregator() {
   const [newsExpanded, setNewsExpanded] = useState(false);
   const [videosExpanded, setVideosExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
-  const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'altcoins', 'ai', 'meme'
+  const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -73,9 +73,33 @@ export default function CryptoAggregator() {
       if (category === 'top100') {
         // Top 100 by market cap
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1`;
-      } else if (category === 'altcoins') {
-        // Top 30 altcoins (excluding Bitcoin and Ethereum)
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=32&page=1`;
+      } else if (category === 'iso20022') {
+        // ISO 20022 compliant coins
+        // List of known ISO 20022 compliant cryptocurrencies
+        const iso20022Coins = [
+          'ripple', 'stellar', 'algorand', 'hedera-hashgraph', 'quant-network', 
+          'xdc-network', 'iota', 'cardano', 'vechain', 'fetch-ai'
+        ];
+        
+        // Fetch all these coins
+        const promises = iso20022Coins.map(coinId => 
+          fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}`)
+            .then(res => res.json())
+            .catch(err => {
+              console.error(`Error fetching ${coinId}:`, err);
+              return [];
+            })
+        );
+        
+        const results = await Promise.all(promises);
+        const data = results.flat().filter(coin => coin && coin.id);
+        
+        // Sort by market cap
+        data.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0));
+        
+        setCryptoPrices(data);
+        setLoading(false);
+        return;
       } else if (category === 'ai') {
         // Top 30 AI coins - using category filter
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1`;
@@ -86,11 +110,6 @@ export default function CryptoAggregator() {
 
       const response = await fetch(url);
       let data = await response.json();
-      
-      // For altcoins, filter out Bitcoin and Ethereum
-      if (category === 'altcoins') {
-        data = data.filter(coin => coin.id !== 'bitcoin' && coin.id !== 'ethereum').slice(0, 30);
-      }
       
       setCryptoPrices(data);
       setLoading(false);
@@ -408,14 +427,14 @@ export default function CryptoAggregator() {
                 Top 100
               </button>
               <button
-                onClick={() => setPriceCategory('altcoins')}
+                onClick={() => setPriceCategory('iso20022')}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-                  priceCategory === 'altcoins'
+                  priceCategory === 'iso20022'
                     ? 'bg-[#ffc93c] text-black'
                     : 'bg-slate-700/50 text-white hover:bg-slate-700'
                 }`}
               >
-                Top Alt Coins
+                ISO 20022 Coins
               </button>
               <button
                 onClick={() => setPriceCategory('ai')}
