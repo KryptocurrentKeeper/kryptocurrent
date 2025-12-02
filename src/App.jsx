@@ -68,38 +68,16 @@ export default function CryptoAggregator() {
 
   const fetchCryptoPrices = async (category = 'top100') => {
     try {
+      setLoading(true);
       let url = '';
 
       if (category === 'top100') {
         // Top 100 by market cap
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1`;
       } else if (category === 'iso20022') {
-        // ISO 20022 compliant coins
-        // List of known ISO 20022 compliant cryptocurrencies
-        const iso20022Coins = [
-          'ripple', 'stellar', 'algorand', 'hedera-hashgraph', 'quant-network', 
-          'xdc-network', 'iota', 'cardano', 'vechain', 'fetch-ai'
-        ];
-        
-        // Fetch all these coins
-        const promises = iso20022Coins.map(coinId => 
-          fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}`)
-            .then(res => res.json())
-            .catch(err => {
-              console.error(`Error fetching ${coinId}:`, err);
-              return [];
-            })
-        );
-        
-        const results = await Promise.all(promises);
-        const data = results.flat().filter(coin => coin && coin.id);
-        
-        // Sort by market cap
-        data.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0));
-        
-        setCryptoPrices(data);
-        setLoading(false);
-        return;
+        // ISO 20022 compliant coins - fetch as comma-separated IDs
+        const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdc-network,iota,cardano,vechain,fetch-ai';
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1`;
       } else if (category === 'ai') {
         // Top 30 AI coins - using category filter
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1`;
@@ -109,7 +87,7 @@ export default function CryptoAggregator() {
       }
 
       const response = await fetch(url);
-      let data = await response.json();
+      const data = await response.json();
       
       setCryptoPrices(data);
       setLoading(false);
