@@ -532,7 +532,7 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Limited Feeds to Avoid Rate Limiting */}
+        {/* Updates from X Section - Single Twitter List Embed */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
@@ -552,58 +552,21 @@ export default function CryptoAggregator() {
             </button>
           </div>
           
-          {/* Show only 2 feeds to avoid rate limiting */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Eleanor Terrett */}
-            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                  @EleanorTerrett
-                </a>
-                <a href="https://twitter.com/EleanorTerrett" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                  View Profile →
-                </a>
-              </div>
-              <a 
-                className="twitter-timeline" 
-                data-height="600"
-                data-theme="dark"
-                href="https://twitter.com/EleanorTerrett?ref_src=twsrc%5Etfw"
-              >
-                Posts by @EleanorTerrett
-              </a>
-            </div>
-
-            {/* CryptoWendyO */}
-            <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-              <div className="p-3 border-b border-slate-600 flex items-center justify-between">
-                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="font-semibold text-sm hover:text-[#ffc93c] transition">
-                  @CryptoWendyO
-                </a>
-                <a href="https://twitter.com/CryptoWendyO" target="_blank" rel="noopener noreferrer" className="text-xs text-[#ffc93c] hover:underline">
-                  View Profile →
-                </a>
-              </div>
-              <a 
-                className="twitter-timeline" 
-                data-height="600"
-                data-theme="dark"
-                href="https://twitter.com/CryptoWendyO?ref_src=twsrc%5Etfw"
-              >
-                Posts by @CryptoWendyO
-              </a>
-            </div>
+          {/* Single Twitter List - Shows all accounts in one feed */}
+          <div className="bg-slate-700/50 rounded-lg overflow-hidden">
+            <a 
+              className="twitter-timeline" 
+              data-height="600"
+              data-theme="dark"
+              href="https://twitter.com/i/lists/1995266467663921449?ref_src=twsrc%5Etfw"
+            >
+              Latest crypto updates from our curated list
+            </a>
           </div>
 
-          {/* Note about more accounts */}
+          {/* Note about the feed */}
           <div className="mt-4 text-center text-sm text-gray-400">
-            <p>View more accounts: 
-              <a href="https://twitter.com/the_Cryptogeek" target="_blank" rel="noopener noreferrer" className="text-[#ffc93c] hover:underline ml-2">@the_Cryptogeek</a>,
-              <a href="https://twitter.com/RaoulGMI" target="_blank" rel="noopener noreferrer" className="text-[#ffc93c] hover:underline ml-2">@RaoulGMI</a>,
-              <a href="https://twitter.com/brian_armstrong" target="_blank" rel="noopener noreferrer" className="text-[#ffc93c] hover:underline ml-2">@brian_armstrong</a>,
-              <a href="https://twitter.com/intocryptoverse" target="_blank" rel="noopener noreferrer" className="text-[#ffc93c] hover:underline ml-2">@intocryptoverse</a>,
-              <a href="https://twitter.com/CryptoLawUS" target="_blank" rel="noopener noreferrer" className="text-[#ffc93c] hover:underline ml-2">@CryptoLawUS</a>
-            </p>
+            <p>Showing latest posts from: @EleanorTerrett, @the_Cryptogeek, @CryptoWendyO, @RaoulGMI, @brian_armstrong, @intocryptoverse, @CryptoLawUS, @RuleXRP</p>
           </div>
         </div>
 
