@@ -101,8 +101,12 @@ export default function CryptoAggregator() {
     try {
       console.log('Fetching tweets from Nitter RSS feeds...');
       
-      // Nitter instances that provide RSS feeds
-      const nitterInstance = 'https://nitter.poast.org'; // Reliable instance
+      // Try multiple Nitter instances (some may be down)
+      const nitterInstances = [
+        'https://nitter.net',
+        'https://nitter.poast.org',
+        'https://nitter.privacydev.net'
+      ];
       
       const twitterAccounts = [
         { username: 'EleanorTerrett', name: 'Eleanor Terrett' },
@@ -117,56 +121,84 @@ export default function CryptoAggregator() {
 
       const allTweets = [];
       let tweetId = 1;
+      let successfulFetches = 0;
 
-      // Fetch tweets from each account via Nitter RSS
+      // Try each account with fallback instances
       for (const account of twitterAccounts) {
-        try {
-          const rssUrl = `${nitterInstance}/${account.username}/rss`;
+        let accountSuccess = false;
+        
+        // Try each Nitter instance until one works
+        for (const nitterInstance of nitterInstances) {
+          if (accountSuccess) break;
           
-          // Use RSS2JSON to parse Nitter RSS feeds
-          const response = await fetch(
-            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=3`
-          );
-
-          if (!response.ok) {
-            console.warn(`Failed to fetch tweets for @${account.username}`);
-            continue;
-          }
-
-          const data = await response.json();
-
-          if (data.status === 'ok' && data.items && data.items.length > 0) {
-            console.log(`✓ Found ${data.items.length} tweets from @${account.username}`);
+          try {
+            const rssUrl = `${nitterInstance}/${account.username}/rss`;
             
-            data.items.forEach(item => {
-              // Extract tweet text from description (HTML) or use title as fallback
-              let tweetText = item.description || item.title || '';
+            console.log(`Trying ${account.username} from ${nitterInstance}...`);
+            
+            // Use RSS2JSON to parse Nitter RSS feeds
+            const response = await fetch(
+              `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=2`
+            );
+
+            if (!response.ok) {
+              console.warn(`Failed to fetch from ${nitterInstance} for @${account.username}: ${response.status}`);
+              continue;
+            }
+
+            const data = await response.json();
+            
+            console.log(`Response for @${account.username}:`, data.status, data.items?.length || 0, 'items');
+
+            if (data.status === 'ok' && data.items && data.items.length > 0) {
+              console.log(`✓ Found ${data.items.length} tweets from @${account.username} via ${nitterInstance}`);
+              successfulFetches++;
+              accountSuccess = true;
               
-              // Remove HTML tags from description
-              const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = tweetText;
-              tweetText = tempDiv.textContent || tempDiv.innerText || tweetText;
-              
-              // Clean up the text
-              tweetText = tweetText.trim();
-              
-              // If text is too short, try using title
-              if (tweetText.length < 20 && item.title) {
-                tweetText = item.title;
-              }
-              
-              allTweets.push({
-                id: tweetId++,
-                title: tweetText.substring(0, 280) || 'Tweet', // Limit to 280 chars like Twitter
-                source: { title: account.name },
-                logo: data.feed.image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
-                created_at: item.pubDate || new Date().toISOString(),
-                url: item.link || `https://twitter.com/${account.username}`
+              data.items.forEach(item => {
+                // Extract tweet text from description (HTML) or use title as fallback
+                let tweetText = item.description || item.title || '';
+                
+                // Remove HTML tags from description
+                if (tweetText.includes('<')) {
+                  const tempDiv = document.createElement('div');
+                  tempDiv.innerHTML = tweetText;
+                  tweetText = tempDiv.textContent || tempDiv.innerText || tweetText;
+                }
+                
+                // Clean up the text
+                tweetText = tweetText.trim();
+                
+                // If text is too short, try using title
+                if (tweetText.length < 20 && item.title) {
+                  tweetText = item.title;
+                }
+                
+                // Skip if still no content
+                if (!tweetText || tweetText.length < 5) {
+                  console.warn(`Skipping empty tweet from @${account.username}`);
+                  return;
+                }
+                
+                allTweets.push({
+                  id: tweetId++,
+                  title: tweetText.substring(0, 280) || 'Tweet', // Limit to 280 chars like Twitter
+                  source: { title: account.name },
+                  logo: data.feed.image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
+                  created_at: item.pubDate || new Date().toISOString(),
+                  url: item.link || `https://twitter.com/${account.username}`
+                });
               });
-            });
+            } else {
+              console.warn(`No items from ${nitterInstance} for @${account.username}`);
+            }
+          } catch (error) {
+            console.error(`Error fetching @${account.username} from ${nitterInstance}:`, error);
           }
-        } catch (error) {
-          console.error(`Error fetching @${account.username}:`, error);
+        }
+        
+        if (!accountSuccess) {
+          console.error(`Failed to fetch @${account.username} from all instances`);
         }
       }
 
@@ -174,9 +206,9 @@ export default function CryptoAggregator() {
         // Sort by most recent
         allTweets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setNews(allTweets);
-        console.log(`✓ Total: ${allTweets.length} tweets loaded`);
+        console.log(`✓✓✓ SUCCESS: ${allTweets.length} total tweets loaded from ${successfulFetches} accounts`);
       } else {
-        console.log('No tweets fetched, using fallback');
+        console.log('❌ No tweets fetched from any source, using fallback');
         setNewsToFallback();
       }
     } catch (error) {
