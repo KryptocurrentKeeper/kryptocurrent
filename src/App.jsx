@@ -98,6 +98,78 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoNews = async () => {
+    try {
+      console.log('Fetching tweets from Nitter RSS feeds...');
+      
+      // Nitter instances that provide RSS feeds
+      const nitterInstance = 'https://nitter.poast.org'; // Reliable instance
+      
+      const twitterAccounts = [
+        { username: 'EleanorTerrett', name: 'Eleanor Terrett' },
+        { username: 'the_Cryptogeek', name: 'The Crypto Geek' },
+        { username: 'CryptoWendyO', name: 'CryptoWendyO' },
+        { username: 'RuleXRP', name: 'RyleXRP' },
+        { username: 'RaoulGMI', name: 'Raoul Pal' },
+        { username: 'brian_armstrong', name: 'Brian Armstrong' },
+        { username: 'intocryptoverse', name: 'Intocryptoverse' },
+        { username: 'CryptoLawUS', name: 'CryptoLawUS' }
+      ];
+
+      const allTweets = [];
+      let tweetId = 1;
+
+      // Fetch tweets from each account via Nitter RSS
+      for (const account of twitterAccounts) {
+        try {
+          const rssUrl = `${nitterInstance}/${account.username}/rss`;
+          
+          // Use RSS2JSON to parse Nitter RSS feeds
+          const response = await fetch(
+            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=3`
+          );
+
+          if (!response.ok) {
+            console.warn(`Failed to fetch tweets for @${account.username}`);
+            continue;
+          }
+
+          const data = await response.json();
+
+          if (data.status === 'ok' && data.items && data.items.length > 0) {
+            console.log(`✓ Found ${data.items.length} tweets from @${account.username}`);
+            
+            data.items.forEach(item => {
+              allTweets.push({
+                id: tweetId++,
+                title: item.title || item.description?.substring(0, 100) || 'Tweet',
+                source: { title: account.name },
+                logo: data.feed.image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
+                created_at: item.pubDate || new Date().toISOString(),
+                url: item.link || `https://twitter.com/${account.username}`
+              });
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching @${account.username}:`, error);
+        }
+      }
+
+      if (allTweets.length > 0) {
+        // Sort by most recent
+        allTweets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setNews(allTweets);
+        console.log(`✓ Total: ${allTweets.length} tweets loaded`);
+      } else {
+        console.log('No tweets fetched, using fallback');
+        setNewsToFallback();
+      }
+    } catch (error) {
+      console.error('Error in fetchCryptoNews:', error);
+      setNewsToFallback();
+    }
+  };
+
+  const setNewsToFallback = () => {
     const xUpdates = [
       { id: 1, title: "Latest Crypto Updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
       { id: 2, title: "Crypto Technology Insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
@@ -106,11 +178,7 @@ export default function CryptoAggregator() {
       { id: 5, title: "Macro Market Insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
       { id: 6, title: "Crypto Legal Updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
       { id: 7, title: "DeFi & Crypto Insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
-      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" },
-      { id: 9, title: "Market Updates & Analysis", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
-      { id: 10, title: "Blockchain Developments", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
-      { id: 11, title: "Trading Insights", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 11 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
-      { id: 12, title: "Crypto Market Commentary", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }
+      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
     ];
     setNews(xUpdates);
   };
@@ -118,13 +186,13 @@ export default function CryptoAggregator() {
   const fetchCryptoArticles = async () => {
     try {
       const rssFeeds = [
-        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png' },
-        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.png' },
-        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg' },
+        { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
+        { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
+        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
         { url: 'https://finance.yahoo.com/news/rssindex', source: 'Yahoo Finance', logo: 'https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico' },
         { url: 'https://www.fool.com/feeds/index.aspx', source: 'The Motley Fool', logo: 'https://g.foolcdn.com/art/companylogos/mark/MF.png' },
-        { url: 'https://crypto.news/feed/', source: 'Crypto News', logo: 'https://crypto.news/app/uploads/2023/11/cn-favicon.png' },
-        { url: 'https://www.cointribune.com/en/feed/', source: 'Cointribune', logo: 'https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png' }
+        { url: 'https://crypto.news/feed/', source: 'Crypto News', logo: 'https://crypto.news/favicon.ico' },
+        { url: 'https://www.cointribune.com/en/feed/', source: 'Cointribune', logo: 'https://www.cointribune.com/favicon.ico' }
       ];
 
       const allArticles = [];
@@ -133,15 +201,22 @@ export default function CryptoAggregator() {
       // Fetch from each RSS feed using RSS2JSON
       for (const feed of rssFeeds) {
         try {
+          console.log(`Fetching ${feed.source}...`);
           const response = await fetch(
             `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=10`
           );
           
-          if (!response.ok) continue;
+          if (!response.ok) {
+            console.error(`❌ Failed to fetch ${feed.source}: ${response.status} ${response.statusText}`);
+            continue;
+          }
           
           const data = await response.json();
           
+          console.log(`${feed.source} response:`, data);
+          
           if (data.status === 'ok' && data.items) {
+            console.log(`✓ Found ${data.items.length} articles from ${feed.source}`);
             data.items.forEach(item => {
               allArticles.push({
                 id: articleId++,
@@ -152,6 +227,8 @@ export default function CryptoAggregator() {
                 url: item.link
               });
             });
+          } else {
+            console.error(`❌ ${feed.source} returned status: ${data.status}, message: ${data.message || 'No message'}`);
           }
         } catch (error) {
           console.error(`Error fetching ${feed.source}:`, error);
@@ -179,16 +256,16 @@ export default function CryptoAggregator() {
 
   const getFallbackArticles = () => {
     return [
-      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
-      { id: 2, title: "Ethereum Price Prediction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
-      { id: 3, title: "Crypto Trading Tips", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
+      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
+      { id: 2, title: "Ethereum Price Prediction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
+      { id: 3, title: "Crypto Trading Tips", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
       { id: 4, title: "Blockchain Technology News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
       { id: 5, title: "DeFi Market Updates", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
-      { id: 6, title: "NFT Market Trends", source: "Crypto News", logo: "https://crypto.news/app/uploads/2023/11/cn-favicon.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
-      { id: 7, title: "Altcoin Investment Guide", source: "Cointribune", logo: "https://www.cointribune.com/app/uploads/2021/11/cropped-fav-512-192x192.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
-      { id: 8, title: "Crypto Regulation News", source: "CoinDesk", logo: "https://www.coindesk.com/resizer/ihIXhdNsoNDck_CqkfXPkhkMQLQ=/1200x628/center/middle/cloudfront-us-east-1.images.arcpublishing.com/coindesk/YDSSX7D7CZDYHJUQKW67M7PJNM.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
-      { id: 9, title: "Market Analysis Report", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.png", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
-      { id: 10, title: "Latest Crypto Insights", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/cs-logo-green.svg", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" }
+      { id: 6, title: "NFT Market Trends", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
+      { id: 7, title: "Altcoin Investment Guide", source: "Cointribune", logo: "https://www.cointribune.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
+      { id: 8, title: "Crypto Regulation News", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
+      { id: 9, title: "Market Analysis Report", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
+      { id: 10, title: "Latest Crypto Insights", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" }
     ];
   };
 
@@ -258,8 +335,11 @@ export default function CryptoAggregator() {
 
       for (const [channelName, channelId] of Object.entries(channels)) {
         try {
+          // Add search query for Crypto Sensei to filter only crypto videos
+          const searchQuery = channelName === 'Crypto Sensei' ? '&q=crypto|bitcoin|ethereum|XRP|cryptocurrency|blockchain' : '';
+          
           const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}`
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
           );
           
           if (!response.ok) {
@@ -473,7 +553,7 @@ export default function CryptoAggregator() {
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
-                    {pricesExpanded ? 'Show Less' : 'Show Top 100'}
+                    {pricesExpanded ? 'Show Less' : 'Show More'}
                   </button>
                 )}
               </div>
@@ -508,7 +588,7 @@ export default function CryptoAggregator() {
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
-                    {pricesExpanded ? 'Show Less' : 'Show Top 100'}
+                    {pricesExpanded ? 'Show Less' : 'Show More'}
                   </button>
                 )}
               </div>
@@ -532,42 +612,66 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Single Twitter List Embed */}
+        {/* Updates from X Section - Real Tweets via Nitter RSS */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
             <button 
-              onClick={() => {
-                console.log('Refreshing Twitter widgets...');
-                if (window.twttr && window.twttr.widgets) {
-                  window.twttr.widgets.load();
-                  console.log('Twitter widgets reloaded');
-                } else {
-                  console.error('Twitter widgets not available');
-                }
-              }}
+              onClick={fetchCryptoNews}
               className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition"
             >
               <RefreshCw size={14} />Refresh
             </button>
           </div>
           
-          {/* Single Twitter List - Shows all accounts in one feed */}
-          <div className="bg-slate-700/50 rounded-lg overflow-hidden">
-            <a 
-              className="twitter-timeline" 
-              data-height="600"
-              data-theme="dark"
-              href="https://twitter.com/i/lists/1995266467663921449?ref_src=twsrc%5Etfw"
-            >
-              Latest crypto updates from our curated list
-            </a>
+          {/* Display real tweets */}
+          <div className="grid grid-cols-1 gap-3">
+            {news.slice(0, 8).map((tweet) => (
+              <a 
+                key={tweet.id} 
+                href={tweet.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <img 
+                    src={tweet.logo} 
+                    alt={tweet.source.title} 
+                    className="w-12 h-12 rounded-full flex-shrink-0"
+                    onError={(e) => {
+                      e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-white text-sm">{tweet.source.title}</h3>
+                      <span className="text-xs text-gray-400">
+                        {(() => {
+                          const date = new Date(tweet.created_at);
+                          const now = new Date();
+                          const diffMs = now - date;
+                          const diffMins = Math.floor(diffMs / 60000);
+                          const diffHours = Math.floor(diffMs / 3600000);
+                          const diffDays = Math.floor(diffMs / 86400000);
+                          
+                          if (diffMins < 60) return `${diffMins}m ago`;
+                          if (diffHours < 24) return `${diffHours}h ago`;
+                          return `${diffDays}d ago`;
+                        })()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300 line-clamp-3">{tweet.title}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
           </div>
 
-          {/* Note about the feed */}
-          <div className="mt-4 text-center text-sm text-gray-400">
-            <p>Showing latest posts from: @EleanorTerrett, @the_Cryptogeek, @CryptoWendyO, @RaoulGMI, @brian_armstrong, @intocryptoverse, @CryptoLawUS, @RuleXRP</p>
-          </div>
+          {/* Note about source */}
+          <p className="mt-4 text-xs text-center text-gray-400">
+            Posts fetched from X via Nitter RSS feeds • Click any post to view on X
+          </p>
         </div>
 
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
