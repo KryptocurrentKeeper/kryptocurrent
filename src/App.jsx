@@ -139,9 +139,25 @@ export default function CryptoAggregator() {
             console.log(`✓ Found ${data.items.length} tweets from @${account.username}`);
             
             data.items.forEach(item => {
+              // Extract tweet text from description (HTML) or use title as fallback
+              let tweetText = item.description || item.title || '';
+              
+              // Remove HTML tags from description
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = tweetText;
+              tweetText = tempDiv.textContent || tempDiv.innerText || tweetText;
+              
+              // Clean up the text
+              tweetText = tweetText.trim();
+              
+              // If text is too short, try using title
+              if (tweetText.length < 20 && item.title) {
+                tweetText = item.title;
+              }
+              
               allTweets.push({
                 id: tweetId++,
-                title: item.title || item.description?.substring(0, 100) || 'Tweet',
+                title: tweetText.substring(0, 280) || 'Tweet', // Limit to 280 chars like Twitter
                 source: { title: account.name },
                 logo: data.feed.image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
                 created_at: item.pubDate || new Date().toISOString(),
@@ -624,48 +640,112 @@ export default function CryptoAggregator() {
             </button>
           </div>
           
-          {/* Display real tweets */}
-          <div className="grid grid-cols-1 gap-3">
-            {news.slice(0, 8).map((tweet) => (
-              <a 
-                key={tweet.id} 
-                href={tweet.url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
-              >
-                <div className="flex items-start gap-3">
-                  <img 
-                    src={tweet.logo} 
-                    alt={tweet.source.title} 
-                    className="w-12 h-12 rounded-full flex-shrink-0"
-                    onError={(e) => {
-                      e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-white text-sm">{tweet.source.title}</h3>
-                      <span className="text-xs text-gray-400">
-                        {(() => {
-                          const date = new Date(tweet.created_at);
-                          const now = new Date();
-                          const diffMs = now - date;
-                          const diffMins = Math.floor(diffMs / 60000);
-                          const diffHours = Math.floor(diffMs / 3600000);
-                          const diffDays = Math.floor(diffMs / 86400000);
-                          
-                          if (diffMins < 60) return `${diffMins}m ago`;
-                          if (diffHours < 24) return `${diffHours}h ago`;
-                          return `${diffDays}d ago`;
-                        })()}
-                      </span>
+          {/* Mobile: Show 2 posts unexpanded */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-1 gap-3">
+              {(newsExpanded ? news : news.slice(0, 2)).map((tweet) => (
+                <a 
+                  key={tweet.id} 
+                  href={tweet.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
+                >
+                  <div className="flex items-start gap-3">
+                    <img 
+                      src={tweet.logo} 
+                      alt={tweet.source.title} 
+                      className="w-12 h-12 rounded-full flex-shrink-0"
+                      onError={(e) => {
+                        e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-white text-sm">{tweet.source.title}</h3>
+                        <span className="text-xs text-gray-400">
+                          {(() => {
+                            const date = new Date(tweet.created_at);
+                            const now = new Date();
+                            const diffMs = now - date;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            const diffHours = Math.floor(diffMs / 3600000);
+                            const diffDays = Math.floor(diffMs / 86400000);
+                            
+                            if (diffMins < 60) return `${diffMins}m ago`;
+                            if (diffHours < 24) return `${diffHours}h ago`;
+                            return `${diffDays}d ago`;
+                          })()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 line-clamp-4">{tweet.title}</p>
                     </div>
-                    <p className="text-sm text-gray-300 line-clamp-3">{tweet.title}</p>
                   </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
+            {news.length > 2 && (
+              <button 
+                onClick={() => setNewsExpanded(!newsExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {newsExpanded ? 'Show Less' : 'Show More'}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop: Show 6 posts in 3 columns unexpanded */}
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-3 gap-4">
+              {(newsExpanded ? news : news.slice(0, 6)).map((tweet) => (
+                <a 
+                  key={tweet.id} 
+                  href={tweet.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
+                >
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={tweet.logo} 
+                        alt={tweet.source.title} 
+                        className="w-10 h-10 rounded-full flex-shrink-0"
+                        onError={(e) => {
+                          e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white text-sm truncate">{tweet.source.title}</h3>
+                        <span className="text-xs text-gray-400">
+                          {(() => {
+                            const date = new Date(tweet.created_at);
+                            const now = new Date();
+                            const diffMs = now - date;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            const diffHours = Math.floor(diffMs / 3600000);
+                            const diffDays = Math.floor(diffMs / 86400000);
+                            
+                            if (diffMins < 60) return `${diffMins}m ago`;
+                            if (diffHours < 24) return `${diffHours}h ago`;
+                            return `${diffDays}d ago`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300 line-clamp-5">{tweet.title}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {news.length > 6 && (
+              <button 
+                onClick={() => setNewsExpanded(!newsExpanded)}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {newsExpanded ? 'Show Less' : 'Show More'}
+              </button>
+            )}
           </div>
 
           {/* Note about source */}
