@@ -542,53 +542,47 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Profile Links */}
+        {/* Updates from X Section - Improved Profile Links */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Updates from X</h2>
-            <p className="text-xs text-gray-400">Click to view latest posts</p>
+            <div>
+              <h2 className="text-xl font-bold text-white">Updates from X</h2>
+              <p className="text-sm text-gray-400 mt-1">Follow these crypto experts for the latest insights</p>
+            </div>
           </div>
           
-          {/* Mobile: Show 2 posts unexpanded */}
+          {/* Mobile: Show 2 accounts unexpanded */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-3">
-              {(newsExpanded ? news : news.slice(0, 2)).map((tweet) => (
+              {(newsExpanded ? news : news.slice(0, 2)).map((account) => (
                 <a 
-                  key={tweet.id} 
-                  href={tweet.url} 
+                  key={account.id} 
+                  href={account.url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
+                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-xl p-4 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 shadow-lg hover:shadow-[#ffc93c]/20"
                 >
-                  <div className="flex items-start gap-3">
-                    <img 
-                      src={tweet.logo} 
-                      alt={tweet.source.title} 
-                      className="w-12 h-12 rounded-full flex-shrink-0"
-                      onError={(e) => {
-                        e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-white text-sm">{tweet.source.title}</h3>
-                        <span className="text-xs text-gray-400">
-                          {(() => {
-                            const date = new Date(tweet.created_at);
-                            const now = new Date();
-                            const diffMs = now - date;
-                            const diffMins = Math.floor(diffMs / 60000);
-                            const diffHours = Math.floor(diffMs / 3600000);
-                            const diffDays = Math.floor(diffMs / 86400000);
-                            
-                            if (diffMins < 60) return `${diffMins}m ago`;
-                            if (diffHours < 24) return `${diffHours}h ago`;
-                            return `${diffDays}d ago`;
-                          })()}
-                        </span>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
+                        <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
+                          <svg className="w-7 h-7 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-300 line-clamp-4">{tweet.title}</p>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-white text-base group-hover:text-[#ffc93c] transition-colors">
+                        {account.source.title}
+                      </h3>
+                      <p className="text-sm text-gray-400 truncate">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-500 mt-1">{account.title}</p>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </a>
               ))}
@@ -603,46 +597,41 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 6 posts in 3 columns unexpanded */}
+          {/* Desktop: Show 6 accounts in 3 columns unexpanded */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-3 gap-4">
-              {(newsExpanded ? news : news.slice(0, 6)).map((tweet) => (
+              {(newsExpanded ? news : news.slice(0, 6)).map((account) => (
                 <a 
-                  key={tweet.id} 
-                  href={tweet.url} 
+                  key={account.id} 
+                  href={account.url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer"
+                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-xl p-5 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 shadow-lg hover:shadow-[#ffc93c]/20 hover:-translate-y-1"
                 >
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src={tweet.logo} 
-                        alt={tweet.source.title} 
-                        className="w-10 h-10 rounded-full flex-shrink-0"
-                        onError={(e) => {
-                          e.target.src = 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white text-sm truncate">{tweet.source.title}</h3>
-                        <span className="text-xs text-gray-400">
-                          {(() => {
-                            const date = new Date(tweet.created_at);
-                            const now = new Date();
-                            const diffMs = now - date;
-                            const diffMins = Math.floor(diffMs / 60000);
-                            const diffHours = Math.floor(diffMs / 3600000);
-                            const diffDays = Math.floor(diffMs / 86400000);
-                            
-                            if (diffMins < 60) return `${diffMins}m ago`;
-                            if (diffHours < 24) return `${diffHours}h ago`;
-                            return `${diffDays}d ago`;
-                          })()}
-                        </span>
+                  <div className="flex flex-col items-center text-center gap-3">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
+                        <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
+                          <svg className="w-8 h-8 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                        </div>
                       </div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
                     </div>
-                    <p className="text-sm text-gray-300 line-clamp-5">{tweet.title}</p>
+                    <div className="flex-1 min-w-0 w-full">
+                      <h3 className="font-bold text-white text-base group-hover:text-[#ffc93c] transition-colors mb-1">
+                        {account.source.title}
+                      </h3>
+                      <p className="text-sm text-gray-400 truncate mb-2">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{account.title}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[#ffc93c] text-sm font-semibold group-hover:gap-2 transition-all">
+                      <span>View Posts</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </a>
               ))}
@@ -650,17 +639,19 @@ export default function CryptoAggregator() {
             {news.length > 6 && (
               <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
-                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {newsExpanded ? 'Show Less' : 'Show More'}
               </button>
             )}
           </div>
 
-          {/* Note about source */}
-          <p className="mt-4 text-xs text-center text-gray-400">
-            Click any account to view their latest posts on X
-          </p>
+          {/* Call to action */}
+          <div className="mt-6 p-4 bg-gradient-to-r from-[#ffc93c]/10 to-[#ffb700]/10 rounded-lg border border-[#ffc93c]/20">
+            <p className="text-center text-sm text-gray-300">
+              💡 <span className="font-semibold text-white">Pro Tip:</span> Follow these experts on X to stay ahead of crypto trends and news
+            </p>
+          </div>
         </div>
 
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
