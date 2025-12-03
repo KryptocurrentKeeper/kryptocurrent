@@ -457,11 +457,11 @@ export default function CryptoAggregator() {
               <div className="md:hidden">
                 <div className="grid grid-cols-2 gap-2">
                   {(pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 4)).map((crypto) => (
-                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 min-w-0">
-                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
-                          <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <h3 className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</h3>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold whitespace-nowrap">
@@ -492,11 +492,11 @@ export default function CryptoAggregator() {
               <div className="hidden md:block">
                 <div className="grid md:grid-cols-4 lg:grid-cols-6 gap-2">
                   {displayedPrices.map((crypto) => (
-                    <div key={crypto.id} onClick={() => openChart(crypto)} className="bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition cursor-pointer">
+                    <div key={crypto.id} onClick={() => openChart(crypto)} className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 min-w-0">
-                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" />
-                          <h3 className="font-semibold text-xs truncate">{crypto.symbol.toUpperCase()}</h3>
+                          <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <h3 className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</h3>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold whitespace-nowrap">
@@ -560,27 +560,26 @@ export default function CryptoAggregator() {
                   href={account.url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-xl p-4 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 shadow-lg hover:shadow-[#ffc93c]/20"
+                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg p-3 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
                         <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
-                          <svg className="w-7 h-7 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                           </svg>
                         </div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white text-base group-hover:text-[#ffc93c] transition-colors">
+                      <h3 className="font-semibold text-white text-sm group-hover:text-[#ffc93c] transition-colors">
                         {account.source.title}
                       </h3>
-                      <p className="text-sm text-gray-400 truncate">@{account.url.split('/').pop()}</p>
-                      <p className="text-xs text-gray-500 mt-1">{account.title}</p>
+                      <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
                     </div>
-                    <svg className="w-5 h-5 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -599,39 +598,35 @@ export default function CryptoAggregator() {
 
           {/* Desktop: Show 6 accounts in 3 columns unexpanded */}
           <div className="hidden md:block">
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3">
               {(newsExpanded ? news : news.slice(0, 6)).map((account) => (
                 <a 
                   key={account.id} 
                   href={account.url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-xl p-5 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 shadow-lg hover:shadow-[#ffc93c]/20 hover:-translate-y-1"
+                  className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg p-3 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 hover:-translate-y-1"
                 >
-                  <div className="flex flex-col items-center text-center gap-3">
+                  <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
                         <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
-                          <svg className="w-8 h-8 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-6 h-6 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                           </svg>
                         </div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
                     </div>
-                    <div className="flex-1 min-w-0 w-full">
-                      <h3 className="font-bold text-white text-base group-hover:text-[#ffc93c] transition-colors mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white text-sm group-hover:text-[#ffc93c] transition-colors">
                         {account.source.title}
                       </h3>
-                      <p className="text-sm text-gray-400 truncate mb-2">@{account.url.split('/').pop()}</p>
-                      <p className="text-xs text-gray-500 line-clamp-2">{account.title}</p>
+                      <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
                     </div>
-                    <div className="flex items-center gap-1 text-[#ffc93c] text-sm font-semibold group-hover:gap-2 transition-all">
-                      <span>View Posts</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </a>
               ))}
@@ -647,9 +642,9 @@ export default function CryptoAggregator() {
           </div>
 
           {/* Call to action */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-[#ffc93c]/10 to-[#ffb700]/10 rounded-lg border border-[#ffc93c]/20">
+          <div className="mt-4 p-3 bg-gradient-to-r from-[#ffc93c]/10 to-[#ffb700]/10 rounded-lg border border-[#ffc93c]/20">
             <p className="text-center text-sm text-gray-300">
-              💡 <span className="font-semibold text-white">Pro Tip:</span> Follow these experts on X to stay ahead of crypto trends and news
+              💡 <span className="font-semibold text-white">Pro Tip:</span> Follow these experts on X to stay ahead of crypto trends
             </p>
           </div>
         </div>
@@ -662,17 +657,17 @@ export default function CryptoAggregator() {
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedVideos.map((video) => (
-                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
-                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
                       {video.thumbnail ? (
-                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       ) : (
-                        <span className="text-2xl">▶️</span>
+                        <span className="text-2xl group-hover:scale-110 transition-transform">▶️</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm group-hover:text-[#ffc93c] transition-colors">{video.title}</h3>
                       <p className="text-xs opacity-70">{video.channel}</p>
                       <p className="text-xs opacity-60 mt-1">{video.views}</p>
                     </div>
