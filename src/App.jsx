@@ -98,135 +98,17 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoNews = async () => {
-    try {
-      console.log('Fetching tweets from Nitter RSS feeds...');
-      
-      // Try multiple Nitter instances (some may be down)
-      const nitterInstances = [
-        'https://nitter.net',
-        'https://nitter.poast.org',
-        'https://nitter.privacydev.net'
-      ];
-      
-      const twitterAccounts = [
-        { username: 'EleanorTerrett', name: 'Eleanor Terrett' },
-        { username: 'the_Cryptogeek', name: 'The Crypto Geek' },
-        { username: 'CryptoWendyO', name: 'CryptoWendyO' },
-        { username: 'RuleXRP', name: 'RyleXRP' },
-        { username: 'RaoulGMI', name: 'Raoul Pal' },
-        { username: 'brian_armstrong', name: 'Brian Armstrong' },
-        { username: 'intocryptoverse', name: 'Intocryptoverse' },
-        { username: 'CryptoLawUS', name: 'CryptoLawUS' }
-      ];
-
-      const allTweets = [];
-      let tweetId = 1;
-      let successfulFetches = 0;
-
-      // Try each account with fallback instances
-      for (const account of twitterAccounts) {
-        let accountSuccess = false;
-        
-        // Try each Nitter instance until one works
-        for (const nitterInstance of nitterInstances) {
-          if (accountSuccess) break;
-          
-          try {
-            const rssUrl = `${nitterInstance}/${account.username}/rss`;
-            
-            console.log(`Trying ${account.username} from ${nitterInstance}...`);
-            
-            // Use RSS2JSON to parse Nitter RSS feeds
-            const response = await fetch(
-              `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=2`
-            );
-
-            if (!response.ok) {
-              console.warn(`Failed to fetch from ${nitterInstance} for @${account.username}: ${response.status}`);
-              continue;
-            }
-
-            const data = await response.json();
-            
-            console.log(`Response for @${account.username}:`, data.status, data.items?.length || 0, 'items');
-
-            if (data.status === 'ok' && data.items && data.items.length > 0) {
-              console.log(`✓ Found ${data.items.length} tweets from @${account.username} via ${nitterInstance}`);
-              successfulFetches++;
-              accountSuccess = true;
-              
-              data.items.forEach(item => {
-                // Extract tweet text from description (HTML) or use title as fallback
-                let tweetText = item.description || item.title || '';
-                
-                // Remove HTML tags from description
-                if (tweetText.includes('<')) {
-                  const tempDiv = document.createElement('div');
-                  tempDiv.innerHTML = tweetText;
-                  tweetText = tempDiv.textContent || tempDiv.innerText || tweetText;
-                }
-                
-                // Clean up the text
-                tweetText = tweetText.trim();
-                
-                // If text is too short, try using title
-                if (tweetText.length < 20 && item.title) {
-                  tweetText = item.title;
-                }
-                
-                // Skip if still no content
-                if (!tweetText || tweetText.length < 5) {
-                  console.warn(`Skipping empty tweet from @${account.username}`);
-                  return;
-                }
-                
-                allTweets.push({
-                  id: tweetId++,
-                  title: tweetText.substring(0, 280) || 'Tweet', // Limit to 280 chars like Twitter
-                  source: { title: account.name },
-                  logo: data.feed.image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
-                  created_at: item.pubDate || new Date().toISOString(),
-                  url: item.link || `https://twitter.com/${account.username}`
-                });
-              });
-            } else {
-              console.warn(`No items from ${nitterInstance} for @${account.username}`);
-            }
-          } catch (error) {
-            console.error(`Error fetching @${account.username} from ${nitterInstance}:`, error);
-          }
-        }
-        
-        if (!accountSuccess) {
-          console.error(`Failed to fetch @${account.username} from all instances`);
-        }
-      }
-
-      if (allTweets.length > 0) {
-        // Sort by most recent
-        allTweets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        setNews(allTweets);
-        console.log(`✓✓✓ SUCCESS: ${allTweets.length} total tweets loaded from ${successfulFetches} accounts`);
-      } else {
-        console.log('❌ No tweets fetched from any source, using fallback');
-        setNewsToFallback();
-      }
-    } catch (error) {
-      console.error('Error in fetchCryptoNews:', error);
-      setNewsToFallback();
-    }
-  };
-
-  const setNewsToFallback = () => {
+    // Using static profile links since RSS2JSON cannot access Nitter feeds
+    // and Twitter embeds have persistent rate limiting issues
     const xUpdates = [
-      { id: 1, title: "Latest Crypto Updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
-      { id: 2, title: "Crypto Technology Insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
-      { id: 3, title: "Crypto Market Analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
-      { id: 4, title: "XRP News & Updates", source: { title: "RyleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" },
-      { id: 5, title: "Macro Market Insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
-      { id: 6, title: "Crypto Legal Updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
-      { id: 7, title: "DeFi & Crypto Insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
-      { id: 8, title: "Crypto Law & Regulation", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
+      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
+      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
+      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
+      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" },
+      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
+      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
+      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
+      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
     ];
     setNews(xUpdates);
   };
@@ -660,16 +542,11 @@ export default function CryptoAggregator() {
           </div>
         </div>
 
-        {/* Updates from X Section - Real Tweets via Nitter RSS */}
+        {/* Updates from X Section - Profile Links */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
-            <button 
-              onClick={fetchCryptoNews}
-              className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition"
-            >
-              <RefreshCw size={14} />Refresh
-            </button>
+            <p className="text-xs text-gray-400">Click to view latest posts</p>
           </div>
           
           {/* Mobile: Show 2 posts unexpanded */}
@@ -782,7 +659,7 @@ export default function CryptoAggregator() {
 
           {/* Note about source */}
           <p className="mt-4 text-xs text-center text-gray-400">
-            Posts fetched from X via Nitter RSS feeds • Click any post to view on X
+            Click any account to view their latest posts on X
           </p>
         </div>
 
