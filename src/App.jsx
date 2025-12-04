@@ -141,6 +141,7 @@ export default function CryptoAggregator() {
     // Added realistic "last posted" times
     const now = Date.now();
     const xUpdates = [
+      { id: 0, title: "View all accounts in one feed", source: { title: "Kryptocurrent List" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 15 * 60 * 1000).toISOString(), url: "https://x.com/i/lists/1995266467663921449" }, // 15 min ago - Kryptocurrent List
       { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
       { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
       { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
@@ -606,10 +607,10 @@ export default function CryptoAggregator() {
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
           </div>
           
-          {/* Mobile: Show 2 accounts unexpanded */}
+          {/* Mobile: Show 3 accounts unexpanded (includes Kryptocurrent List) */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-3">
-              {(newsExpanded ? news : news.slice(0, 2)).map((account) => (
+              {(newsExpanded ? news : news.slice(0, 3)).map((account) => (
                 <a 
                   key={account.id} 
                   href={account.url} 
@@ -653,7 +654,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {news.length > 2 && (
+            {news.length > 3 && (
               <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -663,10 +664,10 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 6 accounts in 3 columns unexpanded */}
+          {/* Desktop: Show 7 accounts in 3 columns unexpanded (includes Kryptocurrent List) */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-3 gap-3">
-              {(newsExpanded ? news : news.slice(0, 6)).map((account) => (
+              {(newsExpanded ? news : news.slice(0, 7)).map((account) => (
                 <a 
                   key={account.id} 
                   href={account.url} 
@@ -710,7 +711,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {news.length > 6 && (
+            {news.length > 7 && (
               <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
