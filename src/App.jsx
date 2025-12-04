@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -17,6 +17,12 @@ export default function CryptoAggregator() {
   const [videosExpanded, setVideosExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
   const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
+  
+  // Refs for scrolling to section tops
+  const pricesRef = useRef(null);
+  const xRef = useRef(null);
+  const videosRef = useRef(null);
+  const articlesRef = useRef(null);
 
   useEffect(() => {
     fetchCryptoPrices();
@@ -490,6 +496,35 @@ export default function CryptoAggregator() {
     return `${Math.floor(seconds / 86400)} days ago`;
   };
 
+  // Handle expand/collapse with scroll to top
+  const handlePricesToggle = () => {
+    if (pricesExpanded && pricesRef.current) {
+      pricesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setPricesExpanded(!pricesExpanded);
+  };
+
+  const handleNewsToggle = () => {
+    if (newsExpanded && xRef.current) {
+      xRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setNewsExpanded(!newsExpanded);
+  };
+
+  const handleVideosToggle = () => {
+    if (videosExpanded && videosRef.current) {
+      videosRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setVideosExpanded(!videosExpanded);
+  };
+
+  const handleArticlesToggle = () => {
+    if (articlesExpanded && articlesRef.current) {
+      articlesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setArticlesExpanded(!articlesExpanded);
+  };
+
   // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
   // News: show 4 unless expanded
   // Videos: show 4 unless expanded, 10 when expanded
@@ -502,9 +537,9 @@ export default function CryptoAggregator() {
     crypto.current_price !== null && 
     crypto.current_price !== undefined
   );
-  const displayedPrices = pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 24);
+  const displayedPrices = pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 18);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
-  const displayedVideos = videosExpanded ? videos.slice(0, 8) : videos.slice(0, 4);
+  const displayedVideos = videosExpanded ? videos.slice(0, 8) : videos.slice(0, 3);
   const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
 
   return (
@@ -518,10 +553,10 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Prices Section */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+        <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex flex-col gap-4 mb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Live Crypto Prices</h2>
+              <h2 className="text-xl font-bold text-white">Current Costs</h2>
               <button onClick={() => fetchCryptoPrices(priceCategory)} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
                 <RefreshCw size={14} />Refresh
               </button>
@@ -578,10 +613,10 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: Show 4 with expand button */}
+              {/* Mobile: Show 6 with expand button */}
               <div className="md:hidden">
                 <div className="grid grid-cols-2 gap-2">
-                  {(pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 4)).map((crypto) => (
+                  {(pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 6)).map((crypto) => (
                     <div key={crypto.id} onClick={() => openChart(crypto)} className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 min-w-0">
@@ -603,9 +638,9 @@ export default function CryptoAggregator() {
                     </div>
                   ))}
                 </div>
-                {validCryptoPrices.length > 4 && (
+                {validCryptoPrices.length > 6 && (
                   <button 
-                    onClick={() => setPricesExpanded(!pricesExpanded)}
+                    onClick={handlePricesToggle}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
                     {pricesExpanded ? 'Show Less' : 'Show More'}
@@ -640,7 +675,7 @@ export default function CryptoAggregator() {
                 </div>
                 {cryptoPrices.length > 24 && (
                   <button 
-                    onClick={() => setPricesExpanded(!pricesExpanded)}
+                    onClick={handlePricesToggle}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
                     {pricesExpanded ? 'Show Less' : 'Show More'}
@@ -668,9 +703,9 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Updates from X Section - Improved Profile Links */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+        <div ref={xRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-white">Updates from X</h2>
+            <h2 className="text-xl font-bold text-white">Xtra Xtra</h2>
           </div>
           
           {/* Mobile: Show 3 accounts unexpanded (includes Genius List) */}
@@ -722,7 +757,7 @@ export default function CryptoAggregator() {
             </div>
             {news.length > 3 && (
               <button 
-                onClick={() => setNewsExpanded(!newsExpanded)}
+                onClick={handleNewsToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {newsExpanded ? 'Show Less' : 'Show More'}
@@ -779,7 +814,7 @@ export default function CryptoAggregator() {
             </div>
             {news.length > 3 && (
               <button 
-                onClick={() => setNewsExpanded(!newsExpanded)}
+                onClick={handleNewsToggle}
                 className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {newsExpanded ? 'Show Less' : 'Show More'}
@@ -789,13 +824,13 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
+        <div ref={videosRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-white">Click Bait</h2>
           
-          {/* Mobile: Show 4 with expand button */}
+          {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {displayedVideos.map((video) => (
+              {(videosExpanded ? videos.slice(0, 8) : videos.slice(0, 3)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -814,9 +849,9 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 4 && (
+            {videos.length > 3 && (
               <button 
-                onClick={() => setVideosExpanded(!videosExpanded)}
+                onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {videosExpanded ? 'Show Less' : 'Show More'}
@@ -827,7 +862,7 @@ export default function CryptoAggregator() {
           {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {displayedVideos.map((video) => (
+              {(videosExpanded ? videos.slice(0, 8) : videos.slice(0, 4)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -848,7 +883,7 @@ export default function CryptoAggregator() {
             </div>
             {videos.length > 4 && (
               <button 
-                onClick={() => setVideosExpanded(!videosExpanded)}
+                onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {videosExpanded ? 'Show Less' : 'Show More'}
@@ -858,18 +893,15 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Articles Section - 2 Columns on Desktop, Expandable on Mobile */}
-        <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Crypto Articles</h2>
-            <button onClick={fetchCryptoArticles} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
-              <RefreshCw size={14} />Refresh
-            </button>
+        <div ref={articlesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-white">Good News</h2>
           </div>
           
-          {/* Mobile: Show 4 with expand button */}
+          {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {displayedArticles.map((article) => (
+              {(articlesExpanded ? articles : articles.slice(0, 3)).map((article) => (
                 <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -887,9 +919,9 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {articles.length > 4 && (
+            {articles.length > 3 && (
               <button 
-                onClick={() => setArticlesExpanded(!articlesExpanded)}
+                onClick={handleArticlesToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {articlesExpanded ? 'Show Less' : 'Show More'}
@@ -900,7 +932,7 @@ export default function CryptoAggregator() {
           {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {displayedArticles.map((article) => (
+              {(articlesExpanded ? articles : articles.slice(0, 4)).map((article) => (
                 <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -920,7 +952,7 @@ export default function CryptoAggregator() {
             </div>
             {articles.length > 4 && (
               <button 
-                onClick={() => setArticlesExpanded(!articlesExpanded)}
+                onClick={handleArticlesToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {articlesExpanded ? 'Show Less' : 'Show More'}
