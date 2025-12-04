@@ -234,25 +234,6 @@ export default function CryptoAggregator() {
     }
   };
 
-      // Sort by latest
-      allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      // Take top 10
-      const topArticles = allArticles.slice(0, 10);
-      
-      if (topArticles.length > 0) {
-        setArticles(topArticles);
-        console.log(`✓ Fetched ${topArticles.length} articles from RSS feeds`);
-      } else {
-        // Fallback to static articles if RSS fails
-        setArticles(getFallbackArticles());
-      }
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-      setArticles(getFallbackArticles());
-    }
-  };
-
   const getFallbackArticles = () => {
     return [
       { id: 1, title: "Bitcoin Surges Past Key Resistance Level", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/2024/12/03/bitcoin-btc-technical-analysis/" },
