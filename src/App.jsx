@@ -117,55 +117,84 @@ export default function CryptoAggregator() {
 
   const fetchCryptoArticles = async () => {
     try {
+      // Direct RSS feeds - using CORS proxy for cross-origin requests
       const rssFeeds = [
         { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
         { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
         { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
-        { url: 'https://finance.yahoo.com/news/rssindex', source: 'Yahoo Finance', logo: 'https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico' },
-        { url: 'https://www.fool.com/feeds/index.aspx', source: 'The Motley Fool', logo: 'https://g.foolcdn.com/art/companylogos/mark/MF.png' },
-        { url: 'https://crypto.news/feed/', source: 'Crypto News', logo: 'https://crypto.news/favicon.ico' },
-        { url: 'https://www.cointribune.com/en/feed/', source: 'Cointribune', logo: 'https://www.cointribune.com/favicon.ico' }
+        { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: 'https://decrypt.co/favicon.ico' },
+        { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: 'https://www.theblockcrypto.com/favicon.ico' }
       ];
 
       const allArticles = [];
       let articleId = 1;
 
-      // Fetch from each RSS feed using RSS2JSON
+      // Fetch from each RSS feed using CORS proxy
       for (const feed of rssFeeds) {
         try {
           console.log(`Fetching ${feed.source}...`);
-          const response = await fetch(
-            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=a6edb13d73b99b19a555de80eadfb59527023399&count=10`
-          );
           
+          // Use allOrigins CORS proxy to fetch RSS feeds
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
+          const response = await fetch(proxyUrl);
+
           if (!response.ok) {
-            console.error(`❌ Failed to fetch ${feed.source}: ${response.status} ${response.statusText}`);
+            console.error(`❌ Failed to fetch ${feed.source}: ${response.status}`);
             continue;
           }
-          
+
           const data = await response.json();
+          const xmlText = data.contents;
+
+          // Parse XML
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+          // Get items (works for both RSS and Atom feeds)
+          const items = xmlDoc.querySelectorAll('item, entry');
           
-          console.log(`${feed.source} response:`, data);
-          
-          if (data.status === 'ok' && data.items) {
-            console.log(`✓ Found ${data.items.length} articles from ${feed.source}`);
-            data.items.forEach(item => {
+          console.log(`✓ Found ${items.length} articles from ${feed.source}`);
+
+          // Parse each item (limit to 3 per source)
+          Array.from(items).slice(0, 3).forEach(item => {
+            const title = item.querySelector('title')?.textContent || '';
+            const link = item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '';
+            const pubDate = item.querySelector('pubDate, published')?.textContent || new Date().toISOString();
+
+            if (title && link) {
               allArticles.push({
                 id: articleId++,
-                title: item.title,
+                title: title.trim(),
                 source: feed.source,
                 logo: feed.logo,
-                created_at: item.pubDate,
-                url: item.link
+                created_at: pubDate,
+                url: link.trim()
               });
-            });
-          } else {
-            console.error(`❌ ${feed.source} returned status: ${data.status}, message: ${data.message || 'No message'}`);
-          }
+            }
+          });
         } catch (error) {
           console.error(`Error fetching ${feed.source}:`, error);
         }
       }
+
+      // Sort by latest
+      allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Take top 10
+      const topArticles = allArticles.slice(0, 10);
+      
+      if (topArticles.length > 0) {
+        setArticles(topArticles);
+        console.log(`✓ Fetched ${topArticles.length} articles from RSS feeds`);
+      } else {
+        console.log('No articles fetched, using fallback');
+        setArticles(getFallbackArticles());
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      setArticles(getFallbackArticles());
+    }
+  };
 
       // Sort by latest
       allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -546,11 +575,8 @@ export default function CryptoAggregator() {
 
         {/* Updates from X Section - Improved Profile Links */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-white">Updates from X</h2>
-              <p className="text-sm text-gray-400 mt-1">Follow these crypto experts for the latest insights</p>
-            </div>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-white">Updates from X</h2>
           </div>
           
           {/* Mobile: Show 2 accounts unexpanded */}
@@ -665,13 +691,6 @@ export default function CryptoAggregator() {
                 {newsExpanded ? 'Show Less' : 'Show More'}
               </button>
             )}
-          </div>
-
-          {/* Call to action */}
-          <div className="mt-4 p-3 bg-gradient-to-r from-[#ffc93c]/10 to-[#ffb700]/10 rounded-lg border border-[#ffc93c]/20">
-            <p className="text-center text-sm text-gray-300">
-              💡 <span className="font-semibold text-white">Pro Tip:</span> Follow these experts on X to stay ahead of crypto trends
-            </p>
           </div>
         </div>
 
