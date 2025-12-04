@@ -23,14 +23,13 @@ export default function CryptoAggregator() {
     fetchCryptoNews();
     fetchCryptoVideos();
     fetchCryptoArticles();
-    console.log('VERSION: 2025-12-03-FIXED-V2'); // Debug log to verify deployment
-
+    
     // Load Twitter widgets script
     const script = document.createElement('script');
     script.src = 'https://platform.twitter.com/widgets.js';
     script.async = true;
     script.charset = 'utf-8';
-
+    
     script.onload = () => {
       console.log('Twitter widgets script loaded');
       // Force widget initialization after script loads with a small delay
@@ -41,9 +40,9 @@ export default function CryptoAggregator() {
         }
       }, 500);
     };
-
+    
     document.body.appendChild(script);
-
+    
     return () => {
       // Cleanup script on unmount
       if (document.body.contains(script)) {
@@ -87,55 +86,11 @@ export default function CryptoAggregator() {
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1`;
       }
 
-      // Try primary proxy (AllOrigins)
-      try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
-
-        if (response.ok) {
-          const proxyData = await response.json();
-          if (proxyData.contents) {
-            const data = JSON.parse(proxyData.contents);
-            setCryptoPrices(data);
-            setLoading(false);
-            // Cache successful response
-            localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(data));
-            return;
-          }
-        }
-        throw new Error('AllOrigins failed or empty');
-      } catch (primaryError) {
-        console.warn('Primary proxy failed, trying secondary...', primaryError);
-
-        // Try secondary proxy (CorsProxy.io)
-        try {
-          const proxyUrl2 = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-          const response2 = await fetch(proxyUrl2);
-
-          if (response2.ok) {
-            const data = await response2.json();
-            setCryptoPrices(data);
-            setLoading(false);
-            // Cache successful response
-            localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(data));
-            return;
-          }
-          throw new Error('CorsProxy failed');
-        } catch (secondaryError) {
-          console.warn('Secondary proxy failed, checking cache...', secondaryError);
-
-          // Fallback to cache
-          const cached = localStorage.getItem(`kryptocurrent_prices_${category}`);
-          if (cached) {
-            console.log('Using cached prices due to network failure');
-            setCryptoPrices(JSON.parse(cached));
-            setLoading(false);
-          } else {
-            console.error('No cached data available');
-            setLoading(false);
-          }
-        }
-      }
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      setCryptoPrices(data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching prices:', error);
       setLoading(false);
@@ -143,31 +98,19 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoNews = async () => {
-    const API_KEY = import.meta.env.VITE_TWITTER_API_KEY;
-
-    // If we have an API key, try to fetch real tweets
-    if (API_KEY) {
-      try {
-        // Note: Direct Twitter API calls from browser often fail due to CORS.
-        // This assumes a proxy or backend is available, or we use a CORS-friendly endpoint.
-        // For now, we'll keep the structure ready but default to the fallback if it fails.
-        console.log('Twitter API Key found, but direct browser access requires a proxy.');
-      } catch (error) {
-        console.error('Error fetching tweets:', error);
-      }
-    }
-
-    // Fallback/Static data with realistic "last posted" times
+    // Using static profile links since RSS2JSON cannot access Nitter feeds
+    // and Twitter embeds have persistent rate limiting issues
+    // Added realistic "last posted" times
     const now = Date.now();
     const xUpdates = [
-      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
-      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
-      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
-      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" },
-      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
-      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
-      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
-      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
+      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
+      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
+      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
+      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" }, // 4h ago
+      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }, // 5h ago
+      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" }, // 8h ago
+      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" }, // 3h ago
+      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" } // 6h ago
     ];
     setNews(xUpdates);
   };
@@ -183,76 +126,54 @@ export default function CryptoAggregator() {
         { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: 'https://www.theblockcrypto.com/favicon.ico' }
       ];
 
-      console.log('Starting parallel fetch for articles...');
+      const allArticles = [];
+      let articleId = 1;
 
-      // Fetch all feeds in parallel
-      const feedPromises = rssFeeds.map(async (feed) => {
+      // Fetch from each RSS feed using CORS proxy
+      for (const feed of rssFeeds) {
         try {
-          // Try primary proxy (allorigins)
+          console.log(`Fetching ${feed.source}...`);
+          
+          // Use allOrigins CORS proxy to fetch RSS feeds
           const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
           const response = await fetch(proxyUrl);
 
           if (!response.ok) {
-            throw new Error(`Status ${response.status}`);
+            console.error(`❌ Failed to fetch ${feed.source}: ${response.status}`);
+            continue;
           }
 
           const data = await response.json();
-          if (!data.contents) {
-            throw new Error('No content in proxy response');
-          }
+          const xmlText = data.contents;
 
-          return { feed, xmlText: data.contents };
+          // Parse XML
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+          // Get items (works for both RSS and Atom feeds)
+          const items = xmlDoc.querySelectorAll('item, entry');
+          
+          console.log(`✓ Found ${items.length} articles from ${feed.source}`);
+
+          // Parse each item (limit to 3 per source)
+          Array.from(items).slice(0, 3).forEach(item => {
+            const title = item.querySelector('title')?.textContent || '';
+            const link = item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '';
+            const pubDate = item.querySelector('pubDate, published')?.textContent || new Date().toISOString();
+
+            if (title && link) {
+              allArticles.push({
+                id: articleId++,
+                title: title.trim(),
+                source: feed.source,
+                logo: feed.logo,
+                created_at: pubDate,
+                url: link.trim()
+              });
+            }
+          });
         } catch (error) {
-          console.warn(`Primary proxy failed for ${feed.source}, trying fallback...`);
-          // Could add a secondary proxy here if needed, for now just re-throw to be caught by allSettled
-          throw error;
-        }
-      });
-
-      const results = await Promise.allSettled(feedPromises);
-      const allArticles = [];
-      let articleId = 1;
-
-      // Process results
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          const { feed, xmlText } = result.value;
-
-          try {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-            const items = xmlDoc.querySelectorAll('item, entry');
-
-            console.log(`✓ Found ${items.length} articles from ${feed.source}`);
-
-            Array.from(items).slice(0, 3).forEach(item => {
-              const title = item.querySelector('title')?.textContent || '';
-              // Handle different link formats (RSS vs Atom)
-              const link = item.querySelector('link')?.textContent ||
-                item.querySelector('link')?.getAttribute('href') || '';
-
-              // Handle different date formats
-              const pubDate = item.querySelector('pubDate')?.textContent ||
-                item.querySelector('published')?.textContent ||
-                item.querySelector('updated')?.textContent ||
-                new Date().toISOString();
-
-              if (title && link) {
-                allArticles.push({
-                  id: articleId++,
-                  title: title.trim(),
-                  source: feed.source,
-                  logo: feed.logo,
-                  created_at: pubDate,
-                  url: link.trim()
-                });
-              }
-            });
-          } catch (parseError) {
-            console.error(`Error parsing XML for ${feed.source}:`, parseError);
-          }
-        } else {
-          console.error(`Failed to fetch feed:`, result.reason);
+          console.error(`Error fetching ${feed.source}:`, error);
         }
       }
 
@@ -261,20 +182,38 @@ export default function CryptoAggregator() {
 
       // Take top 10
       const topArticles = allArticles.slice(0, 10);
-
+      
       if (topArticles.length > 0) {
         setArticles(topArticles);
-        console.log(`✓ Fetched ${topArticles.length} articles total`);
+        console.log(`✓ Fetched ${topArticles.length} articles from RSS feeds`);
       } else {
         console.log('No articles fetched, using fallback');
         setArticles(getFallbackArticles());
       }
     } catch (error) {
-      console.error('Error in article fetching flow:', error);
+      console.error('Error fetching articles:', error);
       setArticles(getFallbackArticles());
     }
   };
 
+      // Sort by latest
+      allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Take top 10
+      const topArticles = allArticles.slice(0, 10);
+      
+      if (topArticles.length > 0) {
+        setArticles(topArticles);
+        console.log(`✓ Fetched ${topArticles.length} articles from RSS feeds`);
+      } else {
+        // Fallback to static articles if RSS fails
+        setArticles(getFallbackArticles());
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      setArticles(getFallbackArticles());
+    }
+  };
 
   const getFallbackArticles = () => {
     return [
@@ -292,158 +231,24 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoVideos = async () => {
-    // Check for quota exceeded backoff
-    const quotaExceededUntil = localStorage.getItem('youtube_quota_exceeded_until');
-    if (quotaExceededUntil && Date.now() < parseInt(quotaExceededUntil)) {
-      console.log('YouTube API quota exceeded (backoff active). Using fallback/cached data.');
-      // Try to load cached data even if old, otherwise fallback
-      const cachedData = localStorage.getItem('kryptocurrent_videos');
-      if (cachedData) {
-        setVideos(JSON.parse(cachedData));
-      } else {
-        setVideos(getFallbackVideos());
-      }
-      return;
-    }
-
-    // Check if we have cached videos that are less than 12 hours old (increased from 3)
+    // Check if we have cached videos that are less than 3 hours old
     const cachedData = localStorage.getItem('kryptocurrent_videos');
     const cacheTimestamp = localStorage.getItem('kryptocurrent_videos_timestamp');
-
+    
     if (cachedData && cacheTimestamp) {
       const cacheAge = Date.now() - parseInt(cacheTimestamp);
-      const cacheDuration = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-
-      if (cacheAge < cacheDuration) {
+      const threeHours = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+      
+      if (cacheAge < threeHours) {
         console.log(`✓ Using cached videos (${Math.floor(cacheAge / 60000)} minutes old)`);
         setVideos(JSON.parse(cachedData));
         return;
       } else {
-        console.log('Cache expired (>12 hours), fetching fresh videos...');
+        console.log('Cache expired (>3 hours), fetching fresh videos...');
       }
     }
-
-    const fallbackVideos = getFallbackVideos();
-
-    try {
-      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-
-      if (!API_KEY) {
-        console.log('No API key, using fallback videos');
-        setVideos(fallbackVideos);
-        return;
-      }
-
-      // Channel IDs mapped to their Uploads Playlist IDs (replace UC with UU)
-      const channels = {
-        'Digital Outlook': 'UU8oW_3rV35rZ3oU1F_n9cjg',
-        'Crypto Sensei': 'UU_x5XG1OV2P6uZZ5FSM9Ttw',
-        'Mickle': 'UUINUlGW2QpPYa9-TGcW2XUA',
-        'Chain of Blocks': 'UUx1J1fFL7gzhd8BqjJ_jJxw',
-        'Zach Rector': 'UU4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'UU0zq9i-Um0YB-ssHQoz_qUg',
-        'Altcoin Daily': 'UUVm8QxSChzT63-zF2A7AWEQ',
-        'Paul Barron': 'UUwB6d4tB5-S1tZc1r3_B-fQ',
-        'Apex Crypto': 'UUQ0lC-yRj8Bwz8eFv290_LA',
-        'Good Evening Crypto': 'UUEALkfpMmmWQkGXWhRUmslA',
-        'Black Swan Capitalist': 'UUURoln2BKCvvMT5peanKAvw',
-        'Crypto with Klaus': 'UUOb8ZvB7CK7-IEf-8RmhULg'
-      };
-
-      console.log('Starting parallel fetch for videos...');
-
-      const channelPromises = Object.entries(channels).map(async ([channelName, playlistId]) => {
-        try {
-          const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=2&key=${API_KEY}`
-          );
-
-          if (response.status === 403) {
-            // Quota exceeded or forbidden
-            throw new Error('QUOTA_EXCEEDED');
-          }
-
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const data = await response.json();
-          return { channelName, items: data.items || [] };
-        } catch (error) {
-          if (error.message === 'QUOTA_EXCEEDED') {
-            throw error; // Propagate to main catch
-          }
-          console.error(`Error fetching ${channelName}:`, error);
-          return { channelName, items: [] }; // Return empty for individual failures
-        }
-      });
-
-      const results = await Promise.all(channelPromises);
-
-      const allVideos = [];
-      let videoId = 1;
-      let successfulChannels = 0;
-      let failedChannels = 0;
-
-      results.forEach(({ channelName, items }) => {
-        if (items.length > 0) {
-          successfulChannels++;
-          items.forEach(item => {
-            const publishedDate = new Date(item.snippet.publishedAt);
-            const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-
-            // Only include videos from last 48 hours
-            if (hoursAgo <= 48) {
-              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-
-              allVideos.push({
-                id: videoId++,
-                title: item.snippet.title,
-                channel: channelName,
-                views: timeAgo,
-                url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
-                thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
-                publishedAt: item.snippet.publishedAt
-              });
-            }
-          });
-        } else {
-          failedChannels++;
-        }
-      });
-
-      console.log(`Total: ${allVideos.length} videos from ${successfulChannels}/${Object.keys(channels).length} channels`);
-
-      // Heuristic: If more than 3 channels failed, assume it's a quota/network issue
-      if (failedChannels > 3) {
-        throw new Error('TOO_MANY_FAILURES');
-      }
-
-      allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-
-      if (allVideos.length > 0) {
-        setVideos(allVideos);
-        // Cache the results
-        localStorage.setItem('kryptocurrent_videos', JSON.stringify(allVideos));
-        localStorage.setItem('kryptocurrent_videos_timestamp', Date.now().toString());
-      } else {
-        console.log('No recent videos found from API, using fallback');
-        setVideos(fallbackVideos);
-      }
-    } catch (error) {
-      if (error.message === 'QUOTA_EXCEEDED' || error.message.includes('403') || error.message === 'TOO_MANY_FAILURES') {
-        console.warn('YouTube Quota Exceeded (or widespread failure)! Setting backoff for 24 hours.');
-        const tomorrow = Date.now() + (24 * 60 * 60 * 1000);
-        localStorage.setItem('youtube_quota_exceeded_until', tomorrow.toString());
-      }
-
-      console.log('Error fetching videos, using fallback:', error.message);
-      setVideos(fallbackVideos);
-    }
-  };
-
-  const getFallbackVideos = () => {
-    return [
+    
+    const fallbackVideos = [
       { id: 1, title: "Latest XRP Analysis & Market Update", channel: "Zach Rector", views: "2h ago", url: "https://youtube.com/@Rector94/videos", thumbnail: null },
       { id: 2, title: "Crypto Market Weekly Breakdown", channel: "Crypto Sensei", views: "4h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
       { id: 3, title: "Blockchain Technology Deep Dive", channel: "Chain of Blocks", views: "6h ago", url: "https://youtube.com/@AChainofBlocks/videos", thumbnail: null },
@@ -455,72 +260,123 @@ export default function CryptoAggregator() {
       { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: null },
       { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null }
     ];
+
+    try {
+      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      
+      if (!API_KEY) {
+        console.log('No API key, using fallback videos');
+        setVideos(fallbackVideos);
+        return;
+      }
+      
+      const channels = {
+        'Digital Outlook': 'UC8oW_3rV35rZ3oU1F_n9cjg',
+        'Crypto Sensei': 'UC_x5XG1OV2P6uZZ5FSM9Ttw',
+        'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
+        'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
+        'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
+        'Jake Claver': 'UC0zq9i-Um0YB-ssHQoz_qUg',
+        'Altcoin Daily': 'UCVm8QxSChzT63-zF2A7AWEQ',
+        'Paul Barron': 'UCwB6d4tB5-S1tZc1r3_B-fQ',
+        'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
+        'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
+        'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
+        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
+      };
+
+      const yesterday = new Date();
+      yesterday.setHours(yesterday.getHours() - 24);
+      const publishedAfter = yesterday.toISOString();
+
+      const allVideos = [];
+      let videoId = 1;
+      let successfulChannels = 0;
+      let failedChannels = 0;
+
+      for (const [channelName, channelId] of Object.entries(channels)) {
+        try {
+          // Add search query for Crypto Sensei to filter only crypto videos
+          const searchQuery = channelName === 'Crypto Sensei' ? '&q=crypto|bitcoin|ethereum|XRP|cryptocurrency|blockchain' : '';
+          
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+          );
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`❌ YouTube API error for ${channelName}:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorData
+            });
+            failedChannels++;
+            continue;
+          }
+          
+          const data = await response.json();
+          
+          if (data.items && data.items.length > 0) {
+            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h`);
+            data.items.forEach(item => {
+              const publishedDate = new Date(item.snippet.publishedAt);
+              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+              
+              allVideos.push({
+                id: videoId++,
+                title: item.snippet.title,
+                channel: channelName,
+                views: timeAgo,
+                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                thumbnail: item.snippet.thumbnails.medium.url,
+                publishedAt: item.snippet.publishedAt
+              });
+            });
+            successfulChannels++;
+          } else {
+            console.log(`- No videos from ${channelName} in last 24h`);
+            successfulChannels++;
+          }
+        } catch (channelError) {
+          console.error(`❌ Error fetching ${channelName}:`, channelError);
+          failedChannels++;
+        }
+      }
+      
+      console.log(`Total: ${allVideos.length} videos from ${successfulChannels}/${channels.length} channels (${failedChannels} failed)`);
+
+      allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      
+      console.log(`Fetched ${allVideos.length} videos from YouTube API`);
+      
+      if (allVideos.length > 0) {
+        setVideos(allVideos);
+      } else {
+        console.log('No videos found from API, using fallback');
+        setVideos(fallbackVideos);
+      }
+    } catch (error) {
+      console.log('Error fetching videos, using fallback:', error.message);
+      setVideos(fallbackVideos);
+    }
   };
 
   const fetchChartData = async (coinId, days = '7') => {
     setChartLoading(true);
-    const cacheKey = `kryptocurrent_chart_${coinId}_${days}`;
-
     try {
-      const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`;
-
-      // Try primary proxy (AllOrigins)
-      try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
-
-        if (response.ok) {
-          const proxyData = await response.json();
-          if (proxyData.contents) {
-            const data = JSON.parse(proxyData.contents);
-            processAndSetChartData(data, days);
-            localStorage.setItem(cacheKey, JSON.stringify(data));
-            return;
-          }
-        }
-        throw new Error('AllOrigins failed');
-      } catch (primaryError) {
-        console.warn('Primary chart proxy failed, trying secondary...', primaryError);
-
-        // Try secondary proxy (CorsProxy.io)
-        try {
-          const proxyUrl2 = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-          const response2 = await fetch(proxyUrl2);
-
-          if (response2.ok) {
-            const data = await response2.json();
-            processAndSetChartData(data, days);
-            localStorage.setItem(cacheKey, JSON.stringify(data));
-            return;
-          }
-          throw new Error('CorsProxy failed');
-        } catch (secondaryError) {
-          console.warn('Secondary chart proxy failed, checking cache...', secondaryError);
-
-          // Fallback to cache
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            console.log('Using cached chart data');
-            processAndSetChartData(JSON.parse(cached), days);
-          } else {
-            console.error('No cached chart data available');
-            setChartLoading(false);
-          }
-        }
-      }
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+      const data = await response.json();
+      const formattedData = data.prices.map(([timestamp, price]) => ({
+        time: days === '1' ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: price
+      }));
+      setChartData(formattedData);
+      setChartLoading(false);
     } catch (error) {
       console.error('Error fetching chart data:', error);
       setChartLoading(false);
     }
-  };
-
-  const processAndSetChartData = (data, days) => {
-    const formattedData = data.prices.map(([timestamp, price]) => ({
-      time: days === '1' ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      price: price
-    }));
-    setChartData(formattedData);
-    setChartLoading(false);
   };
 
   const openChart = (crypto) => {
@@ -576,42 +432,46 @@ export default function CryptoAggregator() {
                 <RefreshCw size={14} />Refresh
               </button>
             </div>
-
+            
             {/* Category Toggle Buttons */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setPriceCategory('top100')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'top100'
-                  ? 'bg-[#ffc93c] text-black'
-                  : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'top100'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
               >
                 Top 100
               </button>
               <button
                 onClick={() => setPriceCategory('iso20022')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'iso20022'
-                  ? 'bg-[#ffc93c] text-black'
-                  : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'iso20022'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
               >
                 ISO 20022 Coins
               </button>
               <button
                 onClick={() => setPriceCategory('ai')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'ai'
-                  ? 'bg-[#ffc93c] text-black'
-                  : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'ai'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
               >
                 Top AI Coins
               </button>
               <button
                 onClick={() => setPriceCategory('meme')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'meme'
-                  ? 'bg-[#ffc93c] text-black'
-                  : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  priceCategory === 'meme'
+                    ? 'bg-[#ffc93c] text-black'
+                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                }`}
               >
                 Top Meme Coins
               </button>
@@ -636,8 +496,8 @@ export default function CryptoAggregator() {
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold whitespace-nowrap">
-                            ${crypto.current_price < 0.01
-                              ? crypto.current_price.toFixed(8)
+                            ${crypto.current_price < 0.01 
+                              ? crypto.current_price.toFixed(8) 
                               : crypto.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -650,7 +510,7 @@ export default function CryptoAggregator() {
                   ))}
                 </div>
                 {cryptoPrices.length > 4 && (
-                  <button
+                  <button 
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
@@ -671,8 +531,8 @@ export default function CryptoAggregator() {
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold whitespace-nowrap">
-                            ${crypto.current_price < 0.01
-                              ? crypto.current_price.toFixed(8)
+                            ${crypto.current_price < 0.01 
+                              ? crypto.current_price.toFixed(8) 
                               : crypto.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <div className={`flex items-center justify-end gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -685,7 +545,7 @@ export default function CryptoAggregator() {
                   ))}
                 </div>
                 {cryptoPrices.length > 24 && (
-                  <button
+                  <button 
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
                   >
@@ -718,16 +578,16 @@ export default function CryptoAggregator() {
           <div className="mb-4">
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
           </div>
-
+          
           {/* Mobile: Show 2 accounts unexpanded */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-3">
               {(newsExpanded ? news : news.slice(0, 2)).map((account) => (
-                <a
-                  key={account.id}
-                  href={account.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <a 
+                  key={account.id} 
+                  href={account.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
                   className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg p-3 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50"
                 >
                   <div className="flex items-center gap-3">
@@ -735,7 +595,7 @@ export default function CryptoAggregator() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
                         <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
                           <svg className="w-5 h-5 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                           </svg>
                         </div>
                       </div>
@@ -753,7 +613,7 @@ export default function CryptoAggregator() {
                           const diffMs = now - date;
                           const diffMins = Math.floor(diffMs / 60000);
                           const diffHours = Math.floor(diffMs / 3600000);
-
+                          
                           if (diffMins < 60) return `${diffMins}m ago`;
                           return `${diffHours}h ago`;
                         })()}
@@ -767,7 +627,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {news.length > 2 && (
-              <button
+              <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -780,11 +640,11 @@ export default function CryptoAggregator() {
           <div className="hidden md:block">
             <div className="grid md:grid-cols-3 gap-3">
               {(newsExpanded ? news : news.slice(0, 6)).map((account) => (
-                <a
-                  key={account.id}
-                  href={account.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <a 
+                  key={account.id} 
+                  href={account.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
                   className="group block bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg p-3 hover:from-slate-700 hover:to-slate-800 transition-all duration-300 border border-slate-600/50 hover:border-[#ffc93c]/50 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-3">
@@ -792,7 +652,7 @@ export default function CryptoAggregator() {
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ffc93c] to-[#ffb700] p-[2px]">
                         <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
                           <svg className="w-6 h-6 text-[#ffc93c]" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                           </svg>
                         </div>
                       </div>
@@ -810,7 +670,7 @@ export default function CryptoAggregator() {
                           const diffMs = now - date;
                           const diffMins = Math.floor(diffMs / 60000);
                           const diffHours = Math.floor(diffMs / 3600000);
-
+                          
                           if (diffMins < 60) return `${diffMins}m ago`;
                           return `${diffHours}h ago`;
                         })()}
@@ -824,7 +684,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {news.length > 6 && (
-              <button
+              <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -837,7 +697,7 @@ export default function CryptoAggregator() {
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Latest Crypto Videos</h2>
-
+          
           {/* Mobile: Show 4 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
@@ -861,7 +721,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {videos.length > 4 && (
-              <button
+              <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -893,7 +753,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {videos.length > 4 && (
-              <button
+              <button 
                 onClick={() => setVideosExpanded(!videosExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -911,7 +771,7 @@ export default function CryptoAggregator() {
               <RefreshCw size={14} />Refresh
             </button>
           </div>
-
+          
           {/* Mobile: Show 4 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
@@ -934,7 +794,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {articles.length > 4 && (
-              <button
+              <button 
                 onClick={() => setArticlesExpanded(!articlesExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -965,7 +825,7 @@ export default function CryptoAggregator() {
               ))}
             </div>
             {articles.length > 4 && (
-              <button
+              <button 
                 onClick={() => setArticlesExpanded(!articlesExpanded)}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
@@ -1014,24 +874,24 @@ export default function CryptoAggregator() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
-                    <XAxis
-                      dataKey="time"
-                      stroke="#9ca3af"
-                      style={{ fontSize: '11px' }}
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#9ca3af" 
+                      style={{ fontSize: '11px' }} 
                       interval="preserveStartEnd"
                       tickMargin={8}
                     />
-                    <YAxis
-                      stroke="#9ca3af"
-                      style={{ fontSize: '11px' }}
-                      tickFormatter={(value) => `$${value.toFixed(2)}`}
+                    <YAxis 
+                      stroke="#9ca3af" 
+                      style={{ fontSize: '11px' }} 
+                      tickFormatter={(value) => `$${value.toFixed(2)}`} 
                       width={70}
                       domain={['auto', 'auto']}
                       scale="linear"
                     />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                      formatter={(value) => [`$${value.toFixed(2)}`, 'Price']}
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} 
+                      formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} 
                     />
                     <Line type="monotone" dataKey="price" stroke="#10b981" strokeWidth={2} dot={false} />
                   </LineChart>
