@@ -237,7 +237,7 @@ export default function CryptoAggregator() {
       const rssFeeds = [
         { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
         { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
-        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
+        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: '/CryptSlate.jpg' },
         { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: '/Decrypt.png' },
         { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' }
       ];
@@ -449,6 +449,15 @@ export default function CryptoAggregator() {
               if (retryData.items && retryData.items.length > 0) {
                 console.log(`✓ Found ${retryData.items.length} videos from ${channelName} with new key`);
                 retryData.items.forEach(item => {
+                  // Skip YouTube Shorts
+                  const title = item.snippet.title.toLowerCase();
+                  const description = item.snippet.description?.toLowerCase() || '';
+                  
+                  if (title.includes('#shorts') || title.includes('#short') || 
+                      description.includes('#shorts') || description.includes('youtube shorts')) {
+                    return; // Skip this video
+                  }
+                  
                   const publishedDate = new Date(item.snippet.publishedAt);
                   const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
                   const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
@@ -482,6 +491,18 @@ export default function CryptoAggregator() {
           if (data.items && data.items.length > 0) {
             console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h`);
             data.items.forEach(item => {
+              // Skip YouTube Shorts - they show up as 'youtube#video' but we can filter by checking title/description
+              // Shorts are typically very short videos, but API doesn't directly distinguish them
+              // We'll filter by excluding videos with "#shorts" in title or if they're in a shorts playlist
+              const title = item.snippet.title.toLowerCase();
+              const description = item.snippet.description?.toLowerCase() || '';
+              
+              // Skip if it's a Short (contains #shorts or youtube shorts indicators)
+              if (title.includes('#shorts') || title.includes('#short') || 
+                  description.includes('#shorts') || description.includes('youtube shorts')) {
+                return; // Skip this video
+              }
+              
               const publishedDate = new Date(item.snippet.publishedAt);
               const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
               const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
