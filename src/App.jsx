@@ -167,8 +167,8 @@ export default function CryptoAggregator() {
         { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
         { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
         { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: 'https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png' },
-        { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: 'https://decrypt.co/favicon.ico' },
-        { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: 'https://www.theblockcrypto.com/favicon.ico' }
+        { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: '/Decrypt.png' },
+        { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' }
       ];
 
       const allArticles = [];
