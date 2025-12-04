@@ -281,13 +281,30 @@ export default function CryptoAggregator() {
     ];
 
     try {
-      const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+      // YouTube API Key Rotation System
+      // Rotates through 3 API keys when quota is hit (403 error)
+      const API_KEYS = [
+        import.meta.env.VITE_YOUTUBE_API_KEY, // Original key
+        'AIzaSyD3xwegZi-AFG9jo54_zpjWaixR7-d3obY', // Backup key 1
+        'AIzaSyA1hS2gb2vRncjPJMJFvt4Pa4_i38hURvA'  // Backup key 2
+      ];
       
-      if (!API_KEY) {
-        console.log('No API key, using fallback videos');
+      // Get current API key index from localStorage (0, 1, or 2)
+      let currentKeyIndex = parseInt(localStorage.getItem('youtube_api_key_index') || '0');
+      
+      // Ensure we have at least one valid key
+      const validKeys = API_KEYS.filter(key => key && key.length > 0);
+      if (validKeys.length === 0) {
+        console.log('No YouTube API keys available, using fallback videos');
         setVideos(fallbackVideos);
         return;
       }
+      
+      // Try to use current key, rotate if quota exceeded
+      let API_KEY = API_KEYS[currentKeyIndex];
+      let rotatedKey = false;
+      
+      console.log(`Using YouTube API key #${currentKeyIndex + 1}`);
       
       const channels = {
         'Digital Outlook': 'UC8oW_3rV35rZ3oU1F_n9cjg',
@@ -295,7 +312,7 @@ export default function CryptoAggregator() {
         'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
         'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'UC0zq9i-Um0YB-ssHQoz_qUg',
+        'Jake Claver': 'UCsu-BlV8FLI6piu4RQPjLxg',
         'Altcoin Daily': 'UCVm8QxSChzT63-zF2A7AWEQ',
         'Paul Barron': 'UCwB6d4tB5-S1tZc1r3_B-fQ',
         'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
@@ -324,6 +341,56 @@ export default function CryptoAggregator() {
           
           if (!response.ok) {
             const errorData = await response.json();
+            
+            // Check if quota exceeded (403 error)
+            if (response.status === 403 && !rotatedKey) {
+              console.warn(`⚠️ Quota exceeded for API key #${currentKeyIndex + 1}, rotating to next key...`);
+              
+              // Rotate to next key
+              currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+              API_KEY = API_KEYS[currentKeyIndex];
+              
+              // Save new key index
+              localStorage.setItem('youtube_api_key_index', currentKeyIndex.toString());
+              console.log(`✓ Switched to YouTube API key #${currentKeyIndex + 1}`);
+              
+              rotatedKey = true;
+              
+              // Retry with new key
+              const retryResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+              );
+              
+              if (!retryResponse.ok) {
+                console.error(`❌ YouTube API error for ${channelName} with new key:`, response.status);
+                failedChannels++;
+                continue;
+              }
+              
+              const retryData = await retryResponse.json();
+              
+              if (retryData.items && retryData.items.length > 0) {
+                console.log(`✓ Found ${retryData.items.length} videos from ${channelName} with new key`);
+                retryData.items.forEach(item => {
+                  const publishedDate = new Date(item.snippet.publishedAt);
+                  const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                  const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                  
+                  allVideos.push({
+                    id: videoId++,
+                    title: item.snippet.title,
+                    channel: channelName,
+                    views: timeAgo,
+                    url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                    thumbnail: item.snippet.thumbnails.medium.url,
+                    publishedAt: item.snippet.publishedAt
+                  });
+                });
+                successfulChannels++;
+              }
+              continue;
+            }
+            
             console.error(`❌ YouTube API error for ${channelName}:`, {
               status: response.status,
               statusText: response.statusText,
@@ -437,7 +504,7 @@ export default function CryptoAggregator() {
   );
   const displayedPrices = pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 24);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
-  const displayedVideos = videosExpanded ? videos.slice(0, 10) : videos.slice(0, 4);
+  const displayedVideos = videosExpanded ? videos.slice(0, 8) : videos.slice(0, 4);
   const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
 
   return (
