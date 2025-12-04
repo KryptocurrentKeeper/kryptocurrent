@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Kryptocurrent Cache</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        button {
+            background: #ffc93c;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #ffb700;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .success {
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear Kryptocurrent Cache</h1>
+    <p>This page will clear all cached data for Kryptocurrent and force a fresh start.</p>
+    
+    <button onclick="clearCache()">Clear All Cache & Reload</button>
+    
+    <div class="status" id="status"></div>
+
+    <script>
+        function clearCache() {
+            const status = document.getElementById('status');
+            status.innerHTML = '<p>Clearing cache...</p>';
+            
+            // Clear all kryptocurrent localStorage items
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('kryptocurrent') || key.includes('youtube')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            status.innerHTML = `
+                <p class="success">✓ Cleared ${keysToRemove.length} cache items:</p>
+                <ul>
+                    ${keysToRemove.map(k => `<li>${k}</li>`).join('')}
+                </ul>
+                <p><strong>Redirecting to homepage in 2 seconds...</strong></p>
+            `;
+            
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

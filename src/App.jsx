@@ -86,13 +86,51 @@ export default function CryptoAggregator() {
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1`;
       }
 
+      console.log(`Fetching prices for ${category}...`);
       const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+        if (response.status === 429) {
+          console.error('Rate limit exceeded - using cached data if available');
+          // Try to use cached data
+          const cached = localStorage.getItem(`kryptocurrent_prices_${category}`);
+          if (cached) {
+            const cachedData = JSON.parse(cached);
+            setCryptoPrices(cachedData);
+            setLoading(false);
+            return;
+          }
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
       
-      setCryptoPrices(data);
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(`✓ Fetched ${data.length} prices for ${category}`);
+        setCryptoPrices(data);
+        // Cache the data
+        localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(data));
+        localStorage.setItem(`kryptocurrent_prices_${category}_timestamp`, Date.now().toString());
+      } else {
+        console.error('No price data received');
+        setCryptoPrices([]);
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching prices:', error);
+      
+      // Try cached data as fallback
+      const cached = localStorage.getItem(`kryptocurrent_prices_${category}`);
+      if (cached) {
+        console.log('Using cached prices due to error');
+        setCryptoPrices(JSON.parse(cached));
+      } else {
+        setCryptoPrices([]);
+      }
+      
       setLoading(false);
     }
   };
@@ -408,7 +446,15 @@ export default function CryptoAggregator() {
   // News: show 4 unless expanded
   // Videos: show 4 unless expanded, 10 when expanded
   // Articles: show 4 unless expanded
-  const displayedPrices = pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 24);
+  // Filter out any invalid crypto data
+  const validCryptoPrices = cryptoPrices.filter(crypto => 
+    crypto && 
+    crypto.id && 
+    crypto.symbol && 
+    crypto.current_price !== null && 
+    crypto.current_price !== undefined
+  );
+  const displayedPrices = pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 24);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
   const displayedVideos = videosExpanded ? videos.slice(0, 10) : videos.slice(0, 4);
   const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
@@ -487,7 +533,7 @@ export default function CryptoAggregator() {
               {/* Mobile: Show 4 with expand button */}
               <div className="md:hidden">
                 <div className="grid grid-cols-2 gap-2">
-                  {(pricesExpanded ? cryptoPrices : cryptoPrices.slice(0, 4)).map((crypto) => (
+                  {(pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 4)).map((crypto) => (
                     <div key={crypto.id} onClick={() => openChart(crypto)} className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 min-w-0">
@@ -509,7 +555,7 @@ export default function CryptoAggregator() {
                     </div>
                   ))}
                 </div>
-                {cryptoPrices.length > 4 && (
+                {validCryptoPrices.length > 4 && (
                   <button 
                     onClick={() => setPricesExpanded(!pricesExpanded)}
                     className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
