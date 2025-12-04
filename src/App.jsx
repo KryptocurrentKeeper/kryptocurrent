@@ -141,7 +141,7 @@ export default function CryptoAggregator() {
     // Added realistic "last posted" times
     const now = Date.now();
     const xUpdates = [
-      { id: 0, title: "View all accounts in one feed", source: { title: "Kryptocurrent List" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 15 * 60 * 1000).toISOString(), url: "https://x.com/i/lists/1995266467663921449" }, // 15 min ago - Kryptocurrent List
+      { id: 0, title: "View all accounts in one feed", source: { title: "Genius List" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 15 * 60 * 1000).toISOString(), url: "https://x.com/i/lists/1995266467663921449" }, // 15 min ago - Genius List
       { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
       { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
       { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
