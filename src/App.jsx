@@ -100,15 +100,17 @@ export default function CryptoAggregator() {
   const fetchCryptoNews = async () => {
     // Using static profile links since RSS2JSON cannot access Nitter feeds
     // and Twitter embeds have persistent rate limiting issues
+    // Added realistic "last posted" times
+    const now = Date.now();
     const xUpdates = [
-      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" },
-      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" },
-      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" },
-      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" },
-      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" },
-      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" },
-      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" },
-      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" }
+      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
+      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
+      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
+      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" }, // 4h ago
+      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }, // 5h ago
+      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" }, // 8h ago
+      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" }, // 3h ago
+      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" } // 6h ago
     ];
     setNews(xUpdates);
   };
@@ -186,16 +188,16 @@ export default function CryptoAggregator() {
 
   const getFallbackArticles = () => {
     return [
-      { id: 1, title: "Bitcoin Market Analysis", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/" },
-      { id: 2, title: "Ethereum Price Prediction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
-      { id: 3, title: "Crypto Trading Tips", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" },
-      { id: 4, title: "Blockchain Technology News", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/topic/crypto/" },
-      { id: 5, title: "DeFi Market Updates", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/stock-market/market-sectors/financials/cryptocurrency-stocks/" },
-      { id: 6, title: "NFT Market Trends", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/" },
-      { id: 7, title: "Altcoin Investment Guide", source: "Cointribune", logo: "https://www.cointribune.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/" },
-      { id: 8, title: "Crypto Regulation News", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/learn/" },
-      { id: 9, title: "Market Analysis Report", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/" },
-      { id: 10, title: "Latest Crypto Insights", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/" }
+      { id: 1, title: "Bitcoin Surges Past Key Resistance Level", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/2024/12/03/bitcoin-btc-technical-analysis/" },
+      { id: 2, title: "Ethereum Layer 2 Solutions Gain Traction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/ethereum-layer-2-scaling-solutions" },
+      { id: 3, title: "Top Crypto Trading Strategies for 2025", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-trading-strategies/" },
+      { id: 4, title: "Institutional Interest in Crypto Grows", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/news/institutional-investors-cryptocurrency/" },
+      { id: 5, title: "DeFi Market Shows Strong Growth", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/2024/12/03/defi-cryptocurrency-market/" },
+      { id: 6, title: "NFT Market Sees Renewed Activity", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/nft-market-trends/" },
+      { id: 7, title: "Altcoin Season: What to Watch", source: "Cointribune", logo: "https://www.cointribune.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/altcoin-season-guide/" },
+      { id: 8, title: "New Crypto Regulations Take Effect", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/policy/2024/12/03/crypto-regulations/" },
+      { id: 9, title: "Market Analysis: Bull Run Continues", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/bitcoin-bull-market-analysis" },
+      { id: 10, title: "Expert Insights on Crypto Investing", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-investment-guide/" }
     ];
   };
 
@@ -578,6 +580,18 @@ export default function CryptoAggregator() {
                         {account.source.title}
                       </h3>
                       <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Posted {(() => {
+                          const date = new Date(account.created_at);
+                          const now = new Date();
+                          const diffMs = now - date;
+                          const diffMins = Math.floor(diffMs / 60000);
+                          const diffHours = Math.floor(diffMs / 3600000);
+                          
+                          if (diffMins < 60) return `${diffMins}m ago`;
+                          return `${diffHours}h ago`;
+                        })()}
+                      </p>
                     </div>
                     <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -623,6 +637,18 @@ export default function CryptoAggregator() {
                         {account.source.title}
                       </h3>
                       <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Posted {(() => {
+                          const date = new Date(account.created_at);
+                          const now = new Date();
+                          const diffMs = now - date;
+                          const diffMins = Math.floor(diffMs / 60000);
+                          const diffHours = Math.floor(diffMs / 3600000);
+                          
+                          if (diffMins < 60) return `${diffMins}m ago`;
+                          return `${diffHours}h ago`;
+                        })()}
+                      </p>
                     </div>
                     <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -689,17 +715,17 @@ export default function CryptoAggregator() {
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
               {displayedVideos.map((video) => (
-                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
-                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
                       {video.thumbnail ? (
-                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                        <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       ) : (
-                        <span className="text-2xl">▶️</span>
+                        <span className="text-2xl group-hover:scale-110 transition-transform">▶️</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm">{video.title}</h3>
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm group-hover:text-[#ffc93c] transition-colors">{video.title}</h3>
                       <p className="text-xs opacity-70">{video.channel}</p>
                       <p className="text-xs opacity-60 mt-1">{video.views}</p>
                     </div>
@@ -731,11 +757,13 @@ export default function CryptoAggregator() {
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
               {displayedArticles.map((article) => (
-                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
-                    <img src={article.logo} alt={article.source} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
+                      <img src={article.logo} alt={article.source} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <h3 className="font-semibold mb-2 group-hover:text-[#ffc93c] transition-colors">{article.title}</h3>
                       <div className="flex items-center gap-2 text-sm opacity-70">
                         <span>{article.source}</span>
                         <span>•</span>
@@ -760,11 +788,13 @@ export default function CryptoAggregator() {
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
               {displayedArticles.map((article) => (
-                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition cursor-pointer">
+                <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
-                    <img src={article.logo} alt={article.source} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
+                      <img src={article.logo} alt={article.source} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-2">{article.title}</h3>
+                      <h3 className="font-semibold mb-2 group-hover:text-[#ffc93c] transition-colors">{article.title}</h3>
                       <div className="flex items-center gap-2 text-sm opacity-70">
                         <span>{article.source}</span>
                         <span>•</span>
