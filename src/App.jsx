@@ -75,21 +75,44 @@ export default function CryptoAggregator() {
   const fetchCryptoPrices = async (category = 'top100') => {
     try {
       setLoading(true);
+      
+      // CoinGecko API Key Rotation System
+      // Rotates through 3 API keys when quota is hit (429 error)
+      const COINGECKO_API_KEYS = [
+        import.meta.env.VITE_COINGECKO_API_KEY, // Original key (from .env)
+        'CG-pDYwrEULGCyoK3cDn37ZMws6', // Backup key 1
+        import.meta.env.VITE_COINGECKO_API_KEY_3  // Backup key 2 (optional, from .env)
+      ];
+      
+      // Get current API key index from localStorage (0, 1, or 2)
+      let currentKeyIndex = parseInt(localStorage.getItem('coingecko_api_key_index') || '0');
+      
+      // Filter out empty keys
+      const validKeys = COINGECKO_API_KEYS.filter(key => key && key.length > 0);
+      
+      let apiKeyParam = '';
+      if (validKeys.length > 0 && validKeys[currentKeyIndex % validKeys.length]) {
+        apiKeyParam = `&x_cg_demo_api_key=${validKeys[currentKeyIndex % validKeys.length]}`;
+        console.log(`Using CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1}`);
+      } else {
+        console.log('Using CoinGecko free tier (no API key)');
+      }
+      
       let url = '';
 
       if (category === 'top100') {
         // Top 100 by market cap
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${apiKeyParam}`;
       } else if (category === 'iso20022') {
         // ISO 20022 compliant coins - fetch as comma-separated IDs
         const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdc-network,iota,cardano,vechain,fetch-ai';
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
       } else if (category === 'ai') {
         // Top 30 AI coins - using category filter
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1${apiKeyParam}`;
       } else if (category === 'meme') {
         // Top 30 Meme coins - using category filter
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1${apiKeyParam}`;
       }
 
       console.log(`Fetching prices for ${category}...`);
@@ -97,9 +120,57 @@ export default function CryptoAggregator() {
       
       if (!response.ok) {
         console.error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+        
+        // Check if quota exceeded (429 error) and rotate to next key
+        if (response.status === 429 && validKeys.length > 1) {
+          console.warn(`⚠️ Quota exceeded for CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1}, rotating to next key...`);
+          
+          // Rotate to next key
+          currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
+          const newApiKey = validKeys[currentKeyIndex];
+          
+          // Save new key index
+          localStorage.setItem('coingecko_api_key_index', currentKeyIndex.toString());
+          console.log(`✓ Switched to CoinGecko API key #${currentKeyIndex + 1}`);
+          
+          // Rebuild URL with new key
+          const newApiKeyParam = `&x_cg_demo_api_key=${newApiKey}`;
+          let retryUrl = '';
+          
+          if (category === 'top100') {
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${newApiKeyParam}`;
+          } else if (category === 'iso20022') {
+            const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdc-network,iota,cardano,vechain,fetch-ai';
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
+          } else if (category === 'ai') {
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1${newApiKeyParam}`;
+          } else if (category === 'meme') {
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1${newApiKeyParam}`;
+          }
+          
+          // Retry with new key
+          const retryResponse = await fetch(retryUrl);
+          
+          if (!retryResponse.ok) {
+            console.error(`❌ CoinGecko API error with new key: ${retryResponse.status}`);
+            throw new Error(`HTTP ${retryResponse.status}`);
+          }
+          
+          const retryData = await retryResponse.json();
+          
+          if (Array.isArray(retryData) && retryData.length > 0) {
+            console.log(`✓ Fetched ${retryData.length} prices for ${category} with new key`);
+            setCryptoPrices(retryData);
+            localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(retryData));
+            localStorage.setItem(`kryptocurrent_prices_${category}_timestamp`, Date.now().toString());
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If not 429 or rotation failed, try cached data
         if (response.status === 429) {
           console.error('Rate limit exceeded - using cached data if available');
-          // Try to use cached data
           const cached = localStorage.getItem(`kryptocurrent_prices_${category}`);
           if (cached) {
             const cachedData = JSON.parse(cached);
