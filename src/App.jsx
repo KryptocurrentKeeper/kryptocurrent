@@ -141,15 +141,15 @@ export default function CryptoAggregator() {
     // Added realistic "last posted" times
     const now = Date.now();
     const xUpdates = [
-      { id: 0, title: "View all accounts in one feed", source: { title: "Genius List" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 15 * 60 * 1000).toISOString(), url: "https://x.com/i/lists/1995266467663921449" }, // 15 min ago - Genius List
-      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
-      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
-      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
-      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" }, // 4h ago
-      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }, // 5h ago
-      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" }, // 8h ago
-      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" }, // 3h ago
-      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" } // 6h ago
+      { id: 0, title: "View all accounts in one feed", source: { title: "Genius List" }, username: "Kryptocurrent", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 15 * 60 * 1000).toISOString(), url: "https://x.com/i/lists/1995266467663921449" }, // 15 min ago - Genius List
+      { id: 1, title: "Follow for latest crypto updates", source: { title: "Eleanor Terrett" }, username: "EleanorTerrett", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 45 * 60 * 1000).toISOString(), url: "https://x.com/EleanorTerrett" }, // 45 min ago
+      { id: 2, title: "Follow for crypto technology insights", source: { title: "The Crypto Geek" }, username: "the_Cryptogeek", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(), url: "https://x.com/the_Cryptogeek" }, // 2h ago
+      { id: 3, title: "Follow for crypto market analysis", source: { title: "CryptoWendyO" }, username: "CryptoWendyO", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 90 * 60 * 1000).toISOString(), url: "https://x.com/CryptoWendyO" }, // 90 min ago
+      { id: 4, title: "Follow for XRP news & updates", source: { title: "RuleXRP" }, username: "RuleXRP", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 4 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RuleXRP" }, // 4h ago
+      { id: 5, title: "Follow for macro market insights", source: { title: "Raoul Pal" }, username: "RaoulGMI", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(), url: "https://x.com/RaoulGMI" }, // 5h ago
+      { id: 6, title: "Follow for Coinbase & crypto updates", source: { title: "Brian Armstrong" }, username: "brian_armstrong", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(), url: "https://x.com/brian_armstrong" }, // 8h ago
+      { id: 7, title: "Follow for DeFi & crypto insights", source: { title: "Intocryptoverse" }, username: "intocryptoverse", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 3 * 60 * 60 * 1000).toISOString(), url: "https://x.com/intocryptoverse" }, // 3h ago
+      { id: 8, title: "Follow for crypto legal analysis", source: { title: "CryptoLawUS" }, username: "CryptoLawUS", logo: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png", created_at: new Date(now - 6 * 60 * 60 * 1000).toISOString(), url: "https://x.com/CryptoLawUS" } // 6h ago
     ];
     setNews(xUpdates);
   };
@@ -606,7 +606,7 @@ export default function CryptoAggregator() {
             <h2 className="text-xl font-bold text-white">Updates from X</h2>
           </div>
           
-          {/* Mobile: Show 3 accounts unexpanded (includes Kryptocurrent List) */}
+          {/* Mobile: Show 3 accounts unexpanded (includes Genius List) */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-3">
               {(newsExpanded ? news : news.slice(0, 3)).map((account) => (
@@ -632,7 +632,7 @@ export default function CryptoAggregator() {
                       <h3 className="font-semibold text-white text-sm group-hover:text-[#ffc93c] transition-colors">
                         {account.source.title}
                       </h3>
-                      <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-400 truncate">@{account.username}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         Posted {(() => {
                           const date = new Date(account.created_at);
@@ -663,10 +663,10 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 7 accounts in 3 columns unexpanded (includes Kryptocurrent List) */}
+          {/* Desktop: Show 3 accounts in 3 columns unexpanded (includes Genius List) */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-3 gap-3">
-              {(newsExpanded ? news : news.slice(0, 7)).map((account) => (
+              {(newsExpanded ? news : news.slice(0, 3)).map((account) => (
                 <a 
                   key={account.id} 
                   href={account.url} 
@@ -689,7 +689,7 @@ export default function CryptoAggregator() {
                       <h3 className="font-semibold text-white text-sm group-hover:text-[#ffc93c] transition-colors">
                         {account.source.title}
                       </h3>
-                      <p className="text-xs text-gray-400 truncate">@{account.url.split('/').pop()}</p>
+                      <p className="text-xs text-gray-400 truncate">@{account.username}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         Posted {(() => {
                           const date = new Date(account.created_at);
@@ -710,7 +710,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {news.length > 7 && (
+            {news.length > 3 && (
               <button 
                 onClick={() => setNewsExpanded(!newsExpanded)}
                 className="mt-4 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
