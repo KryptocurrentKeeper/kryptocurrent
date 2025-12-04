@@ -173,8 +173,8 @@ export default function CryptoAggregator() {
         try {
           console.log(`Fetching ${feed.source}...`);
           
-          // Use allOrigins CORS proxy to fetch RSS feeds
-          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
+          // Use corsproxy.io - more reliable CORS proxy
+          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.url)}`;
           const response = await fetch(proxyUrl);
 
           if (!response.ok) {
@@ -182,8 +182,7 @@ export default function CryptoAggregator() {
             continue;
           }
 
-          const data = await response.json();
-          const xmlText = data.contents;
+          const xmlText = await response.text();
 
           // Parse XML
           const parser = new DOMParser();
