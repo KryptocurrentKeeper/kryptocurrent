@@ -6,6 +6,7 @@ export default function CryptoAggregator() {
   const [cryptoPrices, setCryptoPrices] = useState([]);
   const [news, setNews] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [shorts, setShorts] = useState([]);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
@@ -15,6 +16,7 @@ export default function CryptoAggregator() {
   const [pricesExpanded, setPricesExpanded] = useState(0); // 0=collapsed, 1=34 shown, 2=68 shown, 3=102 shown
   const [newsExpanded, setNewsExpanded] = useState(false);
   const [videosExpanded, setVideosExpanded] = useState(false);
+  const [shortsExpanded, setShortsExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
   const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
   
@@ -22,12 +24,14 @@ export default function CryptoAggregator() {
   const pricesRef = useRef(null);
   const xRef = useRef(null);
   const videosRef = useRef(null);
+  const shortsRef = useRef(null);
   const articlesRef = useRef(null);
 
   useEffect(() => {
     fetchCryptoPrices();
     fetchCryptoNews();
     fetchCryptoVideos();
+    fetchCryptoShorts();
     fetchCryptoArticles();
     
     // Load Twitter widgets script
@@ -212,6 +216,293 @@ export default function CryptoAggregator() {
     }
   };
 
+  const fetchCryptoShorts = async () => {
+    // Check if we have cached shorts that are less than 3 hours old
+    const cachedData = localStorage.getItem('kryptocurrent_shorts');
+    const cacheTimestamp = localStorage.getItem('kryptocurrent_shorts_timestamp');
+    
+    if (cachedData && cacheTimestamp) {
+      const cacheAge = Date.now() - parseInt(cacheTimestamp);
+      const threeHours = 3 * 60 * 60 * 1000;
+      
+      if (cacheAge < threeHours) {
+        console.log(`✓ Using cached shorts (${Math.floor(cacheAge / 60000)} minutes old)`);
+        setShorts(JSON.parse(cachedData));
+        return;
+      } else {
+        console.log('Shorts cache expired (>3 hours), fetching fresh shorts...');
+      }
+    }
+    
+    const fallbackShorts = [
+      { id: 1, title: "Quick Crypto Update", channel: "Digital Outlook", views: "1h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null },
+      { id: 2, title: "Market Flash", channel: "Crypto Sensei", views: "2h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
+      { id: 3, title: "Rapid Analysis", channel: "Jake Claver", views: "3h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: null }
+    ];
+
+    try {
+      // YouTube API Key Rotation System - Extended keys for shorts
+      const API_KEYS = [
+        import.meta.env.VITE_YOUTUBE_API_KEY,
+        'AIzaSyD3xwegZi-AFG9jo54_zpjWaixR7-d3obY',
+        'AIzaSyA1hS2gb2vRncjPJMJFvt4Pa4_i38hURvA',
+        'AIzaSyA0C6jDg78eo9N-0V5nSvo8HdNWC99X92Q',
+        'AIzaSyD0-a6CC3f6klDlyWtExtKFLGR3Nmk6DI0',
+        'AIzaSyC2_GZ1UChltsUtBFAmrhAlflrutvMCY34',
+        'AIzaSyAUXbJ5t3OC1UogCtDrgcsICc5Pa8PE3GQ',
+        'AIzaSyCz73iKmsiMPLhkwpq5tIMLdaB6acj_anU',
+        'AIzaSyBwygUKgY4PhqqVSpYwDrLxb4_8km1FQVg'
+      ];
+      
+      let currentKeyIndex = parseInt(localStorage.getItem('youtube_shorts_api_key_index') || '0');
+      const validKeys = API_KEYS.filter(key => key && key.length > 0);
+      
+      if (validKeys.length === 0) {
+        console.log('No YouTube API keys available, using fallback shorts');
+        setShorts(fallbackShorts);
+        return;
+      }
+      
+      let API_KEY = validKeys[currentKeyIndex % validKeys.length];
+      let rotatedKey = false;
+      
+      console.log(`Using YouTube API key #${(currentKeyIndex % validKeys.length) + 1} for shorts`);
+      
+      const channels = {
+        'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
+        'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
+        'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
+        'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
+        'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
+        'Jake Claver': 'UCsu-BlV8FLI6piu4RQPjLxg',
+        'Altcoin Daily': 'UCVm8QxSChzT63-zF2A7AWEQ',
+        'Paul Barron': 'UCwB6d4tB5-S1tZc1r3_B-fQ',
+        'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
+        'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
+        'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
+        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
+      };
+
+      const yesterday = new Date();
+      yesterday.setHours(yesterday.getHours() - 24);
+      const publishedAfter = yesterday.toISOString();
+
+      const allShorts = [];
+      let shortId = 1;
+      let successfulChannels = 0;
+      let failedChannels = 0;
+
+      for (const [channelName, channelId] of Object.entries(channels)) {
+        try {
+          const searchQuery = channelName === 'Crypto Sensei' ? '&q=crypto|bitcoin|ethereum|XRP|cryptocurrency|blockchain' : '';
+          
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+          );
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            
+            if (response.status === 403 && !rotatedKey && validKeys.length > 1) {
+              console.warn(`⚠️ Quota exceeded for shorts API key #${(currentKeyIndex % validKeys.length) + 1}, rotating...`);
+              currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
+              API_KEY = validKeys[currentKeyIndex];
+              localStorage.setItem('youtube_shorts_api_key_index', currentKeyIndex.toString());
+              console.log(`✓ Switched to shorts API key #${currentKeyIndex + 1}`);
+              rotatedKey = true;
+              
+              const retryResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+              );
+              
+              if (!retryResponse.ok) {
+                console.error(`❌ YouTube API error for ${channelName} with new key:`, retryResponse.status);
+                failedChannels++;
+                continue;
+              }
+              
+              const retryData = await retryResponse.json();
+              
+              if (retryData.items && retryData.items.length > 0) {
+                const retryVideoIds = [];
+                const retryTempVideos = [];
+                
+                retryData.items.forEach(item => {
+                  const title = item.snippet.title.toLowerCase();
+                  const description = item.snippet.description?.toLowerCase() || '';
+                  
+                  if (title.includes('#shorts') || title.includes('#short') || 
+                      description.includes('#shorts') || description.includes('youtube shorts')) {
+                    return;
+                  }
+                  
+                  retryVideoIds.push(item.id.videoId);
+                  retryTempVideos.push(item);
+                });
+                
+                if (retryVideoIds.length > 0) {
+                  try {
+                    const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
+                    const retryDetailsResponse = await fetch(retryDetailsUrl);
+                    
+                    if (retryDetailsResponse.ok) {
+                      const retryDetailsData = await retryDetailsResponse.json();
+                      const retryDurationMap = {};
+                      
+                      retryDetailsData.items?.forEach(video => {
+                        const duration = video.contentDetails.duration;
+                        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                        const hours = parseInt(match[1] || 0);
+                        const minutes = parseInt(match[2] || 0);
+                        const seconds = parseInt(match[3] || 0);
+                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                        retryDurationMap[video.id] = totalSeconds;
+                      });
+                      
+                      retryTempVideos.forEach((item, index) => {
+                        const videoIdStr = retryVideoIds[index];
+                        const duration = retryDurationMap[videoIdStr] || 0;
+                        
+                        // Only keep videos UNDER 90 seconds
+                        if (duration >= 90) {
+                          return;
+                        }
+                        
+                        const publishedDate = new Date(item.snippet.publishedAt);
+                        const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                        const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                        
+                        allShorts.push({
+                          id: shortId++,
+                          title: item.snippet.title,
+                          channel: channelName,
+                          views: timeAgo,
+                          url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                          thumbnail: item.snippet.thumbnails.medium.url,
+                          publishedAt: item.snippet.publishedAt
+                        });
+                      });
+                    }
+                  } catch (retryDurationError) {
+                    console.error(`Error fetching durations for ${channelName} (shorts retry):`, retryDurationError);
+                  }
+                }
+                successfulChannels++;
+              }
+              continue;
+            }
+            
+            console.error(`❌ YouTube API error for ${channelName}:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorData
+            });
+            failedChannels++;
+            continue;
+          }
+          
+          const data = await response.json();
+          
+          if (data.items && data.items.length > 0) {
+            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h (checking for shorts)`);
+            
+            const videoIds = [];
+            const tempVideos = [];
+            
+            data.items.forEach(item => {
+              const title = item.snippet.title.toLowerCase();
+              const description = item.snippet.description?.toLowerCase() || '';
+              
+              if (title.includes('#shorts') || title.includes('#short') || 
+                  description.includes('#shorts') || description.includes('youtube shorts')) {
+                return;
+              }
+              
+              videoIds.push(item.id.videoId);
+              tempVideos.push(item);
+            });
+            
+            if (videoIds.length > 0) {
+              try {
+                const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds.join(',')}&part=contentDetails`;
+                const detailsResponse = await fetch(videoDetailsUrl);
+                
+                if (detailsResponse.ok) {
+                  const detailsData = await detailsResponse.json();
+                  const durationMap = {};
+                  
+                  detailsData.items?.forEach(video => {
+                    const duration = video.contentDetails.duration;
+                    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                    const hours = parseInt(match[1] || 0);
+                    const minutes = parseInt(match[2] || 0);
+                    const seconds = parseInt(match[3] || 0);
+                    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                    durationMap[video.id] = totalSeconds;
+                  });
+                  
+                  tempVideos.forEach((item, index) => {
+                    const videoId = videoIds[index];
+                    const duration = durationMap[videoId] || 0;
+                    
+                    // Only keep videos UNDER 90 seconds
+                    if (duration >= 90) {
+                      return;
+                    }
+                    
+                    console.log(`Adding short: ${item.snippet.title} - duration: ${duration}s`);
+                    
+                    const publishedDate = new Date(item.snippet.publishedAt);
+                    const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                    const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                    
+                    allShorts.push({
+                      id: shortId++,
+                      title: item.snippet.title,
+                      channel: channelName,
+                      views: timeAgo,
+                      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                      thumbnail: item.snippet.thumbnails.medium.url,
+                      publishedAt: item.snippet.publishedAt
+                    });
+                  });
+                }
+              } catch (durationError) {
+                console.error(`Error fetching durations for ${channelName}:`, durationError);
+              }
+            }
+            
+            successfulChannels++;
+          } else {
+            console.log(`- No videos from ${channelName} in last 24h`);
+            successfulChannels++;
+          }
+        } catch (channelError) {
+          console.error(`❌ Error fetching ${channelName}:`, channelError);
+          failedChannels++;
+        }
+      }
+      
+      console.log(`Total shorts: ${allShorts.length} from ${successfulChannels}/${Object.keys(channels).length} channels (${failedChannels} failed)`);
+
+      allShorts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      
+      console.log(`Fetched ${allShorts.length} shorts from YouTube API`);
+      
+      if (allShorts.length > 0) {
+        setShorts(allShorts);
+        localStorage.setItem('kryptocurrent_shorts', JSON.stringify(allShorts));
+        localStorage.setItem('kryptocurrent_shorts_timestamp', Date.now().toString());
+      } else {
+        console.log('No shorts found from API, using fallback');
+        setShorts(fallbackShorts);
+      }
+    } catch (error) {
+      console.log('Error fetching shorts, using fallback:', error.message);
+      setShorts(fallbackShorts);
+    }
+  };
+
   const fetchCryptoNews = async () => {
     // Using static profile links since RSS2JSON cannot access Nitter feeds
     // and Twitter embeds have persistent rate limiting issues
@@ -326,14 +617,14 @@ export default function CryptoAggregator() {
     return [
       { id: 1, title: "Bitcoin Surges Past Key Resistance Level", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/2024/12/03/bitcoin-btc-technical-analysis/" },
       { id: 2, title: "Ethereum Layer 2 Solutions Gain Traction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/ethereum-layer-2-scaling-solutions" },
-      { id: 3, title: "Top Crypto Trading Strategies for 2025", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-trading-strategies/" },
+      { id: 3, title: "Top Crypto Trading Strategies for 2025", source: "CryptoSlate", logo: "/CryptSlate.jpg", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-trading-strategies/" },
       { id: 4, title: "Institutional Interest in Crypto Grows", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/news/institutional-investors-cryptocurrency/" },
       { id: 5, title: "DeFi Market Shows Strong Growth", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/2024/12/03/defi-cryptocurrency-market/" },
       { id: 6, title: "NFT Market Sees Renewed Activity", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/nft-market-trends/" },
       { id: 7, title: "Altcoin Season: What to Watch", source: "Cointribune", logo: "https://www.cointribune.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/altcoin-season-guide/" },
       { id: 8, title: "New Crypto Regulations Take Effect", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/policy/2024/12/03/crypto-regulations/" },
       { id: 9, title: "Market Analysis: Bull Run Continues", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/bitcoin-bull-market-analysis" },
-      { id: 10, title: "Expert Insights on Crypto Investing", source: "CryptoSlate", logo: "https://cryptoslate.com/wp-content/themes/cryptoslate-2020/imgsv2/favicon.png", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-investment-guide/" }
+      { id: 10, title: "Expert Insights on Crypto Investing", source: "CryptoSlate", logo: "/CryptSlate.jpg", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-investment-guide/" }
     ];
   };
 
@@ -370,14 +661,20 @@ export default function CryptoAggregator() {
 
     try {
       // YouTube API Key Rotation System
-      // Rotates through 3 API keys when quota is hit (403 error)
+      // Rotates through 9 API keys when quota is hit (403 error)
       const API_KEYS = [
         import.meta.env.VITE_YOUTUBE_API_KEY, // Original key
-        'AIzaSyD3xwegZi-AFG9jo54_zpjWaixR7-d3obY', // Backup key 1
-        'AIzaSyA1hS2gb2vRncjPJMJFvt4Pa4_i38hURvA'  // Backup key 2
+        'AIzaSyD3xwegZi-AFG9jo54_zpjWaixR7-d3obY',
+        'AIzaSyA1hS2gb2vRncjPJMJFvt4Pa4_i38hURvA',
+        'AIzaSyA0C6jDg78eo9N-0V5nSvo8HdNWC99X92Q',
+        'AIzaSyD0-a6CC3f6klDlyWtExtKFLGR3Nmk6DI0',
+        'AIzaSyC2_GZ1UChltsUtBFAmrhAlflrutvMCY34',
+        'AIzaSyAUXbJ5t3OC1UogCtDrgcsICc5Pa8PE3GQ',
+        'AIzaSyCz73iKmsiMPLhkwpq5tIMLdaB6acj_anU',
+        'AIzaSyBwygUKgY4PhqqVSpYwDrLxb4_8km1FQVg'
       ];
       
-      // Get current API key index from localStorage (0, 1, or 2)
+      // Get current API key index from localStorage (0-8)
       let currentKeyIndex = parseInt(localStorage.getItem('youtube_api_key_index') || '0');
       
       // Ensure we have at least one valid key
@@ -498,13 +795,13 @@ export default function CryptoAggregator() {
                         retryDurationMap[video.id] = totalSeconds;
                       });
                       
-                      // Add videos that are 60+ seconds
+                      // Add videos that are 90+ seconds
                       retryTempVideos.forEach((item, index) => {
                         const videoIdStr = retryVideoIds[index];
                         const duration = retryDurationMap[videoIdStr] || 0;
                         
-                        // Skip videos under 60 seconds
-                        if (duration < 60) {
+                        // Skip videos under 90 seconds
+                        if (duration < 90) {
                           console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
                           return;
                         }
@@ -565,7 +862,7 @@ export default function CryptoAggregator() {
               tempVideos.push(item);
             });
             
-            // Fetch video durations to filter out videos under 60 seconds
+            // Fetch video durations to filter out videos under 90 seconds
             if (videoIds.length > 0) {
               try {
                 const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds.join(',')}&part=contentDetails`;
@@ -586,13 +883,13 @@ export default function CryptoAggregator() {
                     durationMap[video.id] = totalSeconds;
                   });
                   
-                  // Now add videos that are 60+ seconds
+                  // Now add videos that are 90+ seconds
                   tempVideos.forEach((item, index) => {
                     const videoId = videoIds[index];
                     const duration = durationMap[videoId] || 0;
                     
-                    // Skip videos under 60 seconds
-                    if (duration < 60) {
+                    // Skip videos under 90 seconds
+                    if (duration < 90) {
                       console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
                       return;
                     }
@@ -736,6 +1033,15 @@ export default function CryptoAggregator() {
       }, 100);
     }
     setVideosExpanded(!videosExpanded);
+  };
+
+  const handleShortsToggle = () => {
+    if (shortsExpanded && shortsRef.current) {
+      setTimeout(() => {
+        shortsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    setShortsExpanded(!shortsExpanded);
   };
 
   const handleArticlesToggle = () => {
@@ -1081,10 +1387,10 @@ export default function CryptoAggregator() {
         <div ref={videosRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Click-Worthy</h2>
           
-          {/* Mobile: Show 3 with expand button */}
+          {/* Mobile: Show 10 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 3)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1103,7 +1409,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 3 && (
+            {videos.length > 10 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -1113,10 +1419,10 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 4 in 2 columns with expand button */}
+          {/* Desktop: Show 10 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 4)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1135,12 +1441,81 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 3 && (
+            {videos.length > 10 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
               >
                 {videosExpanded ? 'Show Less' : 'Show More'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Hits Section - Short videos under 90 seconds */}
+        <div ref={shortsRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-white">Quick Hits</h2>
+          
+          {/* Mobile: Show 10 with expand button */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-1 gap-4">
+              {(shortsExpanded ? shorts.slice(0, 20) : shorts.slice(0, 10)).map((short) => (
+                <a key={short.id} href={short.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
+                  <div className="flex gap-4">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
+                      {short.thumbnail ? (
+                        <img src={short.thumbnail} alt={short.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <span className="text-2xl group-hover:scale-110 transition-transform">▶️</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm group-hover:text-[#ffc93c] transition-colors">{short.title}</h3>
+                      <p className="text-xs opacity-70">{short.channel}</p>
+                      <p className="text-xs opacity-60 mt-1">{short.views}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {shorts.length > 10 && (
+              <button 
+                onClick={handleShortsToggle}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {shortsExpanded ? 'Show Less' : 'Show More'}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop: Show 10 in 2 columns with expand button */}
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-2 gap-4">
+              {(shortsExpanded ? shorts.slice(0, 20) : shorts.slice(0, 10)).map((short) => (
+                <a key={short.id} href={short.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
+                  <div className="flex gap-4">
+                    <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
+                      {short.thumbnail ? (
+                        <img src={short.thumbnail} alt={short.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <span className="text-2xl group-hover:scale-110 transition-transform">▶️</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-1 line-clamp-2 text-sm group-hover:text-[#ffc93c] transition-colors">{short.title}</h3>
+                      <p className="text-xs opacity-70">{short.channel}</p>
+                      <p className="text-xs opacity-60 mt-1">{short.views}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {shorts.length > 10 && (
+              <button 
+                onClick={handleShortsToggle}
+                className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+              >
+                {shortsExpanded ? 'Show Less' : 'Show More'}
               </button>
             )}
           </div>
