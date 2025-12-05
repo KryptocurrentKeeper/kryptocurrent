@@ -12,7 +12,7 @@ export default function CryptoAggregator() {
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [chartTimeframe, setChartTimeframe] = useState('7');
-  const [pricesExpanded, setPricesExpanded] = useState(false);
+  const [pricesExpanded, setPricesExpanded] = useState(0); // 0=collapsed, 1=34 shown, 2=68 shown, 3=102 shown
   const [newsExpanded, setNewsExpanded] = useState(false);
   const [videosExpanded, setVideosExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
@@ -352,9 +352,9 @@ export default function CryptoAggregator() {
       { id: 5, title: "Top Altcoins Review This Week", channel: "Altcoin Daily", views: "10h ago", url: "https://youtube.com/@AltcoinDaily/videos", thumbnail: null },
       { id: 6, title: "Market Trends & Trading Signals", channel: "Digital Outlook", views: "12h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null },
       { id: 7, title: "Mickle's Crypto Insights", channel: "Mickle", views: "14h ago", url: "https://youtube.com/@MickleXRP/videos", thumbnail: null },
-      { id: 8, title: "Jake Claver Market Review", channel: "Jake Claver", views: "16h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: null },
-      { id: 9, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "18h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: null },
-      { id: 10, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "20h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null }
+      { id: 8, title: "Apex Crypto Weekly Update", channel: "Apex Crypto", views: "16h ago", url: "https://youtube.com/@ApexCryptoInsights/videos", thumbnail: null },
+      { id: 9, title: "Good Evening Crypto News", channel: "Good Evening Crypto", views: "18h ago", url: "https://youtube.com/@GoodEveningCrypto/videos", thumbnail: null },
+      { id: 10, title: "Black Swan Capitalist Update", channel: "Black Swan Capitalist", views: "20h ago", url: "https://youtube.com/@blackswancapitalist/videos", thumbnail: null }
     ];
 
     try {
@@ -385,11 +385,10 @@ export default function CryptoAggregator() {
       
       const channels = {
         'Digital Outlook': 'UC8oW_3rV35rZ3oU1F_n9cjg',
-        'Crypto Sensei': 'UC_x5XG1OV2P6uZZ5FSM9Ttw',
+        'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
         'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
         'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'UCsu-BlV8FLI6piu4RQPjLxg',
         'Altcoin Daily': 'UCVm8QxSChzT63-zF2A7AWEQ',
         'Paul Barron': 'UCwB6d4tB5-S1tZc1r3_B-fQ',
         'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
@@ -399,7 +398,7 @@ export default function CryptoAggregator() {
       };
 
       const yesterday = new Date();
-      yesterday.setHours(yesterday.getHours() - 24);
+      yesterday.setHours(yesterday.getHours() - 12);
       const publishedAfter = yesterday.toISOString();
 
       const allVideos = [];
@@ -489,7 +488,7 @@ export default function CryptoAggregator() {
           const data = await response.json();
           
           if (data.items && data.items.length > 0) {
-            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h`);
+            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 12h`);
             data.items.forEach(item => {
               // Skip YouTube Shorts - they show up as 'youtube#video' but we can filter by checking title/description
               // Shorts are typically very short videos, but API doesn't directly distinguish them
@@ -519,7 +518,7 @@ export default function CryptoAggregator() {
             });
             successfulChannels++;
           } else {
-            console.log(`- No videos from ${channelName} in last 24h`);
+            console.log(`- No videos from ${channelName} in last 12h`);
             successfulChannels++;
           }
         } catch (channelError) {
@@ -588,31 +587,45 @@ export default function CryptoAggregator() {
     return `${Math.floor(seconds / 86400)} days ago`;
   };
 
-  // Handle expand/collapse with scroll to top
-  const handlePricesToggle = () => {
-    if (pricesExpanded && pricesRef.current) {
-      pricesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Handle expand/collapse with scroll to last position or top
+  const handlePricesToggle = (action) => {
+    if (action === 'more') {
+      // Expand one level (up to 3 levels: 6->34, 34->68, 68->102)
+      setPricesExpanded(prev => Math.min(prev + 1, 3));
+    } else {
+      // Collapse one level and scroll to section top
+      setPricesExpanded(prev => Math.max(prev - 1, 0));
+      if (pricesRef.current) {
+        setTimeout(() => {
+          pricesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
-    setPricesExpanded(!pricesExpanded);
   };
 
   const handleNewsToggle = () => {
     if (newsExpanded && xRef.current) {
-      xRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        xRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
     setNewsExpanded(!newsExpanded);
   };
 
   const handleVideosToggle = () => {
     if (videosExpanded && videosRef.current) {
-      videosRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        videosRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
     setVideosExpanded(!videosExpanded);
   };
 
   const handleArticlesToggle = () => {
     if (articlesExpanded && articlesRef.current) {
-      articlesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        articlesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
     setArticlesExpanded(!articlesExpanded);
   };
@@ -705,10 +718,10 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: Show 6 with expand button */}
+              {/* Mobile: Show 6, then 34, 68, 102 with expand/collapse buttons */}
               <div className="md:hidden">
                 <div className="grid grid-cols-2 gap-2">
-                  {(pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 6)).map((crypto) => (
+                  {validCryptoPrices.slice(0, pricesExpanded === 0 ? 6 : pricesExpanded === 1 ? 34 : pricesExpanded === 2 ? 68 : 102).map((crypto) => (
                     <div key={crypto.id} onClick={() => openChart(crypto)} className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 min-w-0">
@@ -731,12 +744,24 @@ export default function CryptoAggregator() {
                   ))}
                 </div>
                 {validCryptoPrices.length > 6 && (
-                  <button 
-                    onClick={handlePricesToggle}
-                    className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
-                  >
-                    {pricesExpanded ? 'Show Less' : 'Show More'}
-                  </button>
+                  <div className="mt-3 flex gap-2">
+                    {pricesExpanded > 0 && (
+                      <button 
+                        onClick={() => handlePricesToggle('less')}
+                        className="flex-1 px-4 py-2 bg-slate-600 text-white hover:bg-slate-500 rounded-lg transition font-semibold text-sm"
+                      >
+                        Show Less
+                      </button>
+                    )}
+                    {pricesExpanded < 3 && validCryptoPrices.length > (pricesExpanded === 0 ? 6 : pricesExpanded === 1 ? 34 : 68) && (
+                      <button 
+                        onClick={() => handlePricesToggle('more')}
+                        className="flex-1 px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                      >
+                        Show More
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -917,12 +942,12 @@ export default function CryptoAggregator() {
 
         {/* Videos Section - 2 Columns on Desktop, Expandable on Mobile */}
         <div ref={videosRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-white">Click Bait</h2>
+          <h2 className="text-xl font-bold mb-4 text-white">Click-Worthy</h2>
           
           {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(videosExpanded ? videos.slice(0, 8) : videos.slice(0, 3)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -941,7 +966,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 3 && (
+            {videos.length > 10 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -954,7 +979,7 @@ export default function CryptoAggregator() {
           {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(videosExpanded ? videos.slice(0, 8) : videos.slice(0, 4)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -973,7 +998,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 4 && (
+            {videos.length > 10 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
