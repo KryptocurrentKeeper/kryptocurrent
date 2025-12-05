@@ -911,22 +911,8 @@ export default function CryptoAggregator() {
                 }
               } catch (durationError) {
                 console.error(`Error fetching durations for ${channelName}:`, durationError);
-                // If duration fetch fails, add videos anyway (without duration filter)
-                tempVideos.forEach(item => {
-                  const publishedDate = new Date(item.snippet.publishedAt);
-                  const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-                  const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-                  
-                  allVideos.push({
-                    id: videoId++,
-                    title: item.snippet.title,
-                    channel: channelName,
-                    views: timeAgo,
-                    url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                    thumbnail: item.snippet.thumbnails.medium.url,
-                    publishedAt: item.snippet.publishedAt
-                  });
-                });
+                // Don't add videos if duration check fails - we need to ensure 90+ seconds only
+                console.log(`Skipping ${channelName} videos due to duration check failure`);
               }
             }
             
@@ -1387,10 +1373,10 @@ export default function CryptoAggregator() {
         <div ref={videosRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Click-Worthy</h2>
           
-          {/* Mobile: Show 10 with expand button */}
+          {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 12) : videos.slice(0, 3)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1409,7 +1395,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 10 && (
+            {videos.length > 3 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -1419,10 +1405,10 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 10 in 2 columns with expand button */}
+          {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 12) : videos.slice(0, 4)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1441,7 +1427,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 10 && (
+            {videos.length > 3 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -1456,10 +1442,10 @@ export default function CryptoAggregator() {
         <div ref={shortsRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold mb-4 text-white">Quick Hits</h2>
           
-          {/* Mobile: Show 10 with expand button */}
+          {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(shortsExpanded ? shorts.slice(0, 20) : shorts.slice(0, 10)).map((short) => (
+              {(shortsExpanded ? shorts.slice(0, 12) : shorts.slice(0, 3)).map((short) => (
                 <a key={short.id} href={short.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1478,7 +1464,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {shorts.length > 10 && (
+            {shorts.length > 3 && (
               <button 
                 onClick={handleShortsToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -1488,10 +1474,10 @@ export default function CryptoAggregator() {
             )}
           </div>
 
-          {/* Desktop: Show 10 in 2 columns with expand button */}
+          {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(shortsExpanded ? shorts.slice(0, 20) : shorts.slice(0, 10)).map((short) => (
+              {(shortsExpanded ? shorts.slice(0, 12) : shorts.slice(0, 4)).map((short) => (
                 <a key={short.id} href={short.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1510,7 +1496,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {shorts.length > 10 && (
+            {shorts.length > 3 && (
               <button 
                 onClick={handleShortsToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
