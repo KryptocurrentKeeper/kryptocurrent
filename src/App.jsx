@@ -360,7 +360,7 @@ export default function CryptoAggregator() {
                       const retryDurationMap = {};
                       
                       retryDetailsData.items?.forEach(video => {
-                        const duration = video.contentDetails.duration;
+                        const duration = video.contentDetails?.duration || "PT0S";
                         const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
                         const hours = parseInt(match[1] || 0);
                         const minutes = parseInt(match[2] || 0);
@@ -442,7 +442,7 @@ export default function CryptoAggregator() {
                   const durationMap = {};
                   
                   detailsData.items?.forEach(video => {
-                    const duration = video.contentDetails.duration;
+                    const duration = video.contentDetails?.duration || "PT0S";
                     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
                     const hours = parseInt(match[1] || 0);
                     const minutes = parseInt(match[2] || 0);
@@ -452,8 +452,8 @@ export default function CryptoAggregator() {
                   });
                   
                   tempVideos.forEach((item, index) => {
-                    const videoId = videoIds[index];
-                    const duration = durationMap[videoId] || 0;
+                    const currentVideoId = videoIds[index];
+                    const duration = durationMap[currentVideoId] || 0;
                     
                     // Only keep videos UNDER 90 seconds
                     if (duration >= 90) {
@@ -806,7 +806,7 @@ export default function CryptoAggregator() {
                       
                       // Parse durations
                       retryDetailsData.items?.forEach(video => {
-                        const duration = video.contentDetails.duration;
+                        const duration = video.contentDetails?.duration || "PT0S";
                         const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
                         const hours = parseInt(match[1] || 0);
                         const minutes = parseInt(match[2] || 0);
@@ -894,7 +894,7 @@ export default function CryptoAggregator() {
                   
                   // Parse ISO 8601 duration format (PT1M30S = 1 min 30 sec)
                   detailsData.items?.forEach(video => {
-                    const duration = video.contentDetails.duration;
+                    const duration = video.contentDetails?.duration || "PT0S";
                     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
                     const hours = parseInt(match[1] || 0);
                     const minutes = parseInt(match[2] || 0);
@@ -905,8 +905,8 @@ export default function CryptoAggregator() {
                   
                   // Now add videos that are 90+ seconds
                   tempVideos.forEach((item, index) => {
-                    const videoId = videoIds[index];
-                    const duration = durationMap[videoId] || 0;
+                    const currentVideoId = videoIds[index];
+                    const duration = durationMap[currentVideoId] || 0;
                     
                     // Skip videos under 90 seconds
                     if (duration < 90) {
