@@ -303,8 +303,18 @@ export default function CryptoAggregator() {
           if (!response.ok) {
             const errorData = await response.json();
             
+            // Log the detailed error
+            console.error(`❌ YouTube API error for ${channelName} (shorts):`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorData,
+              reason: errorData?.error?.errors?.[0]?.reason,
+              message: errorData?.error?.message
+            });
+            
             if (response.status === 403 && !rotatedKey && validKeys.length > 1) {
-              console.warn(`⚠️ Quota exceeded for shorts API key #${(currentKeyIndex % validKeys.length) + 1}, rotating...`);
+              console.warn(`⚠️ API key issue for shorts key #${(currentKeyIndex % validKeys.length) + 1}: ${errorData?.error?.message || 'Unknown error'}`);
+              console.warn(`Rotating to next key...`);
               currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
               API_KEY = validKeys[currentKeyIndex];
               localStorage.setItem('youtube_shorts_api_key_index', currentKeyIndex.toString());
@@ -726,9 +736,19 @@ export default function CryptoAggregator() {
           if (!response.ok) {
             const errorData = await response.json();
             
+            // Log the detailed error
+            console.error(`❌ YouTube API error for ${channelName}:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorData,
+              reason: errorData?.error?.errors?.[0]?.reason,
+              message: errorData?.error?.message
+            });
+            
             // Check if quota exceeded (403 error)
             if (response.status === 403 && !rotatedKey) {
-              console.warn(`⚠️ Quota exceeded for API key #${currentKeyIndex + 1}, rotating to next key...`);
+              console.warn(`⚠️ API key issue for key #${currentKeyIndex + 1}: ${errorData?.error?.message || 'Unknown error'}`);
+              console.warn(`Rotating to next key...`);
               
               // Rotate to next key
               currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
