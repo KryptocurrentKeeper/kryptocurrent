@@ -395,7 +395,7 @@ export default function CryptoAggregator() {
       console.log(`Using YouTube API key #${currentKeyIndex + 1}`);
       
       const channels = {
-        'Digital Outlook': 'UC8oW_3rV35rZ3oU1F_n9cjg',
+        'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
         'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
         'Mickle': 'UCINUlGW2QpPYa9-TGcW2XUA',
         'Chain of Blocks': 'UCx1J1fFL7gzhd8BqjJ_jJxw',
@@ -458,6 +458,11 @@ export default function CryptoAggregator() {
               
               if (retryData.items && retryData.items.length > 0) {
                 console.log(`✓ Found ${retryData.items.length} videos from ${channelName} with new key`);
+                
+                // Collect video IDs and temp videos for duration check
+                const retryVideoIds = [];
+                const retryTempVideos = [];
+                
                 retryData.items.forEach(item => {
                   // Skip YouTube Shorts
                   const title = item.snippet.title.toLowerCase();
@@ -468,20 +473,61 @@ export default function CryptoAggregator() {
                     return; // Skip this video
                   }
                   
-                  const publishedDate = new Date(item.snippet.publishedAt);
-                  const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-                  const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-                  
-                  allVideos.push({
-                    id: videoId++,
-                    title: item.snippet.title,
-                    channel: channelName,
-                    views: timeAgo,
-                    url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                    thumbnail: item.snippet.thumbnails.medium.url,
-                    publishedAt: item.snippet.publishedAt
-                  });
+                  retryVideoIds.push(item.id.videoId);
+                  retryTempVideos.push(item);
                 });
+                
+                // Fetch video durations
+                if (retryVideoIds.length > 0) {
+                  try {
+                    const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
+                    const retryDetailsResponse = await fetch(retryDetailsUrl);
+                    
+                    if (retryDetailsResponse.ok) {
+                      const retryDetailsData = await retryDetailsResponse.json();
+                      const retryDurationMap = {};
+                      
+                      // Parse durations
+                      retryDetailsData.items?.forEach(video => {
+                        const duration = video.contentDetails.duration;
+                        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                        const hours = parseInt(match[1] || 0);
+                        const minutes = parseInt(match[2] || 0);
+                        const seconds = parseInt(match[3] || 0);
+                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                        retryDurationMap[video.id] = totalSeconds;
+                      });
+                      
+                      // Add videos that are 60+ seconds
+                      retryTempVideos.forEach((item, index) => {
+                        const videoIdStr = retryVideoIds[index];
+                        const duration = retryDurationMap[videoIdStr] || 0;
+                        
+                        // Skip videos under 60 seconds
+                        if (duration < 60) {
+                          console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
+                          return;
+                        }
+                        
+                        const publishedDate = new Date(item.snippet.publishedAt);
+                        const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                        const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                        
+                        allVideos.push({
+                          id: videoId++,
+                          title: item.snippet.title,
+                          channel: channelName,
+                          views: timeAgo,
+                          url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                          thumbnail: item.snippet.thumbnails.medium.url,
+                          publishedAt: item.snippet.publishedAt
+                        });
+                      });
+                    }
+                  } catch (retryDurationError) {
+                    console.error(`Error fetching durations for ${channelName} (retry):`, retryDurationError);
+                  }
+                }
                 successfulChannels++;
               }
               continue;
@@ -547,6 +593,7 @@ export default function CryptoAggregator() {
                     
                     // Skip videos under 60 seconds
                     if (duration < 60) {
+                      console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
                       return;
                     }
                     
@@ -714,8 +761,11 @@ export default function CryptoAggregator() {
       crypto.current_price !== undefined
     )
     .filter((crypto, index, self) => 
-      // Remove duplicates by keeping only the first occurrence of each ID
-      index === self.findIndex(c => c.id === crypto.id)
+      // Remove duplicates by keeping only the first occurrence of each ID or symbol
+      index === self.findIndex(c => 
+        c.id === crypto.id || 
+        (c.symbol.toLowerCase() === crypto.symbol.toLowerCase() && c.name.toLowerCase() === crypto.name.toLowerCase())
+      )
     );
   const displayedPrices = validCryptoPrices.slice(0, pricesExpanded === 0 ? 18 : pricesExpanded === 1 ? 52 : pricesExpanded === 2 ? 84 : validCryptoPrices.length);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
@@ -1034,7 +1084,7 @@ export default function CryptoAggregator() {
           {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 3)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1053,7 +1103,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 10 && (
+            {videos.length > 3 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
@@ -1066,7 +1116,7 @@ export default function CryptoAggregator() {
           {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 10)).map((video) => (
+              {(videosExpanded ? videos.slice(0, 20) : videos.slice(0, 4)).map((video) => (
                 <a key={video.id} href={video.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex gap-4">
                     <div className="w-32 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1085,7 +1135,7 @@ export default function CryptoAggregator() {
                 </a>
               ))}
             </div>
-            {videos.length > 10 && (
+            {videos.length > 3 && (
               <button 
                 onClick={handleVideosToggle}
                 className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
