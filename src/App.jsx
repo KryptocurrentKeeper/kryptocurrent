@@ -366,6 +366,7 @@ export default function CryptoAggregator() {
                             retryDetailsData.items?.forEach(video => {
                               const duration = video.contentDetails?.duration || "PT0S";
                               const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              if (!match) return; // Skip invalid duration
                               const hours = parseInt(match[1] || 0);
                               const minutes = parseInt(match[2] || 0);
                               const seconds = parseInt(match[3] || 0);
@@ -460,6 +461,7 @@ export default function CryptoAggregator() {
                   detailsData.items?.forEach(video => {
                     const duration = video.contentDetails?.duration || "PT0S";
                     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              if (!match) return; // Skip invalid duration
                     const hours = parseInt(match[1] || 0);
                     const minutes = parseInt(match[2] || 0);
                     const seconds = parseInt(match[3] || 0);
@@ -816,6 +818,7 @@ export default function CryptoAggregator() {
                             retryDetailsData.items?.forEach(video => {
                               const duration = video.contentDetails?.duration || "PT0S";
                               const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              if (!match) return; // Skip invalid duration
                               const hours = parseInt(match[1] || 0);
                               const minutes = parseInt(match[2] || 0);
                               const seconds = parseInt(match[3] || 0);
@@ -908,6 +911,7 @@ export default function CryptoAggregator() {
                   detailsData.items?.forEach(video => {
                     const duration = video.contentDetails?.duration || "PT0S";
                     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              if (!match) return; // Skip invalid duration
                     const hours = parseInt(match[1] || 0);
                     const minutes = parseInt(match[2] || 0);
                     const seconds = parseInt(match[3] || 0);
