@@ -271,12 +271,23 @@ export default function CryptoAggregator() {
           console.log(`✓ Found ${items.length} articles from ${feed.source}`);
 
           // Parse each item (limit to 3 per source)
-          Array.from(items).slice(0, 3).forEach(item => {
+          Array.from(items).slice(0, 5).forEach(item => {
             const title = item.querySelector('title')?.textContent || '';
             const link = item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '';
             const pubDate = item.querySelector('pubDate, published')?.textContent || new Date().toISOString();
+            const description = item.querySelector('description')?.textContent || '';
 
-            if (title && link) {
+            // Filter for cryptocurrency-related content
+            const cryptoKeywords = ['crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain', 'altcoin', 'defi', 'nft', 'xrp', 'ripple', 'binance', 'coinbase', 'solana', 'cardano', 'dogecoin', 'shiba', 'web3', 'token', 'coin', 'mining', 'wallet', 'exchange'];
+            const titleLower = title.toLowerCase();
+            const descLower = description.toLowerCase();
+            
+            // Check if title or description contains crypto keywords
+            const isCryptoRelated = cryptoKeywords.some(keyword => 
+              titleLower.includes(keyword) || descLower.includes(keyword)
+            );
+
+            if (title && link && isCryptoRelated) {
               allArticles.push({
                 id: articleId++,
                 title: title.trim(),
@@ -398,7 +409,7 @@ export default function CryptoAggregator() {
       };
 
       const yesterday = new Date();
-      yesterday.setHours(yesterday.getHours() - 12);
+      yesterday.setHours(yesterday.getHours() - 24);
       const publishedAfter = yesterday.toISOString();
 
       const allVideos = [];
@@ -488,11 +499,13 @@ export default function CryptoAggregator() {
           const data = await response.json();
           
           if (data.items && data.items.length > 0) {
-            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 12h`);
+            console.log(`✓ Found ${data.items.length} videos from ${channelName} in last 24h`);
+            
+            // First, collect video IDs for duration check
+            const videoIds = [];
+            const tempVideos = [];
+            
             data.items.forEach(item => {
-              // Skip YouTube Shorts - they show up as 'youtube#video' but we can filter by checking title/description
-              // Shorts are typically very short videos, but API doesn't directly distinguish them
-              // We'll filter by excluding videos with "#shorts" in title or if they're in a shorts playlist
               const title = item.snippet.title.toLowerCase();
               const description = item.snippet.description?.toLowerCase() || '';
               
@@ -502,23 +515,80 @@ export default function CryptoAggregator() {
                 return; // Skip this video
               }
               
-              const publishedDate = new Date(item.snippet.publishedAt);
-              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-              
-              allVideos.push({
-                id: videoId++,
-                title: item.snippet.title,
-                channel: channelName,
-                views: timeAgo,
-                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                thumbnail: item.snippet.thumbnails.medium.url,
-                publishedAt: item.snippet.publishedAt
-              });
+              videoIds.push(item.id.videoId);
+              tempVideos.push(item);
             });
+            
+            // Fetch video durations to filter out videos under 60 seconds
+            if (videoIds.length > 0) {
+              try {
+                const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds.join(',')}&part=contentDetails`;
+                const detailsResponse = await fetch(videoDetailsUrl);
+                
+                if (detailsResponse.ok) {
+                  const detailsData = await detailsResponse.json();
+                  const durationMap = {};
+                  
+                  // Parse ISO 8601 duration format (PT1M30S = 1 min 30 sec)
+                  detailsData.items?.forEach(video => {
+                    const duration = video.contentDetails.duration;
+                    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                    const hours = parseInt(match[1] || 0);
+                    const minutes = parseInt(match[2] || 0);
+                    const seconds = parseInt(match[3] || 0);
+                    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                    durationMap[video.id] = totalSeconds;
+                  });
+                  
+                  // Now add videos that are 60+ seconds
+                  tempVideos.forEach((item, index) => {
+                    const videoId = videoIds[index];
+                    const duration = durationMap[videoId] || 0;
+                    
+                    // Skip videos under 60 seconds
+                    if (duration < 60) {
+                      return;
+                    }
+                    
+                    const publishedDate = new Date(item.snippet.publishedAt);
+                    const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                    const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                    
+                    allVideos.push({
+                      id: videoId++,
+                      title: item.snippet.title,
+                      channel: channelName,
+                      views: timeAgo,
+                      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                      thumbnail: item.snippet.thumbnails.medium.url,
+                      publishedAt: item.snippet.publishedAt
+                    });
+                  });
+                }
+              } catch (durationError) {
+                console.error(`Error fetching durations for ${channelName}:`, durationError);
+                // If duration fetch fails, add videos anyway (without duration filter)
+                tempVideos.forEach(item => {
+                  const publishedDate = new Date(item.snippet.publishedAt);
+                  const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                  const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                  
+                  allVideos.push({
+                    id: videoId++,
+                    title: item.snippet.title,
+                    channel: channelName,
+                    views: timeAgo,
+                    url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                    thumbnail: item.snippet.thumbnails.medium.url,
+                    publishedAt: item.snippet.publishedAt
+                  });
+                });
+              }
+            }
+            
             successfulChannels++;
           } else {
-            console.log(`- No videos from ${channelName} in last 12h`);
+            console.log(`- No videos from ${channelName} in last 24h`);
             successfulChannels++;
           }
         } catch (channelError) {
@@ -593,8 +663,8 @@ export default function CryptoAggregator() {
       // Expand one level (up to 3 levels: 6->34, 34->68, 68->102)
       setPricesExpanded(prev => Math.min(prev + 1, 3));
     } else {
-      // Collapse one level and scroll to section top
-      setPricesExpanded(prev => Math.max(prev - 1, 0));
+      // Collapse to original state (0) and scroll to section top
+      setPricesExpanded(0);
       if (pricesRef.current) {
         setTimeout(() => {
           pricesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -634,15 +704,20 @@ export default function CryptoAggregator() {
   // News: show 4 unless expanded
   // Videos: show 4 unless expanded, 10 when expanded
   // Articles: show 4 unless expanded
-  // Filter out any invalid crypto data
-  const validCryptoPrices = cryptoPrices.filter(crypto => 
-    crypto && 
-    crypto.id && 
-    crypto.symbol && 
-    crypto.current_price !== null && 
-    crypto.current_price !== undefined
-  );
-  const displayedPrices = pricesExpanded ? validCryptoPrices : validCryptoPrices.slice(0, 18);
+  // Filter out any invalid crypto data and remove duplicates
+  const validCryptoPrices = cryptoPrices
+    .filter(crypto => 
+      crypto && 
+      crypto.id && 
+      crypto.symbol && 
+      crypto.current_price !== null && 
+      crypto.current_price !== undefined
+    )
+    .filter((crypto, index, self) => 
+      // Remove duplicates by keeping only the first occurrence of each ID
+      index === self.findIndex(c => c.id === crypto.id)
+    );
+  const displayedPrices = validCryptoPrices.slice(0, pricesExpanded === 0 ? 18 : pricesExpanded === 1 ? 52 : pricesExpanded === 2 ? 84 : validCryptoPrices.length);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
   const displayedVideos = videosExpanded ? videos.slice(0, 8) : videos.slice(0, 3);
   const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
@@ -790,13 +865,25 @@ export default function CryptoAggregator() {
                     </div>
                   ))}
                 </div>
-                {cryptoPrices.length > 24 && (
-                  <button 
-                    onClick={handlePricesToggle}
-                    className="mt-3 w-full px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
-                  >
-                    {pricesExpanded ? 'Show Less' : 'Show More'}
-                  </button>
+                {validCryptoPrices.length > 18 && (
+                  <div className="mt-3 flex gap-2">
+                    {pricesExpanded > 0 && (
+                      <button 
+                        onClick={() => handlePricesToggle('less')}
+                        className="flex-1 px-4 py-2 bg-slate-600 text-white hover:bg-slate-500 rounded-lg transition font-semibold text-sm"
+                      >
+                        Show Less
+                      </button>
+                    )}
+                    {pricesExpanded < 3 && validCryptoPrices.length > (pricesExpanded === 0 ? 18 : pricesExpanded === 1 ? 52 : 84) && (
+                      <button 
+                        onClick={() => handlePricesToggle('more')}
+                        className="flex-1 px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm"
+                      >
+                        Show More
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </>
