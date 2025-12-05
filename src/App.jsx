@@ -264,7 +264,6 @@ export default function CryptoAggregator() {
       }
       
       let API_KEY = validKeys[currentKeyIndex % validKeys.length];
-      let rotatedKey = false;
       
       console.log(`Using YouTube API key #${(currentKeyIndex % validKeys.length) + 1} for shorts`);
       
@@ -312,92 +311,109 @@ export default function CryptoAggregator() {
               message: errorData?.error?.message
             });
             
-            if (response.status === 403 && !rotatedKey && validKeys.length > 1) {
+            if (response.status === 403 && validKeys.length > 1) {
               console.warn(`⚠️ API key issue for shorts key #${(currentKeyIndex % validKeys.length) + 1}: ${errorData?.error?.message || 'Unknown error'}`);
-              console.warn(`Rotating to next key...`);
-              currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
-              API_KEY = validKeys[currentKeyIndex];
-              localStorage.setItem('youtube_shorts_api_key_index', currentKeyIndex.toString());
-              console.log(`✓ Switched to shorts API key #${currentKeyIndex + 1}`);
-              rotatedKey = true;
               
-              const retryResponse = await fetch(
-                `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
-              );
+              // Try all remaining keys
+              let keyAttempts = 0;
+              const maxAttempts = validKeys.length - 1;
+              let success = false;
               
-              if (!retryResponse.ok) {
-                console.error(`❌ YouTube API error for ${channelName} with new key:`, retryResponse.status);
-                failedChannels++;
-                continue;
-              }
-              
-              const retryData = await retryResponse.json();
-              
-              if (retryData.items && retryData.items.length > 0) {
-                const retryVideoIds = [];
-                const retryTempVideos = [];
+              while (keyAttempts < maxAttempts && !success) {
+                keyAttempts++;
+                currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
+                API_KEY = validKeys[currentKeyIndex];
+                localStorage.setItem('youtube_shorts_api_key_index', currentKeyIndex.toString());
+                console.log(`✓ Trying shorts API key #${currentKeyIndex + 1}`);
                 
-                retryData.items.forEach(item => {
-                  const title = item.snippet.title.toLowerCase();
-                  const description = item.snippet.description?.toLowerCase() || '';
+                try {
+                  const retryResponse = await fetch(
+                    `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+                  );
                   
-                  if (title.includes('#shorts') || title.includes('#short') || 
-                      description.includes('#shorts') || description.includes('youtube shorts')) {
-                    return;
-                  }
-                  
-                  retryVideoIds.push(item.id.videoId);
-                  retryTempVideos.push(item);
-                });
-                
-                if (retryVideoIds.length > 0) {
-                  try {
-                    const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
-                    const retryDetailsResponse = await fetch(retryDetailsUrl);
+                  if (retryResponse.ok) {
+                    success = true;
+                    const retryData = await retryResponse.json();
                     
-                    if (retryDetailsResponse.ok) {
-                      const retryDetailsData = await retryDetailsResponse.json();
-                      const retryDurationMap = {};
+                    if (retryData.items && retryData.items.length > 0) {
+                      console.log(`✓ Found ${retryData.items.length} shorts from ${channelName} with key #${currentKeyIndex + 1}`);
                       
-                      retryDetailsData.items?.forEach(video => {
-                        const duration = video.contentDetails?.duration || "PT0S";
-                        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-                        const hours = parseInt(match[1] || 0);
-                        const minutes = parseInt(match[2] || 0);
-                        const seconds = parseInt(match[3] || 0);
-                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-                        retryDurationMap[video.id] = totalSeconds;
-                      });
+                      const retryVideoIds = [];
+                      const retryTempVideos = [];
                       
-                      retryTempVideos.forEach((item, index) => {
-                        const videoIdStr = retryVideoIds[index];
-                        const duration = retryDurationMap[videoIdStr] || 0;
+                      retryData.items.forEach(item => {
+                        const title = item.snippet.title.toLowerCase();
+                        const description = item.snippet.description?.toLowerCase() || '';
                         
-                        // Only keep videos UNDER 90 seconds
-                        if (duration >= 90) {
+                        if (title.includes('#shorts') || title.includes('#short') || 
+                            description.includes('#shorts') || description.includes('youtube shorts')) {
                           return;
                         }
                         
-                        const publishedDate = new Date(item.snippet.publishedAt);
-                        const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-                        const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-                        
-                        allShorts.push({
-                          id: shortId++,
-                          title: item.snippet.title,
-                          channel: channelName,
-                          views: timeAgo,
-                          url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                          thumbnail: item.snippet.thumbnails.medium.url,
-                          publishedAt: item.snippet.publishedAt
-                        });
+                        retryVideoIds.push(item.id.videoId);
+                        retryTempVideos.push(item);
                       });
+                      
+                      if (retryVideoIds.length > 0) {
+                        try {
+                          const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
+                          const retryDetailsResponse = await fetch(retryDetailsUrl);
+                          
+                          if (retryDetailsResponse.ok) {
+                            const retryDetailsData = await retryDetailsResponse.json();
+                            const retryDurationMap = {};
+                            
+                            retryDetailsData.items?.forEach(video => {
+                              const duration = video.contentDetails?.duration || "PT0S";
+                              const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              const hours = parseInt(match[1] || 0);
+                              const minutes = parseInt(match[2] || 0);
+                              const seconds = parseInt(match[3] || 0);
+                              const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                              retryDurationMap[video.id] = totalSeconds;
+                            });
+                            
+                            retryTempVideos.forEach((item, index) => {
+                              const videoIdStr = retryVideoIds[index];
+                              const duration = retryDurationMap[videoIdStr] || 0;
+                              
+                              if (duration >= 90) {
+                                return;
+                              }
+                              
+                              const publishedDate = new Date(item.snippet.publishedAt);
+                              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                              
+                              allShorts.push({
+                                id: shortId++,
+                                title: item.snippet.title,
+                                channel: channelName,
+                                views: timeAgo,
+                                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                                thumbnail: item.snippet.thumbnails.medium.url,
+                                publishedAt: item.snippet.publishedAt
+                              });
+                            });
+                          }
+                        } catch (retryDurationError) {
+                          console.error(`Error fetching durations for ${channelName} (shorts retry):`, retryDurationError);
+                        }
+                      }
+                      successfulChannels++;
                     }
-                  } catch (retryDurationError) {
-                    console.error(`Error fetching durations for ${channelName} (shorts retry):`, retryDurationError);
+                  } else {
+                    const retryErrorData = await retryResponse.json();
+                    console.warn(`Shorts key #${currentKeyIndex + 1} failed: ${retryErrorData?.error?.message || 'Unknown'}`);
                   }
+                } catch (retryError) {
+                  console.error(`Error with shorts key #${currentKeyIndex + 1}:`, retryError.message);
                 }
-                successfulChannels++;
+              }
+              
+              if (!success) {
+                console.error(`❌ All ${validKeys.length} shorts API keys exhausted for ${channelName}`);
+                failedChannels++;
               }
               continue;
             }
@@ -538,7 +554,7 @@ export default function CryptoAggregator() {
       const rssFeeds = [
         { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', logo: 'https://www.coindesk.com/favicon.ico' },
         { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
-        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: '/CryptSlate.jpg' },
+        { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: '/CryptoSlate.jpg' },
         { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: '/Decrypt.png' },
         { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' }
       ];
@@ -627,14 +643,14 @@ export default function CryptoAggregator() {
     return [
       { id: 1, title: "Bitcoin Surges Past Key Resistance Level", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/markets/2024/12/03/bitcoin-btc-technical-analysis/" },
       { id: 2, title: "Ethereum Layer 2 Solutions Gain Traction", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/ethereum-layer-2-scaling-solutions" },
-      { id: 3, title: "Top Crypto Trading Strategies for 2025", source: "CryptoSlate", logo: "/CryptSlate.jpg", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-trading-strategies/" },
+      { id: 3, title: "Top Crypto Trading Strategies for 2025", source: "CryptoSlate", logo: "/CryptoSlate.jpg", created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-trading-strategies/" },
       { id: 4, title: "Institutional Interest in Crypto Grows", source: "Yahoo Finance", logo: "https://s.yimg.com/cv/apiv2/default/icons/favicon_y19_32x32.ico", created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), url: "https://finance.yahoo.com/news/institutional-investors-cryptocurrency/" },
       { id: 5, title: "DeFi Market Shows Strong Growth", source: "The Motley Fool", logo: "https://g.foolcdn.com/art/companylogos/mark/MF.png", created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), url: "https://www.fool.com/investing/2024/12/03/defi-cryptocurrency-market/" },
       { id: 6, title: "NFT Market Sees Renewed Activity", source: "Crypto News", logo: "https://crypto.news/favicon.ico", created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), url: "https://crypto.news/nft-market-trends/" },
       { id: 7, title: "Altcoin Season: What to Watch", source: "Cointribune", logo: "https://www.cointribune.com/favicon.ico", created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), url: "https://www.cointribune.com/en/altcoin-season-guide/" },
       { id: 8, title: "New Crypto Regulations Take Effect", source: "CoinDesk", logo: "https://www.coindesk.com/favicon.ico", created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), url: "https://www.coindesk.com/policy/2024/12/03/crypto-regulations/" },
       { id: 9, title: "Market Analysis: Bull Run Continues", source: "Cointelegraph", logo: "https://cointelegraph.com/favicon.ico", created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), url: "https://cointelegraph.com/news/bitcoin-bull-market-analysis" },
-      { id: 10, title: "Expert Insights on Crypto Investing", source: "CryptoSlate", logo: "/CryptSlate.jpg", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-investment-guide/" }
+      { id: 10, title: "Expert Insights on Crypto Investing", source: "CryptoSlate", logo: "/CryptoSlate.jpg", created_at: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), url: "https://cryptoslate.com/crypto-investment-guide/" }
     ];
   };
 
@@ -697,7 +713,6 @@ export default function CryptoAggregator() {
       
       // Try to use current key, rotate if quota exceeded
       let API_KEY = API_KEYS[currentKeyIndex];
-      let rotatedKey = false;
       
       console.log(`Using YouTube API key #${currentKeyIndex + 1}`);
       
@@ -745,118 +760,115 @@ export default function CryptoAggregator() {
               message: errorData?.error?.message
             });
             
-            // Check if quota exceeded (403 error)
-            if (response.status === 403 && !rotatedKey) {
+            // Check if quota exceeded (403 error) - try all remaining keys
+            if (response.status === 403 && validKeys.length > 1) {
               console.warn(`⚠️ API key issue for key #${currentKeyIndex + 1}: ${errorData?.error?.message || 'Unknown error'}`);
-              console.warn(`Rotating to next key...`);
               
-              // Rotate to next key
-              currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
-              API_KEY = API_KEYS[currentKeyIndex];
+              // Try all remaining keys
+              let keyAttempts = 0;
+              const maxAttempts = validKeys.length - 1; // Don't retry the same key
+              let success = false;
               
-              // Save new key index
-              localStorage.setItem('youtube_api_key_index', currentKeyIndex.toString());
-              console.log(`✓ Switched to YouTube API key #${currentKeyIndex + 1}`);
-              
-              rotatedKey = true;
-              
-              // Retry with new key
-              const retryResponse = await fetch(
-                `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
-              );
-              
-              if (!retryResponse.ok) {
-                console.error(`❌ YouTube API error for ${channelName} with new key:`, response.status);
-                failedChannels++;
-                continue;
-              }
-              
-              const retryData = await retryResponse.json();
-              
-              if (retryData.items && retryData.items.length > 0) {
-                console.log(`✓ Found ${retryData.items.length} videos from ${channelName} with new key`);
+              while (keyAttempts < maxAttempts && !success) {
+                keyAttempts++;
+                currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
+                API_KEY = validKeys[currentKeyIndex];
+                localStorage.setItem('youtube_api_key_index', currentKeyIndex.toString());
+                console.log(`✓ Trying YouTube API key #${currentKeyIndex + 1}`);
                 
-                // Collect video IDs and temp videos for duration check
-                const retryVideoIds = [];
-                const retryTempVideos = [];
-                
-                retryData.items.forEach(item => {
-                  // Skip YouTube Shorts
-                  const title = item.snippet.title.toLowerCase();
-                  const description = item.snippet.description?.toLowerCase() || '';
+                try {
+                  const retryResponse = await fetch(
+                    `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+                  );
                   
-                  if (title.includes('#shorts') || title.includes('#short') || 
-                      description.includes('#shorts') || description.includes('youtube shorts')) {
-                    return; // Skip this video
-                  }
-                  
-                  retryVideoIds.push(item.id.videoId);
-                  retryTempVideos.push(item);
-                });
-                
-                // Fetch video durations
-                if (retryVideoIds.length > 0) {
-                  try {
-                    const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
-                    const retryDetailsResponse = await fetch(retryDetailsUrl);
-                    
-                    if (retryDetailsResponse.ok) {
-                      const retryDetailsData = await retryDetailsResponse.json();
-                      const retryDurationMap = {};
+                  if (retryResponse.ok) {
+                    success = true;
+                    const retryData = await retryResponse.json();
+              
+                    if (retryData.items && retryData.items.length > 0) {
+                      console.log(`✓ Found ${retryData.items.length} videos from ${channelName} with key #${currentKeyIndex + 1}`);
                       
-                      // Parse durations
-                      retryDetailsData.items?.forEach(video => {
-                        const duration = video.contentDetails?.duration || "PT0S";
-                        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-                        const hours = parseInt(match[1] || 0);
-                        const minutes = parseInt(match[2] || 0);
-                        const seconds = parseInt(match[3] || 0);
-                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-                        retryDurationMap[video.id] = totalSeconds;
-                      });
+                      const retryVideoIds = [];
+                      const retryTempVideos = [];
                       
-                      // Add videos that are 90+ seconds
-                      retryTempVideos.forEach((item, index) => {
-                        const videoIdStr = retryVideoIds[index];
-                        const duration = retryDurationMap[videoIdStr] || 0;
+                      retryData.items.forEach(item => {
+                        const title = item.snippet.title.toLowerCase();
+                        const description = item.snippet.description?.toLowerCase() || '';
                         
-                        // Skip videos under 90 seconds
-                        if (duration < 90) {
-                          console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
+                        if (title.includes('#shorts') || title.includes('#short') || 
+                            description.includes('#shorts') || description.includes('youtube shorts')) {
                           return;
                         }
                         
-                        const publishedDate = new Date(item.snippet.publishedAt);
-                        const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
-                        const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
-                        
-                        allVideos.push({
-                          id: videoId++,
-                          title: item.snippet.title,
-                          channel: channelName,
-                          views: timeAgo,
-                          url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                          thumbnail: item.snippet.thumbnails.medium.url,
-                          publishedAt: item.snippet.publishedAt
-                        });
+                        retryVideoIds.push(item.id.videoId);
+                        retryTempVideos.push(item);
                       });
+                      
+                      if (retryVideoIds.length > 0) {
+                        try {
+                          const retryDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${retryVideoIds.join(',')}&part=contentDetails`;
+                          const retryDetailsResponse = await fetch(retryDetailsUrl);
+                          
+                          if (retryDetailsResponse.ok) {
+                            const retryDetailsData = await retryDetailsResponse.json();
+                            const retryDurationMap = {};
+                            
+                            retryDetailsData.items?.forEach(video => {
+                              const duration = video.contentDetails?.duration || "PT0S";
+                              const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                              const hours = parseInt(match[1] || 0);
+                              const minutes = parseInt(match[2] || 0);
+                              const seconds = parseInt(match[3] || 0);
+                              const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                              retryDurationMap[video.id] = totalSeconds;
+                            });
+                            
+                            retryTempVideos.forEach((item, index) => {
+                              const videoIdStr = retryVideoIds[index];
+                              const duration = retryDurationMap[videoIdStr] || 0;
+                              
+                              if (duration < 90) {
+                                return;
+                              }
+                              
+                              const publishedDate = new Date(item.snippet.publishedAt);
+                              const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
+                              const timeAgo = hoursAgo < 1 ? 'Just now' : `${hoursAgo}h ago`;
+                              
+                              allVideos.push({
+                                id: videoId++,
+                                title: item.snippet.title,
+                                channel: channelName,
+                                views: timeAgo,
+                                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                                thumbnail: item.snippet.thumbnails.medium.url,
+                                publishedAt: item.snippet.publishedAt
+                              });
+                            });
+                          }
+                        } catch (retryDurationError) {
+                          console.error(`Error fetching durations for ${channelName} (retry):`, retryDurationError);
+                        }
+                      }
+                      successfulChannels++;
                     }
-                  } catch (retryDurationError) {
-                    console.error(`Error fetching durations for ${channelName} (retry):`, retryDurationError);
+                  } else {
+                    const retryErrorData = await retryResponse.json();
+                    console.warn(`Key #${currentKeyIndex + 1} failed: ${retryErrorData?.error?.message || 'Unknown'}`);
                   }
+                } catch (retryError) {
+                  console.error(`Error with key #${currentKeyIndex + 1}:`, retryError.message);
                 }
-                successfulChannels++;
+              }
+              
+              if (!success) {
+                console.error(`❌ All ${validKeys.length} API keys exhausted for ${channelName}`);
+                failedChannels++;
               }
               continue;
             }
             
-            console.error(`❌ YouTube API error for ${channelName}:`, {
-              status: response.status,
-              statusText: response.statusText,
-              error: errorData
-            });
             failedChannels++;
-            continue;
           }
           
           const data = await response.json();
