@@ -279,7 +279,8 @@ export default function CryptoAggregator() {
         'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
         'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
         'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
-        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
+        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg',
+        'CryptoWendyO': 'UCla2jS8BrfLJj7kbKyy5_ew'
       };
 
       const yesterday = new Date();
@@ -730,7 +731,8 @@ export default function CryptoAggregator() {
         'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
         'Good Evening Crypto': 'UCEALkfpMmmWQkGXWhRUmslA',
         'Black Swan Capitalist': 'UCURoln2BKCvvMT5peanKAvw',
-        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg'
+        'Crypto with Klaus': 'UCOb8ZvB7CK7-IEf-8RmhULg',
+        'CryptoWendyO': 'UCla2jS8BrfLJj7kbKyy5_ew'
       };
 
       const yesterday = new Date();
