@@ -558,7 +558,10 @@ export default function CryptoAggregator() {
         { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph', logo: 'https://cointelegraph.com/favicon.ico' },
         { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate', logo: '/CryptoSlate.jpg' },
         { url: 'https://decrypt.co/feed', source: 'Decrypt', logo: '/Decrypt.png' },
-        { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' }
+        { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' },
+        { url: 'https://coinmarketcap.com/headlines/rss/', source: 'CoinMarketCap', logo: 'https://coinmarketcap.com/favicon.ico' },
+        { url: 'https://crypto.com/research/rss', source: 'Crypto.com', logo: 'https://crypto.com/favicon.ico' },
+        { url: 'https://coinotag.com/feed/', source: 'Coinotag', logo: 'https://coinotag.com/favicon.ico' }
       ];
 
       const allArticles = [];
