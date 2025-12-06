@@ -561,7 +561,7 @@ export default function CryptoAggregator() {
         { url: 'https://www.theblockcrypto.com/rss.xml', source: 'The Block', logo: '/TheBlock.jpeg' },
         { url: 'https://coinmarketcap.com/headlines/rss/', source: 'CoinMarketCap', logo: 'https://coinmarketcap.com/favicon.ico' },
         { url: 'https://crypto.com/research/rss', source: 'Crypto.com', logo: 'https://crypto.com/favicon.ico' },
-        { url: 'https://coinotag.com/feed/', source: 'Coinotag', logo: 'https://coinotag.com/favicon.ico' }
+        { url: 'https://coinotag.com/en/feed/', source: 'Coinotag', logo: 'https://coinotag.com/favicon.ico' }
       ];
 
       const allArticles = [];
@@ -1101,7 +1101,7 @@ export default function CryptoAggregator() {
   const displayedPrices = validCryptoPrices.slice(0, pricesExpanded === 0 ? 18 : pricesExpanded === 1 ? 52 : pricesExpanded === 2 ? 84 : validCryptoPrices.length);
   const displayedNews = newsExpanded ? news : news.slice(0, 4);
   const displayedVideos = videosExpanded ? videos.slice(0, 8) : videos.slice(0, 3);
-  const displayedArticles = articlesExpanded ? articles : articles.slice(0, 4);
+  const displayedArticles = articlesExpanded ? articles.slice(0, 16) : articles.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -1555,7 +1555,7 @@ export default function CryptoAggregator() {
           {/* Mobile: Show 3 with expand button */}
           <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4">
-              {(articlesExpanded ? articles : articles.slice(0, 3)).map((article) => (
+              {(articlesExpanded ? articles.slice(0, 16) : articles.slice(0, 3)).map((article) => (
                 <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
@@ -1586,7 +1586,7 @@ export default function CryptoAggregator() {
           {/* Desktop: Show 4 in 2 columns with expand button */}
           <div className="hidden md:block">
             <div className="grid md:grid-cols-2 gap-4">
-              {(articlesExpanded ? articles : articles.slice(0, 4)).map((article) => (
+              {(articlesExpanded ? articles.slice(0, 16) : articles.slice(0, 4)).map((article) => (
                 <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="group block bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:ring-2 group-hover:ring-[#ffc93c]/50 transition-all">
