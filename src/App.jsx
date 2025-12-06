@@ -270,7 +270,7 @@ export default function CryptoAggregator() {
       const channels = {
         'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
         'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
-        'Mickle': 'UCwidOciShnJDhNEF23T06w',
+        'Mickle': 'UC-widOciShnJDhNEF23T06w',
         'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
         'Jake Claver': 'UCsu-BlV8FLI6piu4RQPjLxg',
@@ -722,7 +722,7 @@ export default function CryptoAggregator() {
       const channels = {
         'Digital Outlook': 'UCG9sTui02o3W4CbHQIP-l7g',
         'Crypto Sensei': 'UCdAz9h6B4j48m_Z-5q0GehA',
-        'Mickle': 'UCwidOciShnJDhNEF23T06w',
+        'Mickle': 'UC-widOciShnJDhNEF23T06w',
         'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
         'Altcoin Daily': 'UCbLhGKVY-bJPcawebgtNfbw',
