@@ -626,8 +626,8 @@ export default function CryptoAggregator() {
       // Sort by latest
       allArticles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-      // Take top 10
-      const topArticles = allArticles.slice(0, 10);
+      // Take top 20 (to display 16 when expanded)
+      const topArticles = allArticles.slice(0, 20);
       
       if (topArticles.length > 0) {
         setArticles(topArticles);
