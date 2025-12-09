@@ -653,21 +653,38 @@ export default function CryptoAggregator() {
       const allArticles = [];
       let articleId = 1;
 
-      // Fetch from each RSS feed using CORS proxy
+      // Fetch from each RSS feed using CORS proxy with fallbacks
       for (const feed of rssFeeds) {
         try {
           console.log(`Fetching ${feed.source}...`);
           
-          // Use corsproxy.io - more reliable CORS proxy
-          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.url)}`;
-          const response = await fetch(proxyUrl);
-
-          if (!response.ok) {
-            console.error(`❌ Failed to fetch ${feed.source}: ${response.status}`);
-            continue;
+          // Try multiple CORS proxies as fallbacks
+          const corsProxies = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`,
+            `https://corsproxy.io/?${encodeURIComponent(feed.url)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`
+          ];
+          
+          let response = null;
+          let xmlText = null;
+          
+          // Try each proxy until one works
+          for (const proxyUrl of corsProxies) {
+            try {
+              response = await fetch(proxyUrl);
+              if (response.ok) {
+                xmlText = await response.text();
+                break;
+              }
+            } catch (proxyError) {
+              continue; // Try next proxy
+            }
           }
 
-          const xmlText = await response.text();
+          if (!xmlText) {
+            console.error(`❌ Failed to fetch ${feed.source} from all proxies`);
+            continue;
+          }
 
           // Parse XML
           const parser = new DOMParser();
