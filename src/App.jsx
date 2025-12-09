@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TrendingUp, TrendingDown, RefreshCw, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, X, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CryptoAggregator() {
@@ -19,6 +19,9 @@ export default function CryptoAggregator() {
   const [shortsExpanded, setShortsExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
   const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   
   // Refs for scrolling to section tops
   const pricesRef = useRef(null);
@@ -213,6 +216,64 @@ export default function CryptoAggregator() {
       }
       
       setLoading(false);
+    }
+  };
+
+  const searchCrypto = async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    
+    try {
+      // Get available API keys
+      const API_KEYS = [
+        import.meta.env.VITE_COINGECKO_API_KEY,
+        'CG-3sWy6p7H9PxVMPazCH3b4qmP',
+        'CG-sMadE1qVVGWq7C2pxdoMEeub',
+        'CG-1HxnkGiCvdMTQKAQWtcvYfzc'
+      ].filter(Boolean);
+
+      let currentKeyIndex = parseInt(localStorage.getItem('coingecko_api_key_index') || '0');
+      let API_KEY = API_KEYS[currentKeyIndex];
+      const apiKeyParam = API_KEY ? `&x_cg_demo_api_key=${API_KEY}` : '';
+
+      // Search CoinGecko for the query
+      const searchUrl = `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}${apiKeyParam}`;
+      const searchResponse = await fetch(searchUrl);
+      
+      if (!searchResponse.ok) {
+        throw new Error('Search failed');
+      }
+
+      const searchData = await searchResponse.json();
+      
+      // Get the coin IDs from search results (top 10)
+      const coinIds = searchData.coins.slice(0, 10).map(coin => coin.id).join(',');
+      
+      if (coinIds) {
+        // Fetch market data for these coins
+        const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc${apiKeyParam}`;
+        const marketsResponse = await fetch(marketsUrl);
+        
+        if (marketsResponse.ok) {
+          const marketsData = await marketsResponse.json();
+          setSearchResults(marketsData);
+          setPriceCategory('search');
+          setCryptoPrices(marketsData);
+        } else {
+          setSearchResults([]);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error searching crypto:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -1123,10 +1184,15 @@ export default function CryptoAggregator() {
               </button>
             </div>
             
-            {/* Category Toggle Buttons */}
-            <div className="flex flex-wrap gap-2">
+            {/* Category Toggle Buttons and Search */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setPriceCategory('top100')}
+                onClick={() => {
+                  setPriceCategory('top100');
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                   priceCategory === 'top100'
                     ? 'bg-[#ffc93c] text-black'
@@ -1136,7 +1202,11 @@ export default function CryptoAggregator() {
                 Top 100
               </button>
               <button
-                onClick={() => setPriceCategory('iso20022')}
+                onClick={() => {
+                  setPriceCategory('iso20022');
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                   priceCategory === 'iso20022'
                     ? 'bg-[#ffc93c] text-black'
@@ -1146,7 +1216,11 @@ export default function CryptoAggregator() {
                 ISO 20022 Coins
               </button>
               <button
-                onClick={() => setPriceCategory('ai')}
+                onClick={() => {
+                  setPriceCategory('ai');
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                   priceCategory === 'ai'
                     ? 'bg-[#ffc93c] text-black'
@@ -1156,7 +1230,11 @@ export default function CryptoAggregator() {
                 Top AI Coins
               </button>
               <button
-                onClick={() => setPriceCategory('meme')}
+                onClick={() => {
+                  setPriceCategory('meme');
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                   priceCategory === 'meme'
                     ? 'bg-[#ffc93c] text-black'
@@ -1165,6 +1243,36 @@ export default function CryptoAggregator() {
               >
                 Top Meme Coins
               </button>
+            </div>
+            
+            {/* Search Field */}
+            <div className="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search any crypto..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.trim().length >= 2) {
+                      searchCrypto(e.target.value);
+                    } else {
+                      setSearchResults([]);
+                      if (priceCategory === 'search') {
+                        setPriceCategory('top100');
+                      }
+                    }
+                  }}
+                  className="w-full md:w-64 px-4 py-2 pl-10 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                {isSearching && (
+                  <RefreshCw className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={18} />
+                )}
+              </div>
+              {priceCategory === 'search' && searchResults.length > 0 && (
+                <p className="text-xs text-gray-400 mt-1">Found {searchResults.length} results</p>
+              )}
             </div>
           </div>
           {loading ? (
