@@ -109,7 +109,7 @@ export default function CryptoAggregator() {
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${apiKeyParam}`;
       } else if (category === 'iso20022') {
         // ISO 20022 compliant coins - fetch as comma-separated IDs
-        const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdc-network,iota,cardano,vechain,fetch-ai';
+        const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,fetch-ai';
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
       } else if (category === 'ai') {
         // Top 30 AI coins - using category filter
@@ -144,7 +144,7 @@ export default function CryptoAggregator() {
           if (category === 'top100') {
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${newApiKeyParam}`;
           } else if (category === 'iso20022') {
-            const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdc-network,iota,cardano,vechain,fetch-ai';
+            const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,fetch-ai';
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
           } else if (category === 'ai') {
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1${newApiKeyParam}`;
