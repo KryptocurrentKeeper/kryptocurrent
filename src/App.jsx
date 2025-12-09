@@ -30,6 +30,20 @@ export default function CryptoAggregator() {
   const shortsRef = useRef(null);
   const articlesRef = useRef(null);
 
+  // Debounced search effect
+  useEffect(() => {
+    if (searchQuery.trim().length >= 2) {
+      const timeoutId = setTimeout(() => {
+        searchCrypto(searchQuery);
+      }, 500); // Wait 500ms after user stops typing
+
+      return () => clearTimeout(timeoutId);
+    } else if (searchQuery.trim().length === 0 && priceCategory === 'search') {
+      setPriceCategory('top100');
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchCryptoPrices();
     fetchCryptoNews();
@@ -240,20 +254,30 @@ export default function CryptoAggregator() {
       let API_KEY = API_KEYS[currentKeyIndex];
       const apiKeyParam = API_KEY ? `&x_cg_demo_api_key=${API_KEY}` : '';
 
-      // Search CoinGecko for the query
-      const searchUrl = `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}${apiKeyParam}`;
-      const searchResponse = await fetch(searchUrl);
+      // Use the coins list endpoint (free tier) and filter locally
+      const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam.substring(1) : ''}`;
+      const listResponse = await fetch(listUrl);
       
-      if (!searchResponse.ok) {
-        throw new Error('Search failed');
+      if (!listResponse.ok) {
+        throw new Error('Failed to fetch coins list');
       }
 
-      const searchData = await searchResponse.json();
+      const coinsList = await listResponse.json();
       
-      // Get the coin IDs from search results (top 10)
-      const coinIds = searchData.coins.slice(0, 10).map(coin => coin.id).join(',');
+      // Filter coins that match the search query (case insensitive)
+      const searchLower = query.toLowerCase();
+      const matchingCoins = coinsList
+        .filter(coin => 
+          coin.name.toLowerCase().includes(searchLower) || 
+          coin.symbol.toLowerCase().includes(searchLower) ||
+          coin.id.toLowerCase().includes(searchLower)
+        )
+        .slice(0, 10); // Take top 10 matches
       
-      if (coinIds) {
+      if (matchingCoins.length > 0) {
+        // Get the coin IDs
+        const coinIds = matchingCoins.map(coin => coin.id).join(',');
+        
         // Fetch market data for these coins
         const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc${apiKeyParam}`;
         const marketsResponse = await fetch(marketsUrl);
@@ -268,6 +292,8 @@ export default function CryptoAggregator() {
         }
       } else {
         setSearchResults([]);
+        setPriceCategory('search');
+        setCryptoPrices([]);
       }
     } catch (error) {
       console.error('Error searching crypto:', error);
@@ -1252,17 +1278,7 @@ export default function CryptoAggregator() {
                   type="text"
                   placeholder="Search any crypto..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (e.target.value.trim().length >= 2) {
-                      searchCrypto(e.target.value);
-                    } else {
-                      setSearchResults([]);
-                      if (priceCategory === 'search') {
-                        setPriceCategory('top100');
-                      }
-                    }
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full md:w-64 px-4 py-2 pl-10 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
