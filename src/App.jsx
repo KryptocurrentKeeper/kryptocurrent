@@ -1808,6 +1808,7 @@ export default function CryptoAggregator() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
