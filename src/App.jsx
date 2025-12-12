@@ -1172,7 +1172,9 @@ export default function CryptoAggregator() {
         
         if (cacheAge < oneHour) {
           console.log(`✓ Using cached memes (${Math.floor(cacheAge / 60000)} minutes old)`);
-          setMemes(JSON.parse(cached));
+          const cachedMemes = JSON.parse(cached);
+          console.log(`✓ Loaded ${cachedMemes.length} memes from cache:`, cachedMemes.slice(0, 2));
+          setMemes(cachedMemes);
           setMemesLoading(false);
           return;
         }
@@ -1180,31 +1182,31 @@ export default function CryptoAggregator() {
 
       console.log('Fetching crypto memes from Reddit...');
       
-      // Fetch from multiple crypto meme subreddits
-      const subreddits = ['cryptocurrencymemes', 'CryptoCurrency', 'Bitcoin'];
+      // Only use r/cryptocurrencymemes since others have CORS restrictions
+      // Fetch 50 to ensure we get 40 good image memes after filtering
+      const subreddit = 'cryptocurrencymemes';
       const allMemes = [];
       let memeId = 1;
 
-      for (const subreddit of subreddits) {
-        try {
-          // Use old.reddit.com which allows CORS
-          const url = `https://old.reddit.com/r/${subreddit}/hot.json?limit=20`;
-          console.log(`Fetching from r/${subreddit}...`);
-          const response = await fetch(url, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0'
-            }
-          });
-          
-          if (!response.ok) {
-            console.error(`Failed to fetch from r/${subreddit}:`, response.status, response.statusText);
-            const errorText = await response.text();
-            console.error('Error response:', errorText.substring(0, 200));
-            continue;
+      try {
+        // Use old.reddit.com which allows CORS
+        const url = `https://old.reddit.com/r/${subreddit}/hot.json?limit=50`;
+        console.log(`Fetching from r/${subreddit}...`);
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0'
           }
+        });
+        
+        if (!response.ok) {
+          console.error(`Failed to fetch from r/${subreddit}:`, response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('Error response:', errorText.substring(0, 200));
+          throw new Error('Failed to fetch memes');
+        }
 
-          const data = await response.json();
-          console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
+        const data = await response.json();
+        console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
           
           // Filter for image posts only
           data.data.children.forEach(post => {
@@ -1215,12 +1217,6 @@ export default function CryptoAggregator() {
                 (postData.url.endsWith('.jpg') || postData.url.endsWith('.png') || 
                  postData.url.endsWith('.jpeg') || postData.url.endsWith('.gif') ||
                  postData.url.includes('i.redd.it'))) {
-              
-              // For CryptoCurrency subreddit, only include meme-flaired posts
-              if (subreddit === 'CryptoCurrency' && 
-                  (!postData.link_flair_text || !postData.link_flair_text.toLowerCase().includes('meme'))) {
-                return;
-              }
               
               allMemes.push({
                 id: memeId++,
@@ -1236,12 +1232,12 @@ export default function CryptoAggregator() {
             }
           });
           
-        } catch (error) {
-          console.error(`Error fetching from r/${subreddit}:`, error);
-        }
+      } catch (error) {
+        console.error('Error fetching memes:', error);
+        throw error;
       }
 
-      console.log(`✓ Collected ${allMemes.length} total memes from all subreddits`);
+      console.log(`✓ Collected ${allMemes.length} image memes from r/cryptocurrencymemes`);
 
       // Sort by upvotes and take top 40
       allMemes.sort((a, b) => b.upvotes - a.upvotes);
@@ -1905,12 +1901,23 @@ export default function CryptoAggregator() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Happy Tears</h2>
             <button 
-              onClick={fetchCryptoMemes}
+              onClick={() => {
+                // Clear cache to force fresh fetch
+                localStorage.removeItem('kryptocurrent_memes');
+                localStorage.removeItem('kryptocurrent_memes_timestamp');
+                console.log('Cache cleared, fetching fresh memes...');
+                fetchCryptoMemes();
+              }}
               className="px-3 py-1 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded text-sm font-semibold transition"
             >
               Refresh Memes
             </button>
           </div>
+          
+          {(() => {
+            console.log('Memes render check:', { memesLoading, memesCount: memes.length, memes: memes.slice(0, 1) });
+            return null;
+          })()}
           
           {memesLoading ? (
             <div className="text-center py-8 text-gray-400">
