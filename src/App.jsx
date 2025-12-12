@@ -1189,24 +1189,36 @@ export default function CryptoAggregator() {
       let memeId = 1;
 
       try {
-        // Use old.reddit.com which allows CORS
-        const url = `https://old.reddit.com/r/${subreddit}/hot.json?limit=50`;
-        console.log(`Fetching from r/${subreddit}...`);
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0'
-          }
-        });
+        // Reddit URL
+        const redditUrl = `https://old.reddit.com/r/${subreddit}/hot.json?limit=50`;
         
-        if (!response.ok) {
-          console.error(`Failed to fetch from r/${subreddit}:`, response.status, response.statusText);
-          const errorText = await response.text();
-          console.error('Error response:', errorText.substring(0, 200));
-          throw new Error('Failed to fetch memes');
+        // Try multiple CORS proxies
+        const corsProxies = [
+          `https://corsproxy.io/?${encodeURIComponent(redditUrl)}`,
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(redditUrl)}`,
+          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(redditUrl)}`
+        ];
+        
+        let data = null;
+        
+        // Try each proxy until one works
+        for (const proxyUrl of corsProxies) {
+          try {
+            console.log(`Trying to fetch memes via proxy...`);
+            const response = await fetch(proxyUrl);
+            if (response.ok) {
+              data = await response.json();
+              console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
+              break;
+            }
+          } catch (proxyError) {
+            continue; // Try next proxy
+          }
         }
-
-        const data = await response.json();
-        console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
+        
+        if (!data) {
+          throw new Error('All CORS proxies failed');
+        }
           
           // Filter for image posts only
           data.data.children.forEach(post => {
@@ -1552,16 +1564,16 @@ export default function CryptoAggregator() {
           )}
 
           {/* ETF Tracker */}
-          <div className="mt-6 p-4 bg-slate-700/50 rounded-xl">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
+          <div className="mt-6 p-3 bg-slate-700/50 rounded-xl">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-1">
+                <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
                 <div>
-                  <h3 className="text-lg font-bold text-white">XRP ETF Tracker</h3>
-                  <p className="text-sm text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
+                  <h3 className="text-base font-bold text-white">XRP ETF Tracker</h3>
+                  <p className="text-xs text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
                 </div>
               </div>
-              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-4 md:px-6 py-2 md:py-3 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-sm md:text-base">
+              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-3 md:px-4 py-1.5 md:py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-xs md:text-sm">
                 Visit →
               </a>
             </div>
