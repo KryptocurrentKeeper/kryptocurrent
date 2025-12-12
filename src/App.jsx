@@ -114,9 +114,10 @@ export default function CryptoAggregator() {
       let apiKeyParam = '';
       if (validKeys.length > 0 && validKeys[currentKeyIndex % validKeys.length]) {
         const currentKey = validKeys[currentKeyIndex % validKeys.length];
-        // Try using x_cg_demo_api_key for all keys (testing)
-        apiKeyParam = `&x_cg_demo_api_key=${currentKey}`;
-        console.log(`Using CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1}: ${currentKey.substring(0, 10)}...`);
+        // Basic paid plan uses x-cg-pro-api-key (with hyphens)
+        const isPaidKey = currentKey === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
+        apiKeyParam = isPaidKey ? `&x-cg-pro-api-key=${currentKey}` : `&x_cg_demo_api_key=${currentKey}`;
+        console.log(`Using CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1}: ${currentKey.substring(0, 10)}... (${isPaidKey ? 'paid' : 'demo'})`);
       } else {
         console.log('Using CoinGecko free tier (no API key)');
       }
@@ -156,8 +157,9 @@ export default function CryptoAggregator() {
           localStorage.setItem('coingecko_api_key_index', currentKeyIndex.toString());
           console.log(`✓ Switched to CoinGecko API key #${currentKeyIndex + 1}`);
           
-          // Rebuild URL with new key
-          const newApiKeyParam = `&x_cg_demo_api_key=${newApiKey}`;
+          // Rebuild URL with new key (paid keys use hyphens)
+          const isPaidKey = newApiKey === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
+          const newApiKeyParam = isPaidKey ? `&x-cg-pro-api-key=${newApiKey}` : `&x_cg_demo_api_key=${newApiKey}`;
           let retryUrl = '';
           
           if (category === 'top100') {
@@ -257,8 +259,9 @@ export default function CryptoAggregator() {
 
       let currentKeyIndex = parseInt(localStorage.getItem('coingecko_api_key_index') || '0');
       let API_KEY = API_KEYS[currentKeyIndex];
-      // Try using x_cg_demo_api_key for all keys (testing)
-      const apiKeyParam = API_KEY ? `x_cg_demo_api_key=${API_KEY}` : '';
+      // Basic paid plan uses x-cg-pro-api-key (with hyphens)
+      const isPaidKey = API_KEY === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
+      const apiKeyParam = API_KEY ? (isPaidKey ? `x-cg-pro-api-key=${API_KEY}` : `x_cg_demo_api_key=${API_KEY}`) : '';
 
       console.log('Fetching coins list with paid API...');
       // Use the coins list endpoint (works with paid plan)
