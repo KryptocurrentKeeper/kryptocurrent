@@ -1902,8 +1902,14 @@ export default function CryptoAggregator() {
 
         {/* Crypto Memes Section - Horizontal Scroll */}
         <div ref={memesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <div className="mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Happy Tears</h2>
+            <button 
+              onClick={fetchCryptoMemes}
+              className="px-3 py-1 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded text-sm font-semibold transition"
+            >
+              Refresh Memes
+            </button>
           </div>
           
           {memesLoading ? (
