@@ -466,7 +466,8 @@ export default function CryptoAggregator() {
                               const videoIdStr = retryVideoIds[index];
                               const duration = retryDurationMap[videoIdStr] || 0;
                               
-                              if (duration >= 90) {
+                              // Only keep videos between 5 seconds and 2 minutes 40 seconds (160 seconds)
+                              if (duration < 5 || duration > 160) {
                                 return;
                               }
                               
@@ -561,8 +562,8 @@ export default function CryptoAggregator() {
                     const currentVideoId = videoIds[index];
                     const duration = durationMap[currentVideoId] || 0;
                     
-                    // Only keep videos UNDER 90 seconds
-                    if (duration >= 90) {
+                    // Only keep videos between 5 seconds and 2 minutes 40 seconds (160 seconds)
+                    if (duration < 5 || duration > 160) {
                       return;
                     }
                     
@@ -660,9 +661,9 @@ export default function CryptoAggregator() {
           
           // Try multiple CORS proxies as fallbacks
           const corsProxies = [
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`,
             `https://corsproxy.io/?${encodeURIComponent(feed.url)}`,
-            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feed.url)}`,
+            `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(feed.url)}`
           ];
           
           let response = null;
@@ -937,7 +938,8 @@ export default function CryptoAggregator() {
                               const videoIdStr = retryVideoIds[index];
                               const duration = retryDurationMap[videoIdStr] || 0;
                               
-                              if (duration < 90) {
+                              // Only keep videos longer than 2 minutes 40 seconds (160 seconds)
+                              if (duration <= 160) {
                                 return;
                               }
                               
@@ -1031,9 +1033,9 @@ export default function CryptoAggregator() {
                     const currentVideoId = videoIds[index];
                     const duration = durationMap[currentVideoId] || 0;
                     
-                    // Skip videos under 90 seconds
-                    if (duration < 90) {
-                      console.log(`Skipping ${item.snippet.title} - duration: ${duration}s`);
+                    // Only keep videos longer than 2 minutes 40 seconds (160 seconds)
+                    if (duration <= 160) {
+                      console.log(`Skipping ${item.snippet.title} - duration: ${duration}s (too short)`);
                       return;
                     }
                     
