@@ -266,14 +266,28 @@ export default function CryptoAggregator() {
       console.log('Fetching coins list with paid API...');
       // Use the coins list endpoint (works with paid plan)
       const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam : ''}`;
+      console.log('List URL:', listUrl);
       const listResponse = await fetch(listUrl);
       
       if (!listResponse.ok) {
-        console.error('Failed to fetch coins list:', listResponse.status);
+        console.error('Failed to fetch coins list:', listResponse.status, listResponse.statusText);
+        const errorText = await listResponse.text();
+        console.error('Error response:', errorText.substring(0, 200));
         throw new Error('Failed to fetch coins list');
       }
 
-      const coinsList = await listResponse.json();
+      const listText = await listResponse.text();
+      console.log('Response preview:', listText.substring(0, 100));
+      
+      let coinsList;
+      try {
+        coinsList = JSON.parse(listText);
+      } catch (e) {
+        console.error('Failed to parse coins list JSON:', e);
+        console.error('Response was:', listText.substring(0, 500));
+        throw new Error('Invalid JSON response from coins list');
+      }
+      
       console.log(`✓ Fetched ${coinsList.length} coins from CoinGecko`);
       
       // Filter coins that match the search query (case insensitive)
@@ -295,16 +309,31 @@ export default function CryptoAggregator() {
         console.log('Fetching market data for matches...');
         // Fetch market data for these coins
         const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&${apiKeyParam}`;
+        console.log('Markets URL:', marketsUrl);
         const marketsResponse = await fetch(marketsUrl);
         
         if (marketsResponse.ok) {
-          const marketsData = await marketsResponse.json();
+          const marketsText = await marketsResponse.text();
+          console.log('Markets response preview:', marketsText.substring(0, 100));
+          
+          let marketsData;
+          try {
+            marketsData = JSON.parse(marketsText);
+          } catch (e) {
+            console.error('Failed to parse markets JSON:', e);
+            console.error('Response was:', marketsText.substring(0, 500));
+            setSearchResults([]);
+            return;
+          }
+          
           console.log(`✓ Got market data for ${marketsData.length} coins`);
           setSearchResults(marketsData);
           setPriceCategory('search');
           setCryptoPrices(marketsData);
         } else {
-          console.error('Failed to fetch market data:', marketsResponse.status);
+          console.error('Failed to fetch market data:', marketsResponse.status, marketsResponse.statusText);
+          const errorText = await marketsResponse.text();
+          console.error('Error response:', errorText.substring(0, 200));
           setSearchResults([]);
         }
       } else {
