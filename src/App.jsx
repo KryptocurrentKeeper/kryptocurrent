@@ -9,6 +9,7 @@ export default function CryptoAggregator() {
   const [shorts, setShorts] = useState([]);
   const [articles, setArticles] = useState([]);
   const [memes, setMemes] = useState([]);
+  const [memesLoading, setMemesLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -1159,6 +1160,7 @@ export default function CryptoAggregator() {
   };
 
   const fetchCryptoMemes = async () => {
+    setMemesLoading(true);
     try {
       // Check cache first (1 hour expiry)
       const cached = localStorage.getItem('kryptocurrent_memes');
@@ -1171,6 +1173,7 @@ export default function CryptoAggregator() {
         if (cacheAge < oneHour) {
           console.log(`✓ Using cached memes (${Math.floor(cacheAge / 60000)} minutes old)`);
           setMemes(JSON.parse(cached));
+          setMemesLoading(false);
           return;
         }
       }
@@ -1184,16 +1187,24 @@ export default function CryptoAggregator() {
 
       for (const subreddit of subreddits) {
         try {
-          // Fetch hot posts from subreddit (no API key needed for public data)
-          const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=20`;
-          const response = await fetch(url);
+          // Use old.reddit.com which allows CORS
+          const url = `https://old.reddit.com/r/${subreddit}/hot.json?limit=20`;
+          console.log(`Fetching from r/${subreddit}...`);
+          const response = await fetch(url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0'
+            }
+          });
           
           if (!response.ok) {
-            console.error(`Failed to fetch from r/${subreddit}:`, response.status);
+            console.error(`Failed to fetch from r/${subreddit}:`, response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('Error response:', errorText.substring(0, 200));
             continue;
           }
 
           const data = await response.json();
+          console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
           
           // Filter for image posts only
           data.data.children.forEach(post => {
@@ -1225,26 +1236,35 @@ export default function CryptoAggregator() {
             }
           });
           
-          console.log(`✓ Found ${data.data.children.length} posts from r/${subreddit}`);
         } catch (error) {
           console.error(`Error fetching from r/${subreddit}:`, error);
         }
       }
 
+      console.log(`✓ Collected ${allMemes.length} total memes from all subreddits`);
+
       // Sort by upvotes and take top 40
       allMemes.sort((a, b) => b.upvotes - a.upvotes);
       const topMemes = allMemes.slice(0, 40);
       
-      console.log(`✓ Loaded ${topMemes.length} crypto memes`);
-      setMemes(topMemes);
-      
-      // Cache for 1 hour
-      localStorage.setItem('kryptocurrent_memes', JSON.stringify(topMemes));
-      localStorage.setItem('kryptocurrent_memes_timestamp', Date.now().toString());
+      if (topMemes.length === 0) {
+        console.warn('⚠️ No memes found - Reddit may be blocking requests');
+        // Set empty array to stop loading spinner
+        setMemes([]);
+      } else {
+        console.log(`✓ Loaded ${topMemes.length} crypto memes`);
+        setMemes(topMemes);
+        
+        // Cache for 1 hour
+        localStorage.setItem('kryptocurrent_memes', JSON.stringify(topMemes));
+        localStorage.setItem('kryptocurrent_memes_timestamp', Date.now().toString());
+      }
       
     } catch (error) {
       console.error('Error fetching memes:', error);
       setMemes([]);
+    } finally {
+      setMemesLoading(false);
     }
   };
 
@@ -1883,14 +1903,17 @@ export default function CryptoAggregator() {
         {/* Crypto Memes Section - Horizontal Scroll */}
         <div ref={memesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-white">Crypto Memes</h2>
-            <p className="text-sm text-gray-400 mt-1">Fresh from Reddit's crypto communities</p>
+            <h2 className="text-xl font-bold text-white">Happy Tears</h2>
           </div>
           
-          {memes.length === 0 ? (
+          {memesLoading ? (
             <div className="text-center py-8 text-gray-400">
               <RefreshCw className="animate-spin mx-auto mb-2" size={32} />
-              <p>Loading memes...</p>
+              <p>Loading memes from Reddit...</p>
+            </div>
+          ) : memes.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <p>No memes available at the moment. Try refreshing the page!</p>
             </div>
           ) : (
             <div className="relative">
