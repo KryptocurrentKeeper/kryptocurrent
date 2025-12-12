@@ -253,7 +253,7 @@ export default function CryptoAggregator() {
     setIsSearching(true);
     
     try {
-      // Paid API key first, then fallback to demo keys
+      // Get available API keys
       const API_KEYS = [
         'CG-pDYwrEULGCyoK3cDn37ZMws6', // Paid key (primary)
         import.meta.env.VITE_COINGECKO_API_KEY,
@@ -268,81 +268,37 @@ export default function CryptoAggregator() {
       const isPaidKey = API_KEY === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
       const apiKeyParam = API_KEY ? (isPaidKey ? `x-cg-pro-api-key=${API_KEY}` : `x_cg_demo_api_key=${API_KEY}`) : '';
 
-      console.log('Fetching coins list with paid API...');
-      // Use the coins list endpoint (works with paid plan)
-      const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam : ''}`;
-      console.log('List URL:', listUrl);
-      const listResponse = await fetch(listUrl);
+      // Search within top 250 coins to avoid rate limits
+      console.log('Searching in top 250 coins...');
+      const searchUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&${apiKeyParam}`;
+      console.log('Search URL:', searchUrl);
+      const response = await fetch(searchUrl);
       
-      if (!listResponse.ok) {
-        console.error('Failed to fetch coins list:', listResponse.status, listResponse.statusText);
-        const errorText = await listResponse.text();
-        console.error('Error response:', errorText.substring(0, 200));
-        throw new Error('Failed to fetch coins list');
+      if (!response.ok) {
+        console.error('Failed to fetch coins:', response.status, response.statusText);
+        throw new Error('Search failed');
       }
 
-      const listText = await listResponse.text();
-      console.log('Response preview:', listText.substring(0, 100));
-      
-      let coinsList;
-      try {
-        coinsList = JSON.parse(listText);
-      } catch (e) {
-        console.error('Failed to parse coins list JSON:', e);
-        console.error('Response was:', listText.substring(0, 500));
-        throw new Error('Invalid JSON response from coins list');
-      }
-      
-      console.log(`✓ Fetched ${coinsList.length} coins from CoinGecko`);
+      const allCoins = await response.json();
+      console.log(`✓ Fetched ${allCoins.length} coins`);
       
       // Filter coins that match the search query (case insensitive)
       const searchLower = query.toLowerCase();
-      const matchingCoins = coinsList
-        .filter(coin => 
-          coin.name.toLowerCase().includes(searchLower) || 
-          coin.symbol.toLowerCase().includes(searchLower) ||
-          coin.id.toLowerCase().includes(searchLower)
-        )
-        .slice(0, 20); // Take top 20 matches
+      const matchingCoins = allCoins.filter(coin => 
+        coin.name.toLowerCase().includes(searchLower) || 
+        coin.symbol.toLowerCase().includes(searchLower) ||
+        coin.id.toLowerCase().includes(searchLower)
+      );
       
       console.log(`Found ${matchingCoins.length} matching coins for "${query}"`);
       
       if (matchingCoins.length > 0) {
-        // Get the coin IDs
-        const coinIds = matchingCoins.map(coin => coin.id).join(',');
-        
-        console.log('Fetching market data for matches...');
-        // Fetch market data for these coins
-        const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&${apiKeyParam}`;
-        console.log('Markets URL:', marketsUrl);
-        const marketsResponse = await fetch(marketsUrl);
-        
-        if (marketsResponse.ok) {
-          const marketsText = await marketsResponse.text();
-          console.log('Markets response preview:', marketsText.substring(0, 100));
-          
-          let marketsData;
-          try {
-            marketsData = JSON.parse(marketsText);
-          } catch (e) {
-            console.error('Failed to parse markets JSON:', e);
-            console.error('Response was:', marketsText.substring(0, 500));
-            setSearchResults([]);
-            return;
-          }
-          
-          console.log(`✓ Got market data for ${marketsData.length} coins`);
-          setSearchResults(marketsData);
-          setPriceCategory('search');
-          setCryptoPrices(marketsData);
-        } else {
-          console.error('Failed to fetch market data:', marketsResponse.status, marketsResponse.statusText);
-          const errorText = await marketsResponse.text();
-          console.error('Error response:', errorText.substring(0, 200));
-          setSearchResults([]);
-        }
+        setSearchResults(matchingCoins);
+        setPriceCategory('search');
+        setCryptoPrices(matchingCoins);
+        console.log(`✓ Displaying ${matchingCoins.length} results`);
       } else {
-        console.log('No matching coins found');
+        console.log('No matching coins found in top 250');
         setSearchResults([]);
         setPriceCategory('search');
         setCryptoPrices([]);
