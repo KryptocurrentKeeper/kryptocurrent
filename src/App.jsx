@@ -8,6 +8,7 @@ export default function CryptoAggregator() {
   const [videos, setVideos] = useState([]);
   const [shorts, setShorts] = useState([]);
   const [articles, setArticles] = useState([]);
+  const [memes, setMemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -18,6 +19,7 @@ export default function CryptoAggregator() {
   const [videosExpanded, setVideosExpanded] = useState(false);
   const [shortsExpanded, setShortsExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
+  const [memesExpanded, setMemesExpanded] = useState(false);
   const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -29,6 +31,7 @@ export default function CryptoAggregator() {
   const videosRef = useRef(null);
   const shortsRef = useRef(null);
   const articlesRef = useRef(null);
+  const memesRef = useRef(null);
 
   // Debounced search effect
   useEffect(() => {
@@ -50,6 +53,7 @@ export default function CryptoAggregator() {
     fetchCryptoVideos();
     fetchCryptoShorts();
     fetchCryptoArticles();
+    fetchCryptoMemes();
     
     // Load Twitter widgets script
     const script = document.createElement('script');
@@ -1154,6 +1158,96 @@ export default function CryptoAggregator() {
     }
   };
 
+  const fetchCryptoMemes = async () => {
+    try {
+      // Check cache first (1 hour expiry)
+      const cached = localStorage.getItem('kryptocurrent_memes');
+      const cacheTimestamp = localStorage.getItem('kryptocurrent_memes_timestamp');
+      
+      if (cached && cacheTimestamp) {
+        const cacheAge = Date.now() - parseInt(cacheTimestamp);
+        const oneHour = 60 * 60 * 1000;
+        
+        if (cacheAge < oneHour) {
+          console.log(`✓ Using cached memes (${Math.floor(cacheAge / 60000)} minutes old)`);
+          setMemes(JSON.parse(cached));
+          return;
+        }
+      }
+
+      console.log('Fetching crypto memes from Reddit...');
+      
+      // Fetch from multiple crypto meme subreddits
+      const subreddits = ['cryptocurrencymemes', 'CryptoCurrency', 'Bitcoin'];
+      const allMemes = [];
+      let memeId = 1;
+
+      for (const subreddit of subreddits) {
+        try {
+          // Fetch hot posts from subreddit (no API key needed for public data)
+          const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=20`;
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            console.error(`Failed to fetch from r/${subreddit}:`, response.status);
+            continue;
+          }
+
+          const data = await response.json();
+          
+          // Filter for image posts only
+          data.data.children.forEach(post => {
+            const postData = post.data;
+            
+            // Only include posts with images and exclude videos/galleries
+            if (postData.post_hint === 'image' && postData.url && 
+                (postData.url.endsWith('.jpg') || postData.url.endsWith('.png') || 
+                 postData.url.endsWith('.jpeg') || postData.url.endsWith('.gif') ||
+                 postData.url.includes('i.redd.it'))) {
+              
+              // For CryptoCurrency subreddit, only include meme-flaired posts
+              if (subreddit === 'CryptoCurrency' && 
+                  (!postData.link_flair_text || !postData.link_flair_text.toLowerCase().includes('meme'))) {
+                return;
+              }
+              
+              allMemes.push({
+                id: memeId++,
+                title: postData.title,
+                image: postData.url,
+                upvotes: postData.ups,
+                comments: postData.num_comments,
+                subreddit: postData.subreddit,
+                url: `https://reddit.com${postData.permalink}`,
+                author: postData.author,
+                created: new Date(postData.created_utc * 1000)
+              });
+            }
+          });
+          
+          console.log(`✓ Found ${data.data.children.length} posts from r/${subreddit}`);
+        } catch (error) {
+          console.error(`Error fetching from r/${subreddit}:`, error);
+        }
+      }
+
+      // Sort by upvotes and take top 40
+      allMemes.sort((a, b) => b.upvotes - a.upvotes);
+      const topMemes = allMemes.slice(0, 40);
+      
+      console.log(`✓ Loaded ${topMemes.length} crypto memes`);
+      setMemes(topMemes);
+      
+      // Cache for 1 hour
+      localStorage.setItem('kryptocurrent_memes', JSON.stringify(topMemes));
+      localStorage.setItem('kryptocurrent_memes_timestamp', Date.now().toString());
+      
+    } catch (error) {
+      console.error('Error fetching memes:', error);
+      setMemes([]);
+    }
+  };
+
   const handleNewsToggle = () => {
     if (newsExpanded && xRef.current) {
       setTimeout(() => {
@@ -1188,6 +1282,15 @@ export default function CryptoAggregator() {
       }, 100);
     }
     setArticlesExpanded(!articlesExpanded);
+  };
+
+  const handleMemesToggle = () => {
+    if (memesExpanded && memesRef.current) {
+      setTimeout(() => {
+        memesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    setMemesExpanded(!memesExpanded);
   };
 
   // Desktop: show 24 prices unless expanded, Mobile: show 4 prices unless expanded
@@ -1775,6 +1878,64 @@ export default function CryptoAggregator() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Crypto Memes Section - Horizontal Scroll */}
+        <div ref={memesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-white">Crypto Memes</h2>
+            <p className="text-sm text-gray-400 mt-1">Fresh from Reddit's crypto communities</p>
+          </div>
+          
+          {memes.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <RefreshCw className="animate-spin mx-auto mb-2" size={32} />
+              <p>Loading memes...</p>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#ffc93c] scrollbar-track-slate-700/50 pb-4">
+                <div className="flex gap-4" style={{ width: 'max-content' }}>
+                  {memes.map((meme) => (
+                    <a 
+                      key={meme.id} 
+                      href={meme.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="group block bg-slate-700/50 rounded-lg overflow-hidden hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#ffc93c]/10 flex-shrink-0"
+                      style={{ width: '300px' }}
+                    >
+                      <div className="aspect-square relative overflow-hidden bg-black">
+                        <img 
+                          src={meme.image} 
+                          alt={meme.title}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <h3 className="font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[#ffc93c] transition-colors">
+                          {meme.title}
+                        </h3>
+                        <div className="flex items-center justify-between text-xs text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <TrendingUp size={14} className="text-green-400" />
+                            {meme.upvotes.toLocaleString()}
+                          </span>
+                          <span>r/{meme.subreddit}</span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="text-center mt-3">
+                <p className="text-xs text-gray-400">
+                  Scroll horizontally to see all {memes.length} memes →
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
