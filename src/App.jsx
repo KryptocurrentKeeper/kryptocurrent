@@ -100,8 +100,8 @@ export default function CryptoAggregator() {
       // CoinGecko API Key Rotation System
       // Rotates through 3 API keys when quota is hit (429 error)
       const COINGECKO_API_KEYS = [
+        'CG-pDYwrEULGCyoK3cDn37ZMws6', // Paid key (primary)
         import.meta.env.VITE_COINGECKO_API_KEY, // Original key (from .env)
-        'CG-pDYwrEULGCyoK3cDn37ZMws6', // Backup key 1
         import.meta.env.VITE_COINGECKO_API_KEY_3  // Backup key 2 (optional, from .env)
       ];
       
@@ -236,6 +236,7 @@ export default function CryptoAggregator() {
   const searchCrypto = async (query) => {
     if (!query || query.trim().length < 2) {
       setSearchResults([]);
+      setPriceCategory('top100');
       return;
     }
 
@@ -243,8 +244,9 @@ export default function CryptoAggregator() {
     setIsSearching(true);
     
     try {
-      // Get available API keys
+      // Paid API key first, then fallback to demo keys
       const API_KEYS = [
+        'CG-pDYwrEULGCyoK3cDn37ZMws6', // Paid key (primary)
         import.meta.env.VITE_COINGECKO_API_KEY,
         'CG-3sWy6p7H9PxVMPazCH3b4qmP',
         'CG-sMadE1qVVGWq7C2pxdoMEeub',
@@ -253,11 +255,11 @@ export default function CryptoAggregator() {
 
       let currentKeyIndex = parseInt(localStorage.getItem('coingecko_api_key_index') || '0');
       let API_KEY = API_KEYS[currentKeyIndex];
-      const apiKeyParam = API_KEY ? `&x_cg_demo_api_key=${API_KEY}` : '';
+      const apiKeyParam = API_KEY ? `x_cg_demo_api_key=${API_KEY}` : '';
 
-      console.log('Fetching coins list...');
-      // Use the coins list endpoint (free tier) and filter locally
-      const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam.substring(1) : ''}`;
+      console.log('Fetching coins list with paid API...');
+      // Use the coins list endpoint (works with paid plan)
+      const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam : ''}`;
       const listResponse = await fetch(listUrl);
       
       if (!listResponse.ok) {
@@ -276,7 +278,7 @@ export default function CryptoAggregator() {
           coin.symbol.toLowerCase().includes(searchLower) ||
           coin.id.toLowerCase().includes(searchLower)
         )
-        .slice(0, 10); // Take top 10 matches
+        .slice(0, 20); // Take top 20 matches
       
       console.log(`Found ${matchingCoins.length} matching coins for "${query}"`);
       
@@ -286,7 +288,7 @@ export default function CryptoAggregator() {
         
         console.log('Fetching market data for matches...');
         // Fetch market data for these coins
-        const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc${apiKeyParam}`;
+        const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&${apiKeyParam}`;
         const marketsResponse = await fetch(marketsUrl);
         
         if (marketsResponse.ok) {
@@ -308,6 +310,7 @@ export default function CryptoAggregator() {
     } catch (error) {
       console.error('Error searching crypto:', error);
       setSearchResults([]);
+      setPriceCategory('top100');
     } finally {
       setIsSearching(false);
       console.log('Search complete');
