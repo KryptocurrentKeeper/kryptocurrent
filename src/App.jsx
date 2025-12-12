@@ -1304,11 +1304,24 @@ export default function CryptoAggregator() {
                   placeholder="Search any crypto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-64 px-4 py-2 pl-10 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition"
+                  className="w-full md:w-64 px-4 py-2 pl-10 pr-10 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 {isSearching && (
                   <RefreshCw className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={18} />
+                )}
+                {!isSearching && searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSearchResults([]);
+                      setPriceCategory('top100');
+                    }}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
+                    aria-label="Clear search"
+                  >
+                    <X size={18} />
+                  </button>
                 )}
               </div>
               {priceCategory === 'search' && searchResults.length > 0 && (
