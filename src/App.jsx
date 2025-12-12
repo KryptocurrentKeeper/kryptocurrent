@@ -430,11 +430,10 @@ export default function CryptoAggregator() {
                       const retryTempVideos = [];
                       
                       retryData.items.forEach(item => {
-                        const title = item.snippet.title.toLowerCase();
+                        // Don't filter by #shorts in Quick Hits - we want short videos!
                         const description = item.snippet.description?.toLowerCase() || '';
                         
-                        if (title.includes('#shorts') || title.includes('#short') || 
-                            description.includes('#shorts') || description.includes('youtube shorts')) {
+                        if (description.includes('youtube shorts') || description.includes('youtube.com/shorts')) {
                           return;
                         }
                         
@@ -526,11 +525,11 @@ export default function CryptoAggregator() {
             const tempVideos = [];
             
             data.items.forEach(item => {
-              const title = item.snippet.title.toLowerCase();
+              // Don't filter by #shorts in Quick Hits - we want short videos!
+              // Only skip if explicitly marked as YouTube Shorts in description
               const description = item.snippet.description?.toLowerCase() || '';
               
-              if (title.includes('#shorts') || title.includes('#short') || 
-                  description.includes('#shorts') || description.includes('youtube shorts')) {
+              if (description.includes('youtube shorts') || description.includes('youtube.com/shorts')) {
                 return;
               }
               
