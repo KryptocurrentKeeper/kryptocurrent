@@ -124,7 +124,12 @@ export default function CryptoAggregator() {
       
       let url = '';
 
-      if (category === 'top100') {
+      if (category === 'search') {
+        // Search results are already set by searchCrypto function, skip fetch
+        console.log('Using search results already loaded');
+        setLoading(false);
+        return;
+      } else if (category === 'top100') {
         // Top 100 by market cap
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${apiKeyParam}`;
       } else if (category === 'iso20022') {
