@@ -239,6 +239,7 @@ export default function CryptoAggregator() {
       return;
     }
 
+    console.log(`🔍 Searching for: "${query}"`);
     setIsSearching(true);
     
     try {
@@ -254,15 +255,18 @@ export default function CryptoAggregator() {
       let API_KEY = API_KEYS[currentKeyIndex];
       const apiKeyParam = API_KEY ? `&x_cg_demo_api_key=${API_KEY}` : '';
 
+      console.log('Fetching coins list...');
       // Use the coins list endpoint (free tier) and filter locally
       const listUrl = `https://api.coingecko.com/api/v3/coins/list${apiKeyParam ? '?' + apiKeyParam.substring(1) : ''}`;
       const listResponse = await fetch(listUrl);
       
       if (!listResponse.ok) {
+        console.error('Failed to fetch coins list:', listResponse.status);
         throw new Error('Failed to fetch coins list');
       }
 
       const coinsList = await listResponse.json();
+      console.log(`✓ Fetched ${coinsList.length} coins from CoinGecko`);
       
       // Filter coins that match the search query (case insensitive)
       const searchLower = query.toLowerCase();
@@ -274,23 +278,29 @@ export default function CryptoAggregator() {
         )
         .slice(0, 10); // Take top 10 matches
       
+      console.log(`Found ${matchingCoins.length} matching coins for "${query}"`);
+      
       if (matchingCoins.length > 0) {
         // Get the coin IDs
         const coinIds = matchingCoins.map(coin => coin.id).join(',');
         
+        console.log('Fetching market data for matches...');
         // Fetch market data for these coins
         const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc${apiKeyParam}`;
         const marketsResponse = await fetch(marketsUrl);
         
         if (marketsResponse.ok) {
           const marketsData = await marketsResponse.json();
+          console.log(`✓ Got market data for ${marketsData.length} coins`);
           setSearchResults(marketsData);
           setPriceCategory('search');
           setCryptoPrices(marketsData);
         } else {
+          console.error('Failed to fetch market data:', marketsResponse.status);
           setSearchResults([]);
         }
       } else {
+        console.log('No matching coins found');
         setSearchResults([]);
         setPriceCategory('search');
         setCryptoPrices([]);
@@ -300,6 +310,7 @@ export default function CryptoAggregator() {
       setSearchResults([]);
     } finally {
       setIsSearching(false);
+      console.log('Search complete');
     }
   };
 
