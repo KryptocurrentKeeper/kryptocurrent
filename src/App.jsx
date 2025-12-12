@@ -1229,7 +1229,7 @@ export default function CryptoAggregator() {
         <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex flex-col gap-4 mb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Current Costs</h2>
+              <h2 className="text-xl font-bold text-white">Current Conditions</h2>
               <button onClick={() => fetchCryptoPrices(priceCategory)} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
                 <RefreshCw size={14} />Refresh
               </button>
@@ -1452,7 +1452,7 @@ export default function CryptoAggregator() {
         {/* Updates from X Section - Improved Profile Links */}
         <div ref={xRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-white">Xtra Xtra</h2>
+            <h2 className="text-xl font-bold text-white">Xpository</h2>
           </div>
           
           {/* Mobile: Show 3 accounts unexpanded (includes Genius List) */}
