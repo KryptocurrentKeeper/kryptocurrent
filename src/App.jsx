@@ -459,10 +459,16 @@ export default function CryptoAggregator() {
                               const videoIdStr = retryVideoIds[index];
                               const duration = retryDurationMap[videoIdStr] || 0;
                               
+                              // Log all videos being processed (retry)
+                              console.log(`Quick Hits retry processing: ${item.snippet.title} - duration: ${duration}s`);
+                              
                               // Only keep videos between 5 seconds and 2 minutes 40 seconds (160 seconds)
                               if (duration < 5 || duration > 160) {
+                                console.log(`  ❌ Filtered out (duration ${duration < 5 ? 'too short' : 'too long'})`);
                                 return;
                               }
+                              
+                              console.log(`  ✅ Adding short (retry): ${item.snippet.title} - duration: ${duration}s`);
                               
                               const publishedDate = new Date(item.snippet.publishedAt);
                               const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
@@ -548,12 +554,16 @@ export default function CryptoAggregator() {
                     const currentVideoId = videoIds[index];
                     const duration = durationMap[currentVideoId] || 0;
                     
+                    // Log all videos being processed
+                    console.log(`Quick Hits processing: ${item.snippet.title} - duration: ${duration}s`);
+                    
                     // Only keep videos between 5 seconds and 2 minutes 40 seconds (160 seconds)
                     if (duration < 5 || duration > 160) {
+                      console.log(`  ❌ Filtered out (duration ${duration < 5 ? 'too short' : 'too long'})`);
                       return;
                     }
                     
-                    console.log(`Adding short: ${item.snippet.title} - duration: ${duration}s`);
+                    console.log(`  ✅ Adding short: ${item.snippet.title} - duration: ${duration}s`);
                     
                     const publishedDate = new Date(item.snippet.publishedAt);
                     const hoursAgo = Math.floor((new Date() - publishedDate) / (1000 * 60 * 60));
