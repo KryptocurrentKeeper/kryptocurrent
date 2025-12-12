@@ -113,8 +113,11 @@ export default function CryptoAggregator() {
       
       let apiKeyParam = '';
       if (validKeys.length > 0 && validKeys[currentKeyIndex % validKeys.length]) {
-        apiKeyParam = `&x_cg_demo_api_key=${validKeys[currentKeyIndex % validKeys.length]}`;
-        console.log(`Using CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1}`);
+        const currentKey = validKeys[currentKeyIndex % validKeys.length];
+        // Paid keys use x_cg_pro_api_key, demo keys use x_cg_demo_api_key
+        const paramName = currentKey.startsWith('CG-pDYwrEULGCyoK3cDn37ZMws6') ? 'x_cg_pro_api_key' : 'x_cg_demo_api_key';
+        apiKeyParam = `&${paramName}=${currentKey}`;
+        console.log(`Using CoinGecko API key #${(currentKeyIndex % validKeys.length) + 1} (${paramName})`);
       } else {
         console.log('Using CoinGecko free tier (no API key)');
       }
@@ -154,8 +157,9 @@ export default function CryptoAggregator() {
           localStorage.setItem('coingecko_api_key_index', currentKeyIndex.toString());
           console.log(`✓ Switched to CoinGecko API key #${currentKeyIndex + 1}`);
           
-          // Rebuild URL with new key
-          const newApiKeyParam = `&x_cg_demo_api_key=${newApiKey}`;
+          // Rebuild URL with new key (use correct param name for paid vs demo keys)
+          const newParamName = newApiKey.startsWith('CG-pDYwrEULGCyoK3cDn37ZMws6') ? 'x_cg_pro_api_key' : 'x_cg_demo_api_key';
+          const newApiKeyParam = `&${newParamName}=${newApiKey}`;
           let retryUrl = '';
           
           if (category === 'top100') {
@@ -255,7 +259,9 @@ export default function CryptoAggregator() {
 
       let currentKeyIndex = parseInt(localStorage.getItem('coingecko_api_key_index') || '0');
       let API_KEY = API_KEYS[currentKeyIndex];
-      const apiKeyParam = API_KEY ? `x_cg_demo_api_key=${API_KEY}` : '';
+      // Paid keys use x_cg_pro_api_key, demo keys use x_cg_demo_api_key
+      const paramName = API_KEY && API_KEY.startsWith('CG-pDYwrEULGCyoK3cDn37ZMws6') ? 'x_cg_pro_api_key' : 'x_cg_demo_api_key';
+      const apiKeyParam = API_KEY ? `${paramName}=${API_KEY}` : '';
 
       console.log('Fetching coins list with paid API...');
       // Use the coins list endpoint (works with paid plan)
