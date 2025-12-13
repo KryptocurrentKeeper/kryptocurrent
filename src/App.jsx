@@ -49,6 +49,15 @@ export default function CryptoAggregator() {
   }, [searchQuery]);
 
   useEffect(() => {
+    // Force clear old meme cache (one-time migration to v3)
+    const cacheVersion = localStorage.getItem('kryptocurrent_memes_version');
+    if (!cacheVersion || cacheVersion !== 'v3') {
+      console.log('Clearing old meme cache (migrating to v3)...');
+      localStorage.removeItem('kryptocurrent_memes');
+      localStorage.removeItem('kryptocurrent_memes_timestamp');
+      localStorage.removeItem('kryptocurrent_memes_version');
+    }
+    
     fetchCryptoPrices();
     fetchCryptoNews();
     fetchCryptoVideos();
@@ -1162,66 +1171,70 @@ export default function CryptoAggregator() {
   const fetchCryptoMemes = async () => {
     setMemesLoading(true);
     try {
-      // Check cache first (1 hour expiry)
-      // Version 2: Using CORS proxy with single subreddit
-      const CACHE_VERSION = 'v2';
+      // Check cache first (10 minute expiry for fresher content)
+      // Version 3: Top of week from multiple subreddits via CORS proxy
+      const CACHE_VERSION = 'v3';
       const cached = localStorage.getItem('kryptocurrent_memes');
       const cacheTimestamp = localStorage.getItem('kryptocurrent_memes_timestamp');
       const cacheVersion = localStorage.getItem('kryptocurrent_memes_version');
       
       if (cached && cacheTimestamp && cacheVersion === CACHE_VERSION) {
         const cacheAge = Date.now() - parseInt(cacheTimestamp);
-        const oneHour = 60 * 60 * 1000;
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes instead of 1 hour
         
-        if (cacheAge < oneHour) {
+        if (cacheAge < tenMinutes) {
           console.log(`✓ Using cached memes (${Math.floor(cacheAge / 60000)} minutes old)`);
           const cachedMemes = JSON.parse(cached);
-          console.log(`✓ Loaded ${cachedMemes.length} memes from cache:`, cachedMemes.slice(0, 2));
+          console.log(`✓ Loaded ${cachedMemes.length} memes from cache`);
+          console.log('First 3 memes:', cachedMemes.slice(0, 3).map(m => ({ title: m.title, url: m.url })));
           setMemes(cachedMemes);
           setMemesLoading(false);
           return;
+        } else {
+          console.log('Cache expired (>10 minutes), fetching fresh memes...');
         }
       }
 
       console.log('Fetching crypto memes from Reddit...');
       
-      // Only use r/cryptocurrencymemes since others have CORS restrictions
-      // Fetch 50 to ensure we get 40 good image memes after filtering
-      const subreddit = 'cryptocurrencymemes';
+      // Fetch top posts from this week for good mix of fresh and popular content
+      const subreddits = ['cryptocurrencymemes', 'cryptomemes', 'Bitcoin'];
       const allMemes = [];
       let memeId = 1;
 
-      try {
-        // Reddit URL
-        const redditUrl = `https://old.reddit.com/r/${subreddit}/hot.json?limit=50`;
-        
-        // Try multiple CORS proxies
-        const corsProxies = [
-          `https://corsproxy.io/?${encodeURIComponent(redditUrl)}`,
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(redditUrl)}`,
-          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(redditUrl)}`
-        ];
-        
-        let data = null;
-        
-        // Try each proxy until one works
-        for (const proxyUrl of corsProxies) {
-          try {
-            console.log(`Trying to fetch memes via proxy...`);
-            const response = await fetch(proxyUrl);
-            if (response.ok) {
-              data = await response.json();
-              console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
-              break;
+      for (const subreddit of subreddits) {
+        try {
+          // Reddit URL - get top posts from this week
+          const redditUrl = `https://old.reddit.com/r/${subreddit}/top.json?t=week&limit=25`;
+          
+          // Try multiple CORS proxies
+          const corsProxies = [
+            `https://corsproxy.io/?${encodeURIComponent(redditUrl)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(redditUrl)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(redditUrl)}`
+          ];
+          
+          let data = null;
+          
+          // Try each proxy until one works
+          for (const proxyUrl of corsProxies) {
+            try {
+              console.log(`Trying to fetch from r/${subreddit}...`);
+              const response = await fetch(proxyUrl);
+              if (response.ok) {
+                data = await response.json();
+                console.log(`✓ Got ${data.data.children.length} posts from r/${subreddit}`);
+                break;
+              }
+            } catch (proxyError) {
+              continue; // Try next proxy
             }
-          } catch (proxyError) {
-            continue; // Try next proxy
           }
-        }
-        
-        if (!data) {
-          throw new Error('All CORS proxies failed');
-        }
+          
+          if (!data) {
+            console.log(`⚠️ All proxies failed for r/${subreddit}, skipping...`);
+            continue;
+          }
           
           // Filter for image posts only
           data.data.children.forEach(post => {
@@ -1231,7 +1244,12 @@ export default function CryptoAggregator() {
             if (postData.post_hint === 'image' && postData.url && 
                 (postData.url.endsWith('.jpg') || postData.url.endsWith('.png') || 
                  postData.url.endsWith('.jpeg') || postData.url.endsWith('.gif') ||
-                 postData.url.includes('i.redd.it'))) {
+                 postData.url.includes('i.redd.it') || postData.url.includes('i.imgur.com'))) {
+              
+              // Skip if already have this meme (duplicate from different subreddit)
+              if (allMemes.some(m => m.url === `https://reddit.com${postData.permalink}`)) {
+                return;
+              }
               
               allMemes.push({
                 id: memeId++,
@@ -1247,12 +1265,12 @@ export default function CryptoAggregator() {
             }
           });
           
-      } catch (error) {
-        console.error('Error fetching memes:', error);
-        throw error;
+        } catch (error) {
+          console.error(`Error fetching from r/${subreddit}:`, error);
+        }
       }
 
-      console.log(`✓ Collected ${allMemes.length} image memes from r/cryptocurrencymemes`);
+      console.log(`✓ Collected ${allMemes.length} image memes from multiple subreddits`);
 
       // Sort by upvotes and take top 40
       allMemes.sort((a, b) => b.upvotes - a.upvotes);
@@ -1266,10 +1284,10 @@ export default function CryptoAggregator() {
         console.log(`✓ Loaded ${topMemes.length} crypto memes`);
         setMemes(topMemes);
         
-        // Cache for 1 hour with version
+        // Cache for 10 minutes with version
         localStorage.setItem('kryptocurrent_memes', JSON.stringify(topMemes));
         localStorage.setItem('kryptocurrent_memes_timestamp', Date.now().toString());
-        localStorage.setItem('kryptocurrent_memes_version', 'v2');
+        localStorage.setItem('kryptocurrent_memes_version', 'v3');
       }
       
     } catch (error) {
@@ -1915,7 +1933,14 @@ export default function CryptoAggregator() {
         {/* Crypto Memes Section - Horizontal Scroll */}
         <div ref={memesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">Happy Tears</h2>
+            <div>
+              <h2 className="text-xl font-bold text-white">Happy Tears</h2>
+              {memes.length > 0 && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Last updated: {new Date(parseInt(localStorage.getItem('kryptocurrent_memes_timestamp') || Date.now())).toLocaleTimeString()}
+                </p>
+              )}
+            </div>
             <button 
               onClick={() => {
                 // Clear cache to force fresh fetch
@@ -1930,11 +1955,6 @@ export default function CryptoAggregator() {
               Refresh Memes
             </button>
           </div>
-          
-          {(() => {
-            console.log('Memes render check:', { memesLoading, memesCount: memes.length, memes: memes.slice(0, 1) });
-            return null;
-          })()}
           
           {memesLoading ? (
             <div className="text-center py-8 text-gray-400">
