@@ -1163,10 +1163,13 @@ export default function CryptoAggregator() {
     setMemesLoading(true);
     try {
       // Check cache first (1 hour expiry)
+      // Version 2: Using CORS proxy with single subreddit
+      const CACHE_VERSION = 'v2';
       const cached = localStorage.getItem('kryptocurrent_memes');
       const cacheTimestamp = localStorage.getItem('kryptocurrent_memes_timestamp');
+      const cacheVersion = localStorage.getItem('kryptocurrent_memes_version');
       
-      if (cached && cacheTimestamp) {
+      if (cached && cacheTimestamp && cacheVersion === CACHE_VERSION) {
         const cacheAge = Date.now() - parseInt(cacheTimestamp);
         const oneHour = 60 * 60 * 1000;
         
@@ -1263,9 +1266,10 @@ export default function CryptoAggregator() {
         console.log(`✓ Loaded ${topMemes.length} crypto memes`);
         setMemes(topMemes);
         
-        // Cache for 1 hour
+        // Cache for 1 hour with version
         localStorage.setItem('kryptocurrent_memes', JSON.stringify(topMemes));
         localStorage.setItem('kryptocurrent_memes_timestamp', Date.now().toString());
+        localStorage.setItem('kryptocurrent_memes_version', 'v2');
       }
       
     } catch (error) {
@@ -1917,6 +1921,7 @@ export default function CryptoAggregator() {
                 // Clear cache to force fresh fetch
                 localStorage.removeItem('kryptocurrent_memes');
                 localStorage.removeItem('kryptocurrent_memes_timestamp');
+                localStorage.removeItem('kryptocurrent_memes_version');
                 console.log('Cache cleared, fetching fresh memes...');
                 fetchCryptoMemes();
               }}
