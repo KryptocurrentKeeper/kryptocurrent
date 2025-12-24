@@ -1676,20 +1676,20 @@ export default function CryptoAggregator() {
 
           {/* XRP Exchange Balance */}
           {xrpExchangeBalance && (
-            <div className="mt-6 p-3 bg-slate-700/50 rounded-xl border border-slate-600">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 flex-1">
-                  <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
+            <div className="mt-4 p-2 bg-slate-700/50 rounded-lg border border-slate-600">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 flex-1">
+                  <img src="/XRPlogo.jpg" alt="XRP" className="w-5 h-5 rounded" />
                   <div>
-                    <h3 className="text-base font-bold text-white">XRP Currently on Exchanges</h3>
+                    <h3 className="text-sm font-bold text-white">XRP Currently on Exchanges</h3>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-[#ffc93c]">
+                  <div className="text-base font-bold text-[#ffc93c]">
                     ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
                   </div>
-                  <div className={`flex items-center justify-end gap-1 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+                  <div className={`flex items-center justify-end gap-0.5 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
                     <span>{Math.abs(xrpExchangeBalance.change7d).toFixed(1)}% (7d)</span>
                   </div>
                 </div>
