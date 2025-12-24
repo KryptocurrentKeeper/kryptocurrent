@@ -1323,7 +1323,7 @@ export default function CryptoAggregator() {
 
   const fetchXRPExchangeBalance = async () => {
     try {
-      // Check cache first (5 minute expiry for relatively fresh data)
+      // Check cache first (5 minute expiry)
       const cached = localStorage.getItem('kryptocurrent_xrp_exchange_balance');
       const cacheTimestamp = localStorage.getItem('kryptocurrent_xrp_exchange_balance_timestamp');
       
@@ -1338,51 +1338,18 @@ export default function CryptoAggregator() {
         }
       }
 
-      console.log('Fetching XRP exchange balance from Bithomp...');
+      console.log('Fetching XRP exchange balance from serverless API...');
       
-      // Bithomp API endpoint for exchange balances
-      // Note: We'll aggregate known exchange addresses
-      // Using CORS proxy since Bithomp may have CORS restrictions
-      const bithompUrl = 'https://bithomp.com/api/v2/exchanges';
+      // Call our Vercel serverless function (no CORS issues!)
+      const response = await fetch('/api/xrp-exchange-balance');
       
-      const corsProxies = [
-        `https://corsproxy.io/?${encodeURIComponent(bithompUrl)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(bithompUrl)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(bithompUrl)}`
-      ];
-      
-      let data = null;
-      
-      // Try each proxy
-      for (const proxyUrl of corsProxies) {
-        try {
-          const response = await fetch(proxyUrl);
-          if (response.ok) {
-            data = await response.json();
-            console.log('✓ Fetched XRP exchange data from Bithomp');
-            break;
-          }
-        } catch (error) {
-          continue;
-        }
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
       }
       
-      if (!data) {
-        console.warn('⚠️ Could not fetch XRP exchange balance, using fallback');
-        // Fallback: Use approximate known value
-        data = {
-          totalBalance: 4200000000, // ~4.2B XRP on exchanges (approximate)
-          change7d: -2.3,
-          lastUpdated: new Date().toISOString()
-        };
-      }
+      const balanceData = await response.json();
       
-      // Calculate or extract balance data
-      const balanceData = {
-        total: data.totalBalance || 4200000000,
-        change7d: data.change7d || -2.3,
-        lastUpdated: new Date().toISOString()
-      };
+      console.log('✓ Fetched XRP exchange balance:', balanceData);
       
       setXrpExchangeBalance(balanceData);
       
@@ -1394,9 +1361,11 @@ export default function CryptoAggregator() {
       console.error('Error fetching XRP exchange balance:', error);
       // Set fallback data
       setXrpExchangeBalance({
-        total: 4200000000,
-        change7d: -2.3,
-        lastUpdated: new Date().toISOString()
+        total: 4180000000,
+        change7d: -2.1,
+        lastUpdated: new Date().toISOString(),
+        source: 'Fallback',
+        error: true
       });
     }
   };
@@ -1696,7 +1665,14 @@ export default function CryptoAggregator() {
                   <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
                   <div>
                     <h3 className="text-base font-bold text-white">XRP on Exchanges</h3>
-                    <p className="text-xs text-gray-400">Real-time on-chain data via Bithomp</p>
+                    <a 
+                      href="https://bithomp.com/explorer/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 transition"
+                    >
+                      View live data on Bithomp →
+                    </a>
                   </div>
                 </div>
                 <div className="text-right">
