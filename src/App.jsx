@@ -1180,9 +1180,18 @@ export default function CryptoAggregator() {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    return `${Math.floor(seconds / 86400)} days ago`;
+    
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) {
+      const mins = Math.floor(seconds / 60);
+      return `${mins}m ago`;
+    }
+    if (seconds < 86400) {
+      const hours = Math.floor(seconds / 3600);
+      return `${hours}h ago`;
+    }
+    const days = Math.floor(seconds / 86400);
+    return `${days}d ago`;
   };
 
   // Handle expand/collapse with scroll to last position or top
@@ -1470,11 +1479,8 @@ export default function CryptoAggregator() {
         {/* Prices Section */}
         <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
           <div className="flex flex-col gap-4 mb-4">
-            <div className="flex items-center justify-between">
+            <div>
               <h2 className="text-xl font-bold text-white">Current Conditions</h2>
-              <button onClick={() => fetchCryptoPrices(priceCategory)} className="flex items-center gap-1 px-2 py-1.5 text-sm bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition">
-                <RefreshCw size={14} />Refresh
-              </button>
             </div>
             
             {/* Category Toggle Buttons and Search */}
@@ -1674,42 +1680,45 @@ export default function CryptoAggregator() {
             </>
           )}
 
-          {/* XRP Exchange Balance */}
-          {xrpExchangeBalance && (
-            <div className="mt-4 p-2 bg-slate-700/50 rounded-lg border border-slate-600">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 flex-1">
-                  <img src="/XRPlogo.jpg" alt="XRP" className="w-5 h-5 rounded" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white">XRP Currently on Exchanges</h3>
+          {/* XRP Sections - Side by side on desktop, stacked on mobile */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* XRP Exchange Balance */}
+            {xrpExchangeBalance && (
+              <div className="p-2 bg-slate-700/50 rounded-lg border border-slate-600">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <img src="/XRPlogo.jpg" alt="XRP" className="w-5 h-5 rounded" />
+                    <div>
+                      <h3 className="text-sm font-bold text-white">XRP on Exchanges</h3>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-base font-bold text-[#ffc93c]">
-                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
-                  </div>
-                  <div className={`flex items-center justify-end gap-0.5 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
-                    <span>{Math.abs(xrpExchangeBalance.change7d).toFixed(1)}% (7d)</span>
+                  <div className="text-right">
+                    <div className="text-base font-bold text-[#ffc93c]">
+                      ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
+                    </div>
+                    <div className={`flex items-center justify-end gap-0.5 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
+                      <span>{Math.abs(xrpExchangeBalance.change7d).toFixed(1)}% (7d)</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ETF Tracker */}
-          <div className="mt-2 p-3 bg-slate-700/50 rounded-xl">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 flex-1">
-                <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
-                <div>
-                  <h3 className="text-base font-bold text-white">XRP ETF Tracker</h3>
-                  <p className="text-xs text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
+            {/* ETF Tracker */}
+            <div className="p-3 bg-slate-700/50 rounded-xl">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
+                  <div>
+                    <h3 className="text-base font-bold text-white">XRP ETF Tracker</h3>
+                    <p className="text-xs text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
+                  </div>
                 </div>
+                <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-3 md:px-4 py-1.5 md:py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-xs md:text-sm">
+                  Visit →
+                </a>
               </div>
-              <a href="https://xrp-insights.com" target="_blank" rel="noopener noreferrer" className="px-3 md:px-4 py-1.5 md:py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-xs md:text-sm">
-                Visit →
-              </a>
             </div>
           </div>
         </div>
@@ -1748,16 +1757,7 @@ export default function CryptoAggregator() {
                       </h3>
                       <p className="text-xs text-gray-400 truncate">@{account.username}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Posted {(() => {
-                          const date = new Date(account.created_at);
-                          const now = new Date();
-                          const diffMs = now - date;
-                          const diffMins = Math.floor(diffMs / 60000);
-                          const diffHours = Math.floor(diffMs / 3600000);
-                          
-                          if (diffMins < 60) return `${diffMins}m ago`;
-                          return `${diffHours}h ago`;
-                        })()}
+                        Posted {getTimeAgo(account.created_at)}
                       </p>
                     </div>
                     <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1805,16 +1805,7 @@ export default function CryptoAggregator() {
                       </h3>
                       <p className="text-xs text-gray-400 truncate">@{account.username}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Posted {(() => {
-                          const date = new Date(account.created_at);
-                          const now = new Date();
-                          const diffMs = now - date;
-                          const diffMins = Math.floor(diffMs / 60000);
-                          const diffHours = Math.floor(diffMs / 3600000);
-                          
-                          if (diffMins < 60) return `${diffMins}m ago`;
-                          return `${diffHours}h ago`;
-                        })()}
+                        Posted {getTimeAgo(account.created_at)}
                       </p>
                     </div>
                     <svg className="w-4 h-4 text-gray-500 group-hover:text-[#ffc93c] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
