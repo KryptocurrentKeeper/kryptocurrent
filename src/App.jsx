@@ -1664,20 +1664,12 @@ export default function CryptoAggregator() {
                 <div className="flex items-center gap-2 flex-1">
                   <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
                   <div>
-                    <h3 className="text-base font-bold text-white">XRP on Exchanges</h3>
-                    <a 
-                      href="https://bithomp.com/explorer/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-400 hover:text-blue-300 transition"
-                    >
-                      View live data on Bithomp →
-                    </a>
+                    <h3 className="text-base font-bold text-white">XRP Currently on Exchanges</h3>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-[#ffc93c]">
-                    {(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
+                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
                   </div>
                   <div className={`flex items-center justify-end gap-1 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
