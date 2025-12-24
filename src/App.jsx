@@ -27,6 +27,23 @@ export default function CryptoAggregator() {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   
+  // Helper function to clean up text encoding issues (fix apostrophes, quotes, etc.)
+  const cleanText = (text) => {
+    if (!text) return text;
+    return text
+      .replace(/&#39;/g, "'")           // HTML entity for apostrophe
+      .replace(/&quot;/g, '"')          // HTML entity for quote
+      .replace(/&amp;/g, '&')           // HTML entity for ampersand
+      .replace(/&#x27;/g, "'")          // Hex entity for apostrophe
+      .replace(/&lt;/g, '<')            // HTML entity for less than
+      .replace(/&gt;/g, '>')            // HTML entity for greater than
+      .replace(/\u2018|\u2019/g, "'")   // Unicode curly single quotes
+      .replace(/\u201C|\u201D/g, '"')   // Unicode curly double quotes
+      .replace(/\u2013|\u2014/g, '-')   // Unicode en dash and em dash
+      .replace(/\u2026/g, '...')        // Unicode ellipsis
+      .replace(/\u00A0/g, ' ');         // Non-breaking space
+  };
+  
   // Refs for scrolling to section tops
   const pricesRef = useRef(null);
   const xRef = useRef(null);
@@ -611,7 +628,7 @@ export default function CryptoAggregator() {
                     
                     allShorts.push({
                       id: shortId++,
-                      title: item.snippet.title,
+                      title: cleanText(item.snippet.title),
                       channel: channelName,
                       views: timeAgo,
                       url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
@@ -985,7 +1002,7 @@ export default function CryptoAggregator() {
                               
                               allVideos.push({
                                 id: videoId++,
-                                title: item.snippet.title,
+                                title: cleanText(item.snippet.title),
                                 channel: channelName,
                                 views: timeAgo,
                                 url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
@@ -1081,7 +1098,7 @@ export default function CryptoAggregator() {
                     
                     allVideos.push({
                       id: videoId++,
-                      title: item.snippet.title,
+                      title: cleanText(item.snippet.title),
                       channel: channelName,
                       views: timeAgo,
                       url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
