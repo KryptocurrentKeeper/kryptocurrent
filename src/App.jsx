@@ -1698,7 +1698,7 @@ export default function CryptoAggregator() {
           )}
 
           {/* ETF Tracker */}
-          <div className="mt-6 p-3 bg-slate-700/50 rounded-xl">
+          <div className="mt-2 p-3 bg-slate-700/50 rounded-xl">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-1">
                 <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
@@ -1715,7 +1715,7 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Updates from X Section - Improved Profile Links */}
-        <div ref={xRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
+        <div ref={xRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8 mt-8">
           <div className="mb-4">
             <h2 className="text-xl font-bold text-white">Xpository</h2>
           </div>
