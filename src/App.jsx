@@ -895,6 +895,11 @@ export default function CryptoAggregator() {
       const yesterday = new Date();
       yesterday.setHours(yesterday.getHours() - 24);
       const publishedAfter = yesterday.toISOString();
+      
+      // 12-hour filter for Crypto Sensei
+      const last12Hours = new Date();
+      last12Hours.setHours(last12Hours.getHours() - 12);
+      const publishedAfter12Hours = last12Hours.toISOString();
 
       const allVideos = [];
       let videoId = 1;
@@ -906,8 +911,11 @@ export default function CryptoAggregator() {
           // Add search query for Crypto Sensei to filter only crypto videos
           const searchQuery = channelName === 'Crypto Sensei' ? '&q=crypto|bitcoin|ethereum|XRP|cryptocurrency|blockchain' : '';
           
+          // Use 12-hour filter for Crypto Sensei, 24-hour for others
+          const timeFilter = channelName === 'Crypto Sensei' ? publishedAfter12Hours : publishedAfter;
+          
           const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+            `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${timeFilter}${searchQuery}`
           );
           
           if (!response.ok) {
@@ -940,7 +948,7 @@ export default function CryptoAggregator() {
                 
                 try {
                   const retryResponse = await fetch(
-                    `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${publishedAfter}${searchQuery}`
+                    `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50&type=video&publishedAfter=${timeFilter}${searchQuery}`
                   );
                   
                   if (retryResponse.ok) {
