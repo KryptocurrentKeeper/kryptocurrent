@@ -381,7 +381,7 @@ export default function CryptoAggregator() {
     const fallbackShorts = [
       { id: 1, title: "Quick Crypto Update", channel: "Digital Outlook", views: "1h ago", url: "https://youtube.com/@DigitalOutlookChannel/videos", thumbnail: null },
       { id: 2, title: "Market Flash", channel: "Crypto Sensei", views: "2h ago", url: "https://youtube.com/@CryptoSenseii/videos", thumbnail: null },
-      { id: 3, title: "Rapid Analysis", channel: "Jake Claver", views: "3h ago", url: "https://youtube.com/@jakeclaver/videos", thumbnail: null }
+      { id: 3, title: "Rapid Analysis", channel: "Mickle", views: "3h ago", url: "https://youtube.com/@Mickle/videos", thumbnail: null }
     ];
 
     try {
@@ -417,7 +417,6 @@ export default function CryptoAggregator() {
         'Mickle': 'UC-widOciShnJDhNEF23T06w',
         'Chain of Blocks': 'UCftxsv8P_Hz32KJuiVQ_0Wg',
         'Zach Rector': 'UC4LwOm1guXDzPPGWnq_YlsA',
-        'Jake Claver': 'UCsu-BlV8FLI6piu4RQPjLxg',
         'Altcoin Daily': 'UCbLhGKVY-bJPcawebgtNfbw',
         'Paul Barron': 'UC4VPa7EOvObpyCRI4YKRQRw',
         'Apex Crypto': 'UCQ0lC-yRj8Bwz8eFv290_LA',
