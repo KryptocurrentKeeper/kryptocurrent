@@ -301,6 +301,16 @@ export default function CryptoAggregator() {
     fetchCryptoPrices(priceCategory);
   }, [priceCategory]);
 
+  // Auto-refresh XRP Exchange Balance every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing XRP Exchange Balance...');
+      fetchXRPExchangeBalance();
+    }, 300000); // 5 minutes (300,000 milliseconds)
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchCryptoPrices = async (category = 'utility') => {
     try {
       setLoading(true);
@@ -2479,7 +2489,8 @@ export default function CryptoAggregator() {
               </div>
               {xrpExchangeBalance.totalQueried && (
                 <div className="text-sm text-gray-400">
-                  Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges
+                  <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges</div>
+                  <div className="text-xs text-gray-500 mt-1">1.2x adjustment for unknown remaining exchange wallets</div>
                 </div>
               )}
             </div>
