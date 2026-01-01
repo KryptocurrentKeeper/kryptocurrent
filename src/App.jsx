@@ -53,145 +53,169 @@ export default function CryptoAggregator() {
       utility: 'Global cross-border settlements & liquidity provisioning',
       adoption: 'Ripple ODL in 70+ countries, $15B+ annual volume, 300+ bank/fintech partnerships',
       partnerships: ['SBI Holdings (RLUSD Japan)', 'BNY Mellon (RLUSD custody)', 'Mastercard/WebBank/Gemini', 'Mizuho Bank/SMBC Nikko', 'Archax (RWA tokenization)', 'Franklin Templeton', 'DBS Group', 'Ctrl Alt/Dubai Land Dept', 'Modulr (UK/Europe)', 'AMINA Bank'],
-      backers: ['Andreessen Horowitz (a16z)', 'Tetragon Financial', 'SBI Holdings', 'Pantera Capital', 'Fortress Investment Group']
+      backers: ['Andreessen Horowitz (a16z)', 'Tetragon Financial', 'SBI Holdings', 'Pantera Capital', 'Fortress Investment Group'],
+      founders: 'Jed McCaleb, Arthur Britto, David Schwartz, Chris Larsen (Ripple Labs)'
     },
     'ETH': {
       utility: 'Smart contracts, DeFi, NFTs, tokenized RWAs',
       adoption: '$500B+ DeFi TVL, BlackRock/BNY Mellon funds, L2 dominance (Base, Arbitrum)',
       partnerships: ['JP Morgan', 'Microsoft', 'Consensys', 'EY', 'BlackRock/BNY Mellon', 'Standard Chartered', 'Accenture', 'UBS/Fidelity', 'Visa', 'Google Cloud'],
-      backers: ['Joseph Lubin (ConsenSys)', 'Vitalik Buterin', 'BlackRock', 'Grayscale', 'Fidelity']
+      backers: ['Joseph Lubin (ConsenSys)', 'Vitalik Buterin', 'BlackRock', 'Grayscale', 'Fidelity'],
+      founders: 'Vitalik Buterin (primary), with co-founders including Gavin Wood, Charles Hoskinson, Anthony Di Iorio, Joseph Lubin'
     },
     'LINK': {
       utility: 'Decentralized oracles for smart contracts',
       adoption: '2,000+ projects, CCIP for RWAs, SWIFT/DTCC pilots',
       partnerships: ['SWIFT (pilots)', 'DTCC (fund data)', 'Mastercard', 'Euroclear', 'Fidelity International', 'UBS/ANZ', 'Deutsche Börse', 'SBI Group', 'GLEIF', 'Chainalysis'],
-      backers: ['Fundamental Labs', 'Nirvana Capital', 'Grayscale Trust']
+      backers: ['Fundamental Labs', 'Nirvana Capital', 'Grayscale Trust'],
+      founders: 'Sergey Nazarov (with Steve Ellis)'
     },
     'BTC': {
       utility: 'Store of value + payments (Lightning)',
       adoption: 'Nation-state reserves, corporate treasuries, surging Lightning volume',
       partnerships: ['Nation-state reserves (U.S.)', 'MicroStrategy (treasury)', 'Lightning Network', 'BlackRock ETFs', 'JPMorgan (collateral)', 'Tesla', 'El Salvador', 'Corporate treasuries (172+)', 'Fedwire pilots', 'Grayscale Trust'],
-      backers: ['MicroStrategy', 'BlackRock (ETFs)', 'Tesla', 'Marathon Digital', 'Fidelity']
+      backers: ['MicroStrategy', 'BlackRock (ETFs)', 'Tesla', 'Marathon Digital', 'Fidelity'],
+      founders: 'Satoshi Nakamoto (pseudonymous/unknown identity)'
     },
     'SOL': {
       utility: 'High-throughput payments, DeFi, consumer apps',
       adoption: 'Visa pilot, PayPal PYUSD, top DEX volume, mobile integration',
       partnerships: ['Visa (pilots)', 'PayPal (PYUSD)', 'Shopify/Stripe', 'JP Morgan (bonds)', 'Revolut', 'Chainlink', 'Google Cloud', 'Mysten Labs', 'Coinbase (DEX)', 'Facebook Diem alumni'],
-      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'Alameda Research', 'Jump Trading']
+      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'Alameda Research', 'Jump Trading'],
+      founders: 'Anatoly Yakovenko (with Raj Gokal and Greg Fitzgerald)'
     },
     'XLM': {
       utility: 'Low-cost remittances & CBDC infrastructure',
       adoption: 'MoneyGram, Ukraine CBDC pilot, Circle USDC issuer',
       partnerships: ['MoneyGram', 'Circle (USDC issuer)', 'Mastercard', 'Franklin Templeton', 'Ukraine CBDC pilot', 'Paxos/Ondo (RWAs)', 'Visa', 'IBM', 'SureRemit', 'Wormhole'],
-      backers: ['Stripe (seed)', 'Circle (USDC)', 'MoneyGram']
+      backers: ['Stripe (seed)', 'Circle (USDC)', 'MoneyGram'],
+      founders: 'Jed McCaleb (with Joyce Kim)'
     },
     'QNT': {
       utility: 'Enterprise blockchain interoperability',
       adoption: 'SWIFT/BIS projects, LACChain CBDC, UK digital bonds',
       partnerships: ['ECB (digital euro)', 'SWIFT/BIS projects', 'Oracle', 'SIA', 'LACChain CBDC', 'UK digital bonds', 'Overledger enterprise clients'],
-      backers: ['Private enterprise-focused', 'Limited public VC details']
+      backers: ['Private enterprise-focused', 'Limited public VC details'],
+      founders: 'Gilbert Verdian'
     },
     'HBAR': {
       utility: 'Enterprise DLT for payments, tokenization',
       adoption: 'Council (Google, Boeing), 20B+ transactions, abrdn RWAs',
       partnerships: ['Google', 'Boeing', 'IBM', 'abrdn (RWAs)', 'Nairobi Securities Exchange', 'NATO DIANA (2026)', 'ServiceNow'],
-      backers: ['Google', 'Boeing', 'IBM', 'abrdn']
+      backers: ['Google', 'Boeing', 'IBM', 'abrdn'],
+      founders: 'Leemon Baird (with Mance Harmon)'
     },
     'VET': {
       utility: 'Supply-chain traceability & carbon credits',
       adoption: 'Walmart China, PwC/DNV, enterprise NFTs',
       partnerships: ['Walmart China', 'PwC/DNV', 'BMW', 'DHL', 'Franklin Templeton/BitGo', 'Boston Consulting Group', 'Crypto.com', 'Valour ETPs'],
-      backers: ['PwC', 'DNV', 'Enterprise-focused']
+      backers: ['PwC', 'DNV', 'Enterprise-focused'],
+      founders: 'Sunny Lu'
     },
     'POL': {
       utility: 'Ethereum scaling + enterprise sidechains',
       adoption: 'Starbucks/Adidas/JPMorgan usage, AggLayer',
       partnerships: ['Starbucks', 'Nike', 'Adidas', 'JPMorgan', 'Mastercard', 'Calastone', 'Cypher Capital', 'Manifold Trading', 'Reliance Jio', 'Stripe'],
-      backers: ['Sequoia Capital India', 'SoftBank Vision Fund', 'Tiger Global', 'Andreessen Horowitz', 'Binance Labs']
+      backers: ['Sequoia Capital India', 'SoftBank Vision Fund', 'Tiger Global', 'Andreessen Horowitz', 'Binance Labs'],
+      founders: 'Jaynti Kanani, Sandeep Nailwal, Anurag Arjun, Mihailo Bjelic'
     },
     'TON': {
       utility: 'Mass-scale payments & mini-apps via Telegram',
       adoption: '900M+ Telegram users, wallet adoption, growing DeFi/stablecoins',
       partnerships: ['Telegram (Mini Apps)', 'Sequoia Capital/Benchmark ($400M)', 'BitGo/Kraken/SkyBridge', 'Crypto.com', 'Chainlink'],
-      backers: ['Sequoia Capital', 'Ribbit Capital', 'Benchmark', 'Pantera Capital', 'Vy Capital']
+      backers: ['Sequoia Capital', 'Ribbit Capital', 'Benchmark', 'Pantera Capital', 'Vy Capital'],
+      founders: 'Nikolai Durov and Pavel Durov (Telegram founders); community-led after Telegram exit'
     },
     'ADA': {
       utility: 'Identity, governance, real-fi in emerging markets',
       adoption: 'Ethiopia credentials (5M+ users), World Mobile telecom',
       partnerships: ['Ethiopia (credentials)', 'World Mobile (telecom)', 'Chainlink', 'Google/Oracle', 'Dune Analytics', 'Pyth Oracle', 'Tier-1 stablecoins incoming'],
-      backers: ['Input Output Global (IOG)', 'EMURGO', 'ICO-funded']
+      backers: ['Input Output Global (IOG)', 'EMURGO', 'ICO-funded'],
+      founders: 'Charles Hoskinson'
     },
     'RLUSD': {
       utility: 'Enterprise-grade stablecoin on XRPL/Ethereum',
       adoption: 'Launched 2025, used in Ripple Payments, MiCA-compliant',
       partnerships: ['SBI VC Trade (Japan)', 'Uphold/Bitstamp/Bitso', 'MoonPay/Independent Reserve', 'CoinMENA/Bullish', 'BNY Mellon', 'Mastercard/WebBank/Gemini'],
-      backers: ['Fortress', 'Citadel affiliates', 'Pantera', 'Galaxy Digital']
+      backers: ['Fortress', 'Citadel affiliates', 'Pantera', 'Galaxy Digital'],
+      founders: 'Ripple Labs (company-created stablecoin; key figures Brad Garlinghouse, Chris Larsen)'
     },
     'AVAX': {
       utility: 'Institutional subnets, tokenized assets',
       adoption: 'Citi/WisdomTree/Deloitte RWAs, Project Guardian',
       partnerships: ['Citi/WisdomTree/Deloitte', 'JP Morgan Onyx', 'SMBC (stablecoins)', 'Crypto Finance AG', 'SkyBridge', 'Galaxy Digital/Pantera/VanEck'],
-      backers: ['Polychain Capital', 'Andreessen Horowitz', 'Three Arrows Capital', 'Galaxy Digital', 'ParaFi Capital']
+      backers: ['Polychain Capital', 'Andreessen Horowitz', 'Three Arrows Capital', 'Galaxy Digital', 'ParaFi Capital'],
+      founders: 'Emin Gün Sirer (with Maofan Yin and Kevin Sekniqi)'
     },
     'NEAR': {
       utility: 'AI integration, account abstraction, cross-chain',
       adoption: 'AI + DeFi growth, intents for swaps',
       partnerships: ['Google Cloud', 'LayerZero', 'THORChain/Everclear', 'Frax Finance', 'Deutsche Telekom (validator)'],
-      backers: ['Andreessen Horowitz', 'Pantera Capital', 'Three Arrows Capital', 'Dragonfly Capital', 'Tiger Global']
+      backers: ['Andreessen Horowitz', 'Pantera Capital', 'Three Arrows Capital', 'Dragonfly Capital', 'Tiger Global'],
+      founders: 'Illia Polosukhin (with Alexander Skidanov)'
     },
     'ICP': {
       utility: 'On-chain cloud & decentralized web',
       adoption: 'Fully on-chain apps (OpenChat/DSCVR)',
       partnerships: ['Microsoft Azure', 'Google Cloud', 'SWIFT', 'Chain Fusion (Solana/Doge)', 'Caffeine AI partners'],
-      backers: ['Andreessen Horowitz', 'Polychain Capital', 'Multicoin Capital', 'Amino Capital', 'SV Angel']
+      backers: ['Andreessen Horowitz', 'Polychain Capital', 'Multicoin Capital', 'Amino Capital', 'SV Angel'],
+      founders: 'Dominic Williams (DFINITY Foundation)'
     },
     'KAS': {
       utility: 'Ultra-fast DAG payments',
       adoption: '10 blocks/sec, merchant adoption',
       partnerships: ['WhiteBIT', 'Tangem/Ledger (wallets)', 'Zealous Swap (DeFi)'],
-      backers: ['Fair-launched', 'Community-driven', 'Limited institutional VC']
+      backers: ['Fair-launched', 'Community-driven', 'Limited institutional VC'],
+      founders: 'Yonatan Sompolinsky'
     },
     'SUI': {
       utility: 'High-throughput for gaming & DeFi',
       adoption: 'DeepBook DEX, Mysten Labs backing',
       partnerships: ['BytePlus', 'ONE Championship', 'SEED', 'Grayscale/21Shares (ETPs)', 'Google Cloud'],
-      backers: ['Andreessen Horowitz', 'FTX Ventures', 'Binance Labs', 'Coinbase Ventures', 'Jump Crypto']
+      backers: ['Andreessen Horowitz', 'FTX Ventures', 'Binance Labs', 'Coinbase Ventures', 'Jump Crypto'],
+      founders: 'Evan Cheng, Sam Blackshear, Adeniyi Abiodun, George Danezis, Kostas Chalkias (Mysten Labs; ex-Diem team)'
     },
     'XDC': {
       utility: 'Enterprise trade finance & payments',
       adoption: 'TradeFinex/R3 partnerships, USDC native',
       partnerships: ['SBI Japan', 'Contour (trade finance)', 'VERT Capital', 'SIX Swiss Exchange', 'Ankr'],
-      backers: ['LDA Capital', 'Enterprise-focused', 'Limited public VC']
+      backers: ['LDA Capital', 'Enterprise-focused', 'Limited public VC'],
+      founders: 'Ritesh Kakkad (with Atul Khekade)'
     },
     'ALGO': {
       utility: 'Institutional & CBDC focus',
       adoption: 'Italy SIA, Marshall Islands crypto',
       partnerships: ['Wormhole', 'Google (Agent Payments)', 'ISDA (derivatives)', 'Marshall Islands', 'Paxos/Ondo (RWAs)'],
-      backers: ['Union Square Ventures', 'Pillar VC', 'ICO backers']
+      backers: ['Union Square Ventures', 'Pillar VC', 'ICO backers'],
+      founders: 'Silvio Micali'
     },
     'XTZ': {
       utility: 'Self-amending, institutional baking',
       adoption: 'Societe Generale/Ubisoft, formal verification',
       partnerships: ['Societe Generale', 'Ubisoft', 'Manchester United', 'Red Bull Racing'],
-      backers: ['Tim Draper', 'Polychain Capital', 'ICO-funded']
+      backers: ['Tim Draper', 'Polychain Capital', 'ICO-funded'],
+      founders: 'Arthur Breitman (with Kathleen Breitman)'
     },
     'DOT': {
       utility: 'Sovereign interoperable chains & parachains',
       adoption: '100+ connected chains, growing RWA volume, JAM upgrades upcoming',
       partnerships: ['Moonbeam (EVM)', 'Acala (DeFi)', 'Centrifuge (RWAs)', 'Hydration', 'Mythos'],
-      backers: ['Polychain Capital', 'Web3 Foundation', 'ICO-funded']
+      backers: ['Polychain Capital', 'Web3 Foundation', 'ICO-funded'],
+      founders: 'Gavin Wood (with Robert Habermeier and Peter Czaban)'
     },
     'TAO': {
       utility: 'Decentralized machine-learning',
       adoption: 'Fast-growing AI sector, subnet revenue',
       partnerships: ['Chainlink (interoperability)', 'General TAO Ventures', 'Subnet projects (AIT Protocol)'],
-      backers: ['Polychain Capital', 'Digital Currency Group', 'dao5', 'Pantera Capital', 'Foundry']
+      backers: ['Polychain Capital', 'Digital Currency Group', 'dao5', 'Pantera Capital', 'Foundry'],
+      founders: 'Jacob Robert Steeves (with Ala Shaabana)'
     },
     'ATOM': {
       utility: 'IBC ecosystem for interoperable chains',
       adoption: 'Noble USDC, dYdX v4',
       partnerships: ['Noble (USDC)', 'dYdX v4', 'Osmosis', 'Solana IBC (incoming)'],
-      backers: ['Interchain Foundation', 'ICO-funded', 'Limited traditional VC']
+      backers: ['Interchain Foundation', 'ICO-funded', 'Limited traditional VC'],
+      founders: 'Jae Kwon (with Ethan Buchman)'
     }
   };
   
@@ -1904,19 +1928,12 @@ export default function CryptoAggregator() {
             {xrpExchangeBalance && (
               <div 
                 onClick={() => setShowExchangeModal(true)}
-                className="p-2 bg-slate-700/50 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
+                className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <img src="/XRPlogo.jpg" alt="XRP" className="w-5 h-5 rounded" />
-                    <div>
-                      <h3 className="text-sm font-bold text-white">XRP on Exchanges</h3>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-base font-bold text-[#ffc93c]">
-                      ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
-                    </div>
+                <div className="flex flex-col items-center justify-center gap-1 text-center">
+                  <h3 className="text-base font-bold text-white">XRP on Exchanges</h3>
+                  <div className="text-xl font-bold text-[#ffc93c]">
+                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
                   </div>
                 </div>
               </div>
@@ -2349,31 +2366,17 @@ export default function CryptoAggregator() {
               </button>
             </div>
 
-            <div className="mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-3xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
-                  <div className={`flex items-center gap-2 text-lg ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                    {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
-                  </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
+                <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
+                <div className={`flex items-center justify-end gap-1 text-sm ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
                 </div>
-                {/* Mini Price Chart - 30 days */}
-                {miniChartData.length > 0 && (
-                  <div className="w-48 h-16">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={miniChartData}>
-                        <Line 
-                          type="monotone" 
-                          dataKey="price" 
-                          stroke={selectedCrypto.price_change_percentage_24h > 0 ? '#10b981' : '#ef4444'} 
-                          strokeWidth={2} 
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -2388,6 +2391,14 @@ export default function CryptoAggregator() {
                   <p className="text-xs font-semibold text-gray-600 mb-2">KEY ADOPTION HIGHLIGHTS (2025-2026)</p>
                   <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].adoption}</p>
                 </div>
+                
+                {/* Founders */}
+                {tokenUtility[selectedCrypto.symbol.toUpperCase()].founders && (
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <p className="text-xs font-semibold text-gray-600 mb-2">FOUNDER(S) / CREATOR(S)</p>
+                    <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].founders}</p>
+                  </div>
+                )}
                 
                 {/* Top Partnerships */}
                 {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships && (
@@ -2477,22 +2488,15 @@ export default function CryptoAggregator() {
             <div className="mb-4">
               <h3 className="text-lg font-bold text-white mb-3">Top 20 Exchange Wallets</h3>
               <div className="max-h-[400px] overflow-y-auto space-y-1.5 pr-2">
-                {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
-                  .sort((a, b) => {
-                    const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
-                    const bVal = parseInt(b[1].replace(/[^0-9]/g, ''));
-                    return bVal - aVal;
-                  })
+                {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
                   .slice(0, 20)
-                  .map(([name, balance], index) => (
-                    <div key={name} className="bg-slate-700/50 rounded-lg p-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#ffc93c]/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[#ffc93c] font-semibold text-xs">{index + 1}</span>
-                        </div>
-                        <div className="text-white text-sm">{name}</div>
+                  .map((wallet, index) => (
+                    <div key={`${wallet.exchange}-${index}`} className="bg-slate-700/50 rounded-lg p-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-white text-sm font-medium">{wallet.exchange}</div>
+                        <div className="text-[#ffc93c] text-sm">{wallet.balance}</div>
                       </div>
-                      <div className="text-[#ffc93c] text-sm">{balance}</div>
+                      <div className="text-gray-400 text-xs font-mono truncate">{wallet.address}</div>
                     </div>
                   ))}
               </div>
@@ -2536,21 +2540,14 @@ export default function CryptoAggregator() {
             </div>
 
             <div className="space-y-1.5">
-              {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
-                .sort((a, b) => {
-                  const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
-                  const bVal = parseInt(b[1].replace(/[^0-9]/g, ''));
-                  return bVal - aVal;
-                })
-                .map(([name, balance], index) => (
-                  <div key={name} className="bg-slate-700/50 rounded-lg p-2 flex items-center justify-between hover:bg-slate-700 transition">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#ffc93c]/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[#ffc93c] font-semibold text-xs">{index + 1}</span>
-                      </div>
-                      <div className="text-white text-sm">{name}</div>
+              {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
+                .map((wallet, index) => (
+                  <div key={`${wallet.exchange}-${index}`} className="bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-white text-sm font-medium">{wallet.exchange}</div>
+                      <div className="text-[#ffc93c] text-sm">{wallet.balance}</div>
                     </div>
-                    <div className="text-[#ffc93c] text-sm">{balance}</div>
+                    <div className="text-gray-400 text-xs font-mono truncate">{wallet.address}</div>
                   </div>
                 ))}
             </div>

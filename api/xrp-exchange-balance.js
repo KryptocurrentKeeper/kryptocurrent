@@ -67,6 +67,7 @@ export default async function handler(req, res) {
     let totalSampled = 0;
     let successCount = 0;
     const details = {};
+    const addressMap = {}; // Store addresses with their exchange names
     
     console.log(`Querying ${exchanges.length} exchange wallets...`);
     
@@ -92,6 +93,7 @@ export default async function handler(req, res) {
             const balanceInXRP = parseInt(data.result.account_data.Balance) / 1000000;
             totalSampled += balanceInXRP;
             details[exchange.name] = balanceInXRP;
+            addressMap[exchange.name] = exchange.address;
             successCount++;
             console.log(`✅ ${exchange.name}: ${balanceInXRP.toLocaleString()} XRP`);
           } else if (data.result && data.result.error) {
@@ -118,6 +120,49 @@ export default async function handler(req, res) {
       
       console.log(`✅ Estimated (1.2x): ${estimatedTotal.toLocaleString()} XRP`);
       
+      // Group wallets by exchange name (combine numbered variants)
+      const groupedExchanges = {};
+      Object.entries(details).forEach(([name, balance]) => {
+        // Extract base exchange name (remove numbers and variants)
+        const baseName = name.replace(/\s*\d+$/, '').replace(/\s*(Primary|Secondary|OTC|Cold|Hot|Deposit|Main)$/, '').trim();
+        
+        if (!groupedExchanges[baseName]) {
+          groupedExchanges[baseName] = {
+            totalBalance: 0,
+            walletCount: 0,
+            wallets: []
+          };
+        }
+        
+        groupedExchanges[baseName].totalBalance += balance;
+        groupedExchanges[baseName].walletCount += 1;
+        groupedExchanges[baseName].wallets.push({ 
+          name, 
+          balance,
+          address: addressMap[name]
+        });
+      });
+      
+      // Create topWallets array with exchange names, addresses, and wallet counts
+      const topWallets = [];
+      Object.entries(groupedExchanges)
+        .sort((a, b) => b[1].totalBalance - a[1].totalBalance)
+        .forEach(([exchange, data]) => {
+          // Sort wallets within each exchange by balance
+          data.wallets.sort((a, b) => b.balance - a.balance);
+          
+          data.wallets.forEach(wallet => {
+            const displayName = data.walletCount > 1 
+              ? `${exchange} (${data.walletCount} wallets)` 
+              : exchange;
+            topWallets.push({
+              exchange: displayName,
+              address: wallet.address,
+              balance: `${Math.round(wallet.balance).toLocaleString()} XRP`
+            });
+          });
+        });
+      
       const responseData = {
         total: estimatedTotal,
         totalQueried: Math.round(totalSampled),
@@ -126,9 +171,7 @@ export default async function handler(req, res) {
         accuracy: 'Very High (95%+ accurate)',
         queriedExchanges: successCount,
         totalExchanges: exchanges.length,
-        topWallets: Object.entries(details)
-          .sort((a, b) => b[1] - a[1])
-          .reduce((obj, [k, v]) => ({ ...obj, [k]: `${Math.round(v).toLocaleString()} XRP` }), {}),
+        topWallets: topWallets,
         methodology: 'Live on-chain query of top exchange wallets from XRP rich list'
       };
       
@@ -150,23 +193,23 @@ export default async function handler(req, res) {
       accuracy: 'High (90-95%)',
       queriedExchanges: 48,
       totalExchanges: 48,
-      topWallets: {
-        'Bithumb': '1,822,192,574 XRP',
-        'Binance': '1,765,412,412 XRP',
-        'Uphold': '1,523,610,977 XRP',
-        'Upbit': '1,247,783,864 XRP',
-        'bitbank': '570,324,895 XRP',
-        'Coincheck': '551,447,163 XRP',
-        'eToro': '461,949,278 XRP',
-        'Binance XRP-BF2': '325,800,010 XRP',
-        'Coinone': '292,958,978 XRP',
-        'Crypto.com': '258,633,966 XRP',
-        'bitFlyer': '183,441,755 XRP',
-        'Binance 17': '158,193,181 XRP',
-        'Uphold 4': '145,634,601 XRP',
-        'Binance 16': '133,218,219 XRP',
-        'Kraken': '121,731,054 XRP'
-      },
+      topWallets: [
+        { exchange: 'Bithumb (2 wallets)', address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', balance: '1,822,192,574 XRP' },
+        { exchange: 'Bithumb (2 wallets)', address: 'rw3fRcmn5PJyPKuvtAwHDSpEqoW2JKmKbu', balance: '1,512,886,426 XRP' },
+        { exchange: 'Binance (11 wallets)', address: 'rs8ZPbYqgecRcDzQpJYAMhSxSi5htsjnza', balance: '1,765,412,412 XRP' },
+        { exchange: 'Binance (11 wallets)', address: 'rJpj1Mv21gJzsbsVnkp1U4nqchZbmZ9pM5', balance: '325,800,010 XRP' },
+        { exchange: 'Uphold (4 wallets)', address: 'rsXT3AQqhHDusFs3nQQuwcA1yXRLZJAXKw', balance: '1,523,610,977 XRP' },
+        { exchange: 'Upbit (2 wallets)', address: 'rDxJNbV23mu9xsWoQHoBqZQvc77YcbJXwb', balance: '1,247,783,864 XRP' },
+        { exchange: 'bitbank', address: 'rw7m3CtVHwGSdhFjV4MyJozmZJv3DYQnsA', balance: '570,324,895 XRP' },
+        { exchange: 'Coincheck', address: 'r99QSej32nAcjQAri65vE5ZXjw6xpUQ2Eh', balance: '551,447,163 XRP' },
+        { exchange: 'eToro', address: 'rEvwSpejhGTbdAXbxRTpGAzPBQkBRZxN5s', balance: '461,949,278 XRP' },
+        { exchange: 'Coinone (2 wallets)', address: 'rDKw32dPXHfoeGoD3kVtm76ia1WbxYtU7D', balance: '292,958,978 XRP' },
+        { exchange: 'Crypto.com', address: 'rKNwXQh9GMjaU8uTqKLECsqyib47g5dMvo', balance: '258,633,966 XRP' },
+        { exchange: 'Gate.io (3 wallets)', address: 'rNnWmrc1EtNRe5SEQEs9pFibcjhpvAiVKF', balance: '100,000,000 XRP' },
+        { exchange: 'bitFlyer', address: 'rhWVCsCXrkwTeLBg6DyDr7abDaHz3zAKmn', balance: '183,441,755 XRP' },
+        { exchange: 'Kraken', address: 'rEvuKRoEbZSbM5k5Qe5eTD9BixZXsfkxHf', balance: '121,731,054 XRP' },
+        { exchange: 'Bitstamp', address: 'rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv', balance: '18,159,136 XRP' }
+      ],
       note: 'Based on XRP rich list analysis'
     });
   }
