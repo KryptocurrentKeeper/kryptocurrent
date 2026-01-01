@@ -11,6 +11,8 @@ export default function CryptoAggregator() {
   const [memes, setMemes] = useState([]);
   const [memesLoading, setMemesLoading] = useState(true);
   const [xrpExchangeBalance, setXrpExchangeBalance] = useState(null);
+  const [showExchangeModal, setShowExchangeModal] = useState(false);
+  const [showAllExchanges, setShowAllExchanges] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -22,7 +24,7 @@ export default function CryptoAggregator() {
   const [shortsExpanded, setShortsExpanded] = useState(false);
   const [articlesExpanded, setArticlesExpanded] = useState(false);
   const [memesExpanded, setMemesExpanded] = useState(false);
-  const [priceCategory, setPriceCategory] = useState('top100'); // 'top100', 'iso20022', 'ai', 'meme'
+  const [priceCategory, setPriceCategory] = useState('utility'); // 'utility', 'iso20022', 'ai', 'meme'
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -43,6 +45,114 @@ export default function CryptoAggregator() {
       .replace(/\u2026/g, '...')        // Unicode ellipsis
       .replace(/\u00A0/g, ' ');         // Non-breaking space
   };
+
+  // Token utility information
+  const tokenUtility = {
+    'XRP': {
+      utility: 'Global cross-border settlements & liquidity provisioning',
+      adoption: 'Ripple ODL in 70+ countries, $15B+ annual volume, 300+ bank/fintech partnerships'
+    },
+    'ETH': {
+      utility: 'Smart contracts, DeFi, NFTs, tokenized RWAs',
+      adoption: '$500B+ DeFi TVL, BlackRock/BNY Mellon funds, L2 dominance (Base, Arbitrum)'
+    },
+    'LINK': {
+      utility: 'Decentralized oracles for smart contracts',
+      adoption: '2,000+ projects, CCIP for RWAs, SWIFT/DTCC pilots'
+    },
+    'BTC': {
+      utility: 'Store of value + payments (Lightning)',
+      adoption: 'Nation-state reserves, corporate treasuries, surging Lightning volume'
+    },
+    'SOL': {
+      utility: 'High-throughput payments, DeFi, consumer apps',
+      adoption: 'Visa pilot, PayPal PYUSD, top DEX volume, mobile integration'
+    },
+    'XLM': {
+      utility: 'Low-cost remittances & CBDC infrastructure',
+      adoption: 'MoneyGram, Ukraine CBDC pilot, Circle USDC issuer'
+    },
+    'QNT': {
+      utility: 'Enterprise blockchain interoperability',
+      adoption: 'SWIFT/BIS projects, LACChain CBDC, UK digital bonds'
+    },
+    'HBAR': {
+      utility: 'Enterprise DLT for payments, tokenization',
+      adoption: 'Council (Google, Boeing), 20B+ transactions, abrdn RWAs'
+    },
+    'VET': {
+      utility: 'Supply-chain traceability & carbon credits',
+      adoption: 'Walmart China, PwC/DNV, enterprise NFTs'
+    },
+    'POL': {
+      utility: 'Ethereum scaling + enterprise sidechains',
+      adoption: 'Starbucks/Adidas/JPMorgan usage, AggLayer'
+    },
+    'TON': {
+      utility: 'Mass-scale payments & mini-apps via Telegram',
+      adoption: '900M+ Telegram users, wallet adoption, growing DeFi/stablecoins'
+    },
+    'ADA': {
+      utility: 'Identity, governance, real-fi in emerging markets',
+      adoption: 'Ethiopia credentials (5M+ users), World Mobile telecom'
+    },
+    'RLUSD': {
+      utility: 'Enterprise-grade stablecoin on XRPL/Ethereum',
+      adoption: 'Launched 2025, used in Ripple Payments, MiCA-compliant'
+    },
+    'AVAX': {
+      utility: 'Institutional subnets, tokenized assets',
+      adoption: 'Citi/WisdomTree/Deloitte RWAs, Project Guardian'
+    },
+    'NEAR': {
+      utility: 'AI integration, account abstraction, cross-chain',
+      adoption: 'AI + DeFi growth, intents for swaps'
+    },
+    'ICP': {
+      utility: 'On-chain cloud & decentralized web',
+      adoption: 'Fully on-chain apps (OpenChat/DSCVR)'
+    },
+    'KAS': {
+      utility: 'Ultra-fast DAG payments',
+      adoption: '10 blocks/sec, merchant adoption'
+    },
+    'SUI': {
+      utility: 'High-throughput for gaming & DeFi',
+      adoption: 'DeepBook DEX, Mysten Labs backing'
+    },
+    'XDC': {
+      utility: 'Enterprise trade finance & payments',
+      adoption: 'TradeFinex/R3 partnerships, USDC native'
+    },
+    'ALGO': {
+      utility: 'Institutional & CBDC focus',
+      adoption: 'Italy SIA, Marshall Islands crypto'
+    },
+    'XTZ': {
+      utility: 'Self-amending, institutional baking',
+      adoption: 'Societe Generale/Ubisoft, formal verification'
+    },
+    'DOT': {
+      utility: 'Sovereign interoperable chains & parachains',
+      adoption: '100+ connected chains, growing RWA volume, JAM upgrades upcoming'
+    },
+    'TAO': {
+      utility: 'Decentralized machine-learning',
+      adoption: 'Fast-growing AI sector, subnet revenue'
+    },
+    'ATOM': {
+      utility: 'IBC ecosystem for interoperable chains',
+      adoption: 'Noble USDC, dYdX v4'
+    },
+    'DOGE': {
+      utility: 'Tipping, micro-payments, community-driven transactions',
+      adoption: 'Accepted by select merchants (e.g., Tesla intermittently), high liquidity, meme/community strength'
+    },
+    'SHIB': {
+      utility: 'Emerging DeFi/gaming via Shibarium',
+      adoption: 'Shibarium L2 upgrades (privacy in 2026), token burns, community ecosystem'
+    }
+  };
   
   // Refs for scrolling to section tops
   const pricesRef = useRef(null);
@@ -61,7 +171,7 @@ export default function CryptoAggregator() {
 
       return () => clearTimeout(timeoutId);
     } else if (searchQuery.trim().length === 0 && priceCategory === 'search') {
-      setPriceCategory('top100');
+      setPriceCategory('utility');
       setSearchResults([]);
     }
   }, [searchQuery]);
@@ -126,7 +236,7 @@ export default function CryptoAggregator() {
     fetchCryptoPrices(priceCategory);
   }, [priceCategory]);
 
-  const fetchCryptoPrices = async (category = 'top100') => {
+  const fetchCryptoPrices = async (category = 'utility') => {
     try {
       setLoading(true);
       
@@ -162,9 +272,10 @@ export default function CryptoAggregator() {
         console.log('Using search results already loaded');
         setLoading(false);
         return;
-      } else if (category === 'top100') {
-        // Top 100 by market cap
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${apiKeyParam}`;
+      } else if (category === 'utility') {
+        // Top 24 Utility Coins (excluding DOGE and SHIB from original 26)
+        const utilityIds = 'ripple,ethereum,chainlink,bitcoin,solana,stellar,quant-network,hedera-hashgraph,vechain,matic-network,the-open-network,cardano,avalanche-2,near,internet-computer,kaspa,sui,xdce-crowd-sale,algorand,tezos,polkadot,bittensor,cosmos';
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${utilityIds}&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
       } else if (category === 'iso20022') {
         // ISO 20022 compliant coins - fetch as comma-separated IDs
         const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,casper-network,lcx,coti';
@@ -200,8 +311,9 @@ export default function CryptoAggregator() {
           const newApiKeyParam = isPaidKey ? `&x-cg-pro-api-key=${newApiKey}` : `&x_cg_demo_api_key=${newApiKey}`;
           let retryUrl = '';
           
-          if (category === 'top100') {
-            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=102&page=1${newApiKeyParam}`;
+          if (category === 'utility') {
+            const utilityIds = 'ripple,ethereum,chainlink,bitcoin,solana,stellar,quant-network,hedera-hashgraph,vechain,matic-network,the-open-network,cardano,avalanche-2,near,internet-computer,kaspa,sui,xdce-crowd-sale,algorand,tezos,polkadot,bittensor,cosmos';
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${utilityIds}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
           } else if (category === 'iso20022') {
             const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,casper-network,lcx,coti';
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
@@ -292,7 +404,7 @@ export default function CryptoAggregator() {
   const searchCrypto = async (query) => {
     if (!query || query.trim().length < 2) {
       setSearchResults([]);
-      setPriceCategory('top100');
+      setPriceCategory('utility');
       return;
     }
 
@@ -353,7 +465,7 @@ export default function CryptoAggregator() {
     } catch (error) {
       console.error('Error searching crypto:', error);
       setSearchResults([]);
-      setPriceCategory('top100');
+      setPriceCategory('utility');
     } finally {
       setIsSearching(false);
       console.log('Search complete');
@@ -1495,17 +1607,17 @@ export default function CryptoAggregator() {
               <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => {
-                  setPriceCategory('top100');
+                  setPriceCategory('utility');
                   setSearchQuery('');
                   setSearchResults([]);
                 }}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-                  priceCategory === 'top100'
+                  priceCategory === 'utility'
                     ? 'bg-[#ffc93c] text-black'
                     : 'bg-slate-700/50 text-white hover:bg-slate-700'
                 }`}
               >
-                Top 100
+                Top Utility Coins
               </button>
               <button
                 onClick={() => {
@@ -1570,7 +1682,7 @@ export default function CryptoAggregator() {
                     onClick={() => {
                       setSearchQuery('');
                       setSearchResults([]);
-                      setPriceCategory('top100');
+                      setPriceCategory('utility');
                     }}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
                     aria-label="Clear search"
@@ -1691,7 +1803,10 @@ export default function CryptoAggregator() {
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
             {/* XRP Exchange Balance */}
             {xrpExchangeBalance && (
-              <div className="p-2 bg-slate-700/50 rounded-lg border border-slate-600">
+              <div 
+                onClick={() => setShowExchangeModal(true)}
+                className="p-2 bg-slate-700/50 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-1">
                     <img src="/XRPlogo.jpg" alt="XRP" className="w-5 h-5 rounded" />
@@ -1702,10 +1817,6 @@ export default function CryptoAggregator() {
                   <div className="text-right">
                     <div className="text-base font-bold text-[#ffc93c]">
                       ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
-                    </div>
-                    <div className={`flex items-center justify-end gap-0.5 text-xs ${xrpExchangeBalance.change7d < 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {xrpExchangeBalance.change7d < 0 ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
-                      <span>{Math.abs(xrpExchangeBalance.change7d).toFixed(1)}% (7d)</span>
                     </div>
                   </div>
                 </div>
@@ -2147,43 +2258,19 @@ export default function CryptoAggregator() {
               </div>
             </div>
 
-            <div className="flex gap-2 mb-4">
-              <button onClick={() => changeChartTimeframe('1')} className={`px-4 py-2 rounded-lg ${chartTimeframe === '1' ? 'bg-[#ffc93c] text-black' : 'bg-gray-100 text-black'}`}>1 Day</button>
-              <button onClick={() => changeChartTimeframe('7')} className={`px-4 py-2 rounded-lg ${chartTimeframe === '7' ? 'bg-[#ffc93c] text-black' : 'bg-gray-100 text-black'}`}>1 Week</button>
-            </div>
-
-            <div className="h-64 mb-4">
-              {chartLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <RefreshCw className="animate-spin text-[#ffc93c]" size={32} />
+            {/* Token Utility Information */}
+            {tokenUtility[selectedCrypto.symbol.toUpperCase()] && (
+              <div className="mb-4 space-y-3">
+                <div className="bg-gray-100 rounded-lg p-4">
+                  <p className="text-xs font-semibold text-gray-600 mb-2">PRIMARY UTILITY / REAL-WORLD USE CASE</p>
+                  <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].utility}</p>
                 </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="#9ca3af" 
-                      style={{ fontSize: '11px' }} 
-                      interval="preserveStartEnd"
-                      tickMargin={8}
-                    />
-                    <YAxis 
-                      stroke="#9ca3af" 
-                      style={{ fontSize: '11px' }} 
-                      tickFormatter={(value) => `$${value.toFixed(2)}`} 
-                      width={70}
-                      domain={['auto', 'auto']}
-                      scale="linear"
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} 
-                      formatter={(value) => [`$${value.toFixed(2)}`, 'Price']} 
-                    />
-                    <Line type="monotone" dataKey="price" stroke="#10b981" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
+                <div className="bg-gray-100 rounded-lg p-4">
+                  <p className="text-xs font-semibold text-gray-600 mb-2">KEY ADOPTION HIGHLIGHTS (2025-2026)</p>
+                  <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].adoption}</p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="bg-gray-100 rounded-lg p-3">
@@ -2202,6 +2289,124 @@ export default function CryptoAggregator() {
                 <p className="text-gray-600 text-xs mb-1">All-Time High</p>
                 <p className="font-bold text-black">${selectedCrypto.ath?.toLocaleString()}</p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* XRP Exchange Balance Modal */}
+      {showExchangeModal && xrpExchangeBalance && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowExchangeModal(false)}>
+          <div className="bg-slate-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <img src="/XRPlogo.jpg" alt="XRP" className="w-10 h-10 rounded" />
+                <div>
+                  <h2 className="text-2xl font-bold text-white">XRP on Exchanges</h2>
+                  <p className="text-gray-400 text-sm">Live on-chain data</p>
+                </div>
+              </div>
+              <button onClick={() => setShowExchangeModal(false)} className="p-2 hover:bg-slate-700 rounded-lg transition">
+                <X size={24} className="text-white" />
+              </button>
+            </div>
+
+            {/* Total Balance */}
+            <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
+              <div className="text-sm text-gray-400 mb-1">Total XRP on Exchanges</div>
+              <div className="text-4xl font-bold text-[#ffc93c] mb-2">
+                ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
+              </div>
+              {xrpExchangeBalance.totalQueried && (
+                <div className="text-sm text-gray-400">
+                  Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges
+                </div>
+              )}
+            </div>
+
+            {/* Top 20 Exchange Wallets */}
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-white mb-3">Top 20 Exchange Wallets</h3>
+              <div className="space-y-2">
+                {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
+                  .sort((a, b) => {
+                    const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
+                    const bVal = parseInt(b[1].replace(/[^0-9]/g, ''));
+                    return bVal - aVal;
+                  })
+                  .map(([name, balance], index) => (
+                    <div key={name} className="bg-slate-700/50 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#ffc93c]/20 flex items-center justify-center">
+                          <span className="text-[#ffc93c] font-bold text-sm">{index + 1}</span>
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold">{name}</div>
+                        </div>
+                      </div>
+                      <div className="text-[#ffc93c] font-bold">{balance}</div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Exchange Breakdown Button */}
+            <button
+              onClick={() => setShowAllExchanges(true)}
+              className="w-full py-3 bg-[#ffc93c] hover:bg-[#ffb700] text-black font-bold rounded-lg transition"
+            >
+              Exchange Breakdown (All {xrpExchangeBalance.queriedExchanges} Exchanges)
+            </button>
+
+            {/* Metadata */}
+            <div className="mt-4 pt-4 border-t border-slate-700">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-400">Data Source</p>
+                  <p className="text-white font-semibold">{xrpExchangeBalance.source}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Accuracy</p>
+                  <p className="text-white font-semibold">{xrpExchangeBalance.accuracy}</p>
+                </div>
+              </div>
+              <p className="text-gray-400 text-xs mt-3">{xrpExchangeBalance.methodology}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All Exchanges Breakdown Modal */}
+      {showAllExchanges && xrpExchangeBalance && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]" onClick={() => setShowAllExchanges(false)}>
+          <div className="bg-slate-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">All Exchange Wallets</h2>
+              <button onClick={() => setShowAllExchanges(false)} className="p-2 hover:bg-slate-700 rounded-lg transition">
+                <X size={24} className="text-white" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
+                .sort((a, b) => {
+                  const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
+                  const bVal = parseInt(b[1].replace(/[^0-9]/g, ''));
+                  return bVal - aVal;
+                })
+                .map(([name, balance], index) => (
+                  <div key={name} className="bg-slate-700/50 rounded-lg p-3 flex items-center justify-between hover:bg-slate-700 transition">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#ffc93c]/20 flex items-center justify-center">
+                        <span className="text-[#ffc93c] font-bold text-sm">{index + 1}</span>
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold">{name}</div>
+                      </div>
+                    </div>
+                    <div className="text-[#ffc93c] font-bold">{balance}</div>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
