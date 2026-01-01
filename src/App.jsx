@@ -13,6 +13,7 @@ export default function CryptoAggregator() {
   const [xrpExchangeBalance, setXrpExchangeBalance] = useState(null);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [showAllExchanges, setShowAllExchanges] = useState(false);
+  const [miniChartData, setMiniChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -50,107 +51,147 @@ export default function CryptoAggregator() {
   const tokenUtility = {
     'XRP': {
       utility: 'Global cross-border settlements & liquidity provisioning',
-      adoption: 'Ripple ODL in 70+ countries, $15B+ annual volume, 300+ bank/fintech partnerships'
+      adoption: 'Ripple ODL in 70+ countries, $15B+ annual volume, 300+ bank/fintech partnerships',
+      partnerships: ['SBI Holdings (RLUSD Japan)', 'BNY Mellon (RLUSD custody)', 'Mastercard/WebBank/Gemini', 'Mizuho Bank/SMBC Nikko', 'Archax (RWA tokenization)', 'Franklin Templeton', 'DBS Group', 'Ctrl Alt/Dubai Land Dept', 'Modulr (UK/Europe)', 'AMINA Bank'],
+      backers: ['Andreessen Horowitz (a16z)', 'Tetragon Financial', 'SBI Holdings', 'Pantera Capital', 'Fortress Investment Group']
     },
     'ETH': {
       utility: 'Smart contracts, DeFi, NFTs, tokenized RWAs',
-      adoption: '$500B+ DeFi TVL, BlackRock/BNY Mellon funds, L2 dominance (Base, Arbitrum)'
+      adoption: '$500B+ DeFi TVL, BlackRock/BNY Mellon funds, L2 dominance (Base, Arbitrum)',
+      partnerships: ['JP Morgan', 'Microsoft', 'Consensys', 'EY', 'BlackRock/BNY Mellon', 'Standard Chartered', 'Accenture', 'UBS/Fidelity', 'Visa', 'Google Cloud'],
+      backers: ['Joseph Lubin (ConsenSys)', 'Vitalik Buterin', 'BlackRock', 'Grayscale', 'Fidelity']
     },
     'LINK': {
       utility: 'Decentralized oracles for smart contracts',
-      adoption: '2,000+ projects, CCIP for RWAs, SWIFT/DTCC pilots'
+      adoption: '2,000+ projects, CCIP for RWAs, SWIFT/DTCC pilots',
+      partnerships: ['SWIFT (pilots)', 'DTCC (fund data)', 'Mastercard', 'Euroclear', 'Fidelity International', 'UBS/ANZ', 'Deutsche Börse', 'SBI Group', 'GLEIF', 'Chainalysis'],
+      backers: ['Fundamental Labs', 'Nirvana Capital', 'Grayscale Trust']
     },
     'BTC': {
       utility: 'Store of value + payments (Lightning)',
-      adoption: 'Nation-state reserves, corporate treasuries, surging Lightning volume'
+      adoption: 'Nation-state reserves, corporate treasuries, surging Lightning volume',
+      partnerships: ['Nation-state reserves (U.S.)', 'MicroStrategy (treasury)', 'Lightning Network', 'BlackRock ETFs', 'JPMorgan (collateral)', 'Tesla', 'El Salvador', 'Corporate treasuries (172+)', 'Fedwire pilots', 'Grayscale Trust'],
+      backers: ['MicroStrategy', 'BlackRock (ETFs)', 'Tesla', 'Marathon Digital', 'Fidelity']
     },
     'SOL': {
       utility: 'High-throughput payments, DeFi, consumer apps',
-      adoption: 'Visa pilot, PayPal PYUSD, top DEX volume, mobile integration'
+      adoption: 'Visa pilot, PayPal PYUSD, top DEX volume, mobile integration',
+      partnerships: ['Visa (pilots)', 'PayPal (PYUSD)', 'Shopify/Stripe', 'JP Morgan (bonds)', 'Revolut', 'Chainlink', 'Google Cloud', 'Mysten Labs', 'Coinbase (DEX)', 'Facebook Diem alumni'],
+      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'Alameda Research', 'Jump Trading']
     },
     'XLM': {
       utility: 'Low-cost remittances & CBDC infrastructure',
-      adoption: 'MoneyGram, Ukraine CBDC pilot, Circle USDC issuer'
+      adoption: 'MoneyGram, Ukraine CBDC pilot, Circle USDC issuer',
+      partnerships: ['MoneyGram', 'Circle (USDC issuer)', 'Mastercard', 'Franklin Templeton', 'Ukraine CBDC pilot', 'Paxos/Ondo (RWAs)', 'Visa', 'IBM', 'SureRemit', 'Wormhole'],
+      backers: ['Stripe (seed)', 'Circle (USDC)', 'MoneyGram']
     },
     'QNT': {
       utility: 'Enterprise blockchain interoperability',
-      adoption: 'SWIFT/BIS projects, LACChain CBDC, UK digital bonds'
+      adoption: 'SWIFT/BIS projects, LACChain CBDC, UK digital bonds',
+      partnerships: ['ECB (digital euro)', 'SWIFT/BIS projects', 'Oracle', 'SIA', 'LACChain CBDC', 'UK digital bonds', 'Overledger enterprise clients'],
+      backers: ['Private enterprise-focused', 'Limited public VC details']
     },
     'HBAR': {
       utility: 'Enterprise DLT for payments, tokenization',
-      adoption: 'Council (Google, Boeing), 20B+ transactions, abrdn RWAs'
+      adoption: 'Council (Google, Boeing), 20B+ transactions, abrdn RWAs',
+      partnerships: ['Google', 'Boeing', 'IBM', 'abrdn (RWAs)', 'Nairobi Securities Exchange', 'NATO DIANA (2026)', 'ServiceNow'],
+      backers: ['Google', 'Boeing', 'IBM', 'abrdn']
     },
     'VET': {
       utility: 'Supply-chain traceability & carbon credits',
-      adoption: 'Walmart China, PwC/DNV, enterprise NFTs'
+      adoption: 'Walmart China, PwC/DNV, enterprise NFTs',
+      partnerships: ['Walmart China', 'PwC/DNV', 'BMW', 'DHL', 'Franklin Templeton/BitGo', 'Boston Consulting Group', 'Crypto.com', 'Valour ETPs'],
+      backers: ['PwC', 'DNV', 'Enterprise-focused']
     },
     'POL': {
       utility: 'Ethereum scaling + enterprise sidechains',
-      adoption: 'Starbucks/Adidas/JPMorgan usage, AggLayer'
+      adoption: 'Starbucks/Adidas/JPMorgan usage, AggLayer',
+      partnerships: ['Starbucks', 'Nike', 'Adidas', 'JPMorgan', 'Mastercard', 'Calastone', 'Cypher Capital', 'Manifold Trading', 'Reliance Jio', 'Stripe'],
+      backers: ['Sequoia Capital India', 'SoftBank Vision Fund', 'Tiger Global', 'Andreessen Horowitz', 'Binance Labs']
     },
     'TON': {
       utility: 'Mass-scale payments & mini-apps via Telegram',
-      adoption: '900M+ Telegram users, wallet adoption, growing DeFi/stablecoins'
+      adoption: '900M+ Telegram users, wallet adoption, growing DeFi/stablecoins',
+      partnerships: ['Telegram (Mini Apps)', 'Sequoia Capital/Benchmark ($400M)', 'BitGo/Kraken/SkyBridge', 'Crypto.com', 'Chainlink'],
+      backers: ['Sequoia Capital', 'Ribbit Capital', 'Benchmark', 'Pantera Capital', 'Vy Capital']
     },
     'ADA': {
       utility: 'Identity, governance, real-fi in emerging markets',
-      adoption: 'Ethiopia credentials (5M+ users), World Mobile telecom'
+      adoption: 'Ethiopia credentials (5M+ users), World Mobile telecom',
+      partnerships: ['Ethiopia (credentials)', 'World Mobile (telecom)', 'Chainlink', 'Google/Oracle', 'Dune Analytics', 'Pyth Oracle', 'Tier-1 stablecoins incoming'],
+      backers: ['Input Output Global (IOG)', 'EMURGO', 'ICO-funded']
     },
     'RLUSD': {
       utility: 'Enterprise-grade stablecoin on XRPL/Ethereum',
-      adoption: 'Launched 2025, used in Ripple Payments, MiCA-compliant'
+      adoption: 'Launched 2025, used in Ripple Payments, MiCA-compliant',
+      partnerships: ['SBI VC Trade (Japan)', 'Uphold/Bitstamp/Bitso', 'MoonPay/Independent Reserve', 'CoinMENA/Bullish', 'BNY Mellon', 'Mastercard/WebBank/Gemini'],
+      backers: ['Fortress', 'Citadel affiliates', 'Pantera', 'Galaxy Digital']
     },
     'AVAX': {
       utility: 'Institutional subnets, tokenized assets',
-      adoption: 'Citi/WisdomTree/Deloitte RWAs, Project Guardian'
+      adoption: 'Citi/WisdomTree/Deloitte RWAs, Project Guardian',
+      partnerships: ['Citi/WisdomTree/Deloitte', 'JP Morgan Onyx', 'SMBC (stablecoins)', 'Crypto Finance AG', 'SkyBridge', 'Galaxy Digital/Pantera/VanEck'],
+      backers: ['Polychain Capital', 'Andreessen Horowitz', 'Three Arrows Capital', 'Galaxy Digital', 'ParaFi Capital']
     },
     'NEAR': {
       utility: 'AI integration, account abstraction, cross-chain',
-      adoption: 'AI + DeFi growth, intents for swaps'
+      adoption: 'AI + DeFi growth, intents for swaps',
+      partnerships: ['Google Cloud', 'LayerZero', 'THORChain/Everclear', 'Frax Finance', 'Deutsche Telekom (validator)'],
+      backers: ['Andreessen Horowitz', 'Pantera Capital', 'Three Arrows Capital', 'Dragonfly Capital', 'Tiger Global']
     },
     'ICP': {
       utility: 'On-chain cloud & decentralized web',
-      adoption: 'Fully on-chain apps (OpenChat/DSCVR)'
+      adoption: 'Fully on-chain apps (OpenChat/DSCVR)',
+      partnerships: ['Microsoft Azure', 'Google Cloud', 'SWIFT', 'Chain Fusion (Solana/Doge)', 'Caffeine AI partners'],
+      backers: ['Andreessen Horowitz', 'Polychain Capital', 'Multicoin Capital', 'Amino Capital', 'SV Angel']
     },
     'KAS': {
       utility: 'Ultra-fast DAG payments',
-      adoption: '10 blocks/sec, merchant adoption'
+      adoption: '10 blocks/sec, merchant adoption',
+      partnerships: ['WhiteBIT', 'Tangem/Ledger (wallets)', 'Zealous Swap (DeFi)'],
+      backers: ['Fair-launched', 'Community-driven', 'Limited institutional VC']
     },
     'SUI': {
       utility: 'High-throughput for gaming & DeFi',
-      adoption: 'DeepBook DEX, Mysten Labs backing'
+      adoption: 'DeepBook DEX, Mysten Labs backing',
+      partnerships: ['BytePlus', 'ONE Championship', 'SEED', 'Grayscale/21Shares (ETPs)', 'Google Cloud'],
+      backers: ['Andreessen Horowitz', 'FTX Ventures', 'Binance Labs', 'Coinbase Ventures', 'Jump Crypto']
     },
     'XDC': {
       utility: 'Enterprise trade finance & payments',
-      adoption: 'TradeFinex/R3 partnerships, USDC native'
+      adoption: 'TradeFinex/R3 partnerships, USDC native',
+      partnerships: ['SBI Japan', 'Contour (trade finance)', 'VERT Capital', 'SIX Swiss Exchange', 'Ankr'],
+      backers: ['LDA Capital', 'Enterprise-focused', 'Limited public VC']
     },
     'ALGO': {
       utility: 'Institutional & CBDC focus',
-      adoption: 'Italy SIA, Marshall Islands crypto'
+      adoption: 'Italy SIA, Marshall Islands crypto',
+      partnerships: ['Wormhole', 'Google (Agent Payments)', 'ISDA (derivatives)', 'Marshall Islands', 'Paxos/Ondo (RWAs)'],
+      backers: ['Union Square Ventures', 'Pillar VC', 'ICO backers']
     },
     'XTZ': {
       utility: 'Self-amending, institutional baking',
-      adoption: 'Societe Generale/Ubisoft, formal verification'
+      adoption: 'Societe Generale/Ubisoft, formal verification',
+      partnerships: ['Societe Generale', 'Ubisoft', 'Manchester United', 'Red Bull Racing'],
+      backers: ['Tim Draper', 'Polychain Capital', 'ICO-funded']
     },
     'DOT': {
       utility: 'Sovereign interoperable chains & parachains',
-      adoption: '100+ connected chains, growing RWA volume, JAM upgrades upcoming'
+      adoption: '100+ connected chains, growing RWA volume, JAM upgrades upcoming',
+      partnerships: ['Moonbeam (EVM)', 'Acala (DeFi)', 'Centrifuge (RWAs)', 'Hydration', 'Mythos'],
+      backers: ['Polychain Capital', 'Web3 Foundation', 'ICO-funded']
     },
     'TAO': {
       utility: 'Decentralized machine-learning',
-      adoption: 'Fast-growing AI sector, subnet revenue'
+      adoption: 'Fast-growing AI sector, subnet revenue',
+      partnerships: ['Chainlink (interoperability)', 'General TAO Ventures', 'Subnet projects (AIT Protocol)'],
+      backers: ['Polychain Capital', 'Digital Currency Group', 'dao5', 'Pantera Capital', 'Foundry']
     },
     'ATOM': {
       utility: 'IBC ecosystem for interoperable chains',
-      adoption: 'Noble USDC, dYdX v4'
-    },
-    'DOGE': {
-      utility: 'Tipping, micro-payments, community-driven transactions',
-      adoption: 'Accepted by select merchants (e.g., Tesla intermittently), high liquidity, meme/community strength'
-    },
-    'SHIB': {
-      utility: 'Emerging DeFi/gaming via Shibarium',
-      adoption: 'Shibarium L2 upgrades (privacy in 2026), token burns, community ecosystem'
+      adoption: 'Noble USDC, dYdX v4',
+      partnerships: ['Noble (USDC)', 'dYdX v4', 'Osmosis', 'Solana IBC (incoming)'],
+      backers: ['Interchain Foundation', 'ICO-funded', 'Limited traditional VC']
     }
   };
   
@@ -372,6 +413,47 @@ export default function CryptoAggregator() {
         if (category === 'ai') {
           filteredData = data.filter(coin => coin.id !== 'chainlink');
           console.log(`✓ Fetched ${data.length} prices for ${category} (filtered to ${filteredData.length})`);
+        } else if (category === 'utility') {
+          // Custom sort order based on utility ranking (exact order from the list)
+          const utilityOrder = [
+            'ripple',           // 1. XRP
+            'ethereum',         // 2. Ethereum
+            'chainlink',        // 3. Chainlink
+            'bitcoin',          // 4. Bitcoin
+            'solana',           // 5. Solana
+            'stellar',          // 6. Stellar
+            'quant-network',    // 7. Quant
+            'hedera-hashgraph', // 8. Hedera
+            'vechain',          // 9. VeChain
+            'matic-network',    // 10. Polygon
+            'the-open-network', // 11. The Open Network
+            'cardano',          // 12. Cardano
+            'ripple-usd',       // 13. Ripple USD (if available)
+            'avalanche-2',      // 14. Avalanche
+            'near',             // 15. NEAR Protocol
+            'internet-computer',// 16. Internet Computer
+            'kaspa',            // 17. Kaspa
+            'sui',              // 18. Sui
+            'xdce-crowd-sale',  // 19. XDC Network
+            'algorand',         // 20. Algorand
+            'tezos',            // 21. Tezos
+            'polkadot',         // 22. Polkadot
+            'bittensor',        // 23. Bittensor
+            'cosmos'            // 24. Cosmos
+          ];
+          
+          filteredData = data.sort((a, b) => {
+            const aIndex = utilityOrder.indexOf(a.id);
+            const bIndex = utilityOrder.indexOf(b.id);
+            // If both are in the list, sort by list order
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            // If only one is in the list, prioritize it
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            // If neither is in the list, maintain original order
+            return 0;
+          });
+          console.log(`✓ Fetched ${data.length} prices for ${category} (sorted by utility ranking)`);
         } else {
           console.log(`✓ Fetched ${data.length} prices for ${category}`);
         }
@@ -1279,10 +1361,26 @@ export default function CryptoAggregator() {
     }
   };
 
-  const openChart = (crypto) => {
+  const openChart = async (crypto) => {
     setSelectedCrypto(crypto);
     setChartTimeframe('7');
     fetchChartData(crypto.id, '7');
+    
+    // Fetch 30-day mini chart data
+    try {
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto.id}/market_chart?vs_currency=usd&days=30&interval=daily`);
+      if (response.ok) {
+        const data = await response.json();
+        const formattedData = data.prices.map(([timestamp, price]) => ({
+          time: timestamp,
+          price: price
+        }));
+        setMiniChartData(formattedData);
+      }
+    } catch (error) {
+      console.error('Error fetching mini chart:', error);
+      setMiniChartData([]);
+    }
   };
 
   const changeChartTimeframe = (days) => {
@@ -1293,6 +1391,7 @@ export default function CryptoAggregator() {
   const closeChart = () => {
     setSelectedCrypto(null);
     setChartData([]);
+    setMiniChartData([]);
   };
 
   const getTimeAgo = (dateString) => {
@@ -2251,10 +2350,30 @@ export default function CryptoAggregator() {
             </div>
 
             <div className="mb-4">
-              <div className="text-3xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
-              <div className={`flex items-center gap-2 text-lg ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
+                  <div className={`flex items-center gap-2 text-lg ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                    {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
+                  </div>
+                </div>
+                {/* Mini Price Chart - 30 days */}
+                {miniChartData.length > 0 && (
+                  <div className="w-48 h-16">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={miniChartData}>
+                        <Line 
+                          type="monotone" 
+                          dataKey="price" 
+                          stroke={selectedCrypto.price_change_percentage_24h > 0 ? '#10b981' : '#ef4444'} 
+                          strokeWidth={2} 
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2269,6 +2388,36 @@ export default function CryptoAggregator() {
                   <p className="text-xs font-semibold text-gray-600 mb-2">KEY ADOPTION HIGHLIGHTS (2025-2026)</p>
                   <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].adoption}</p>
                 </div>
+                
+                {/* Top Partnerships */}
+                {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships && (
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <p className="text-xs font-semibold text-gray-600 mb-2">TOP PARTNERSHIPS & COLLABORATIONS (2025-2026)</p>
+                    <div className="text-sm text-black">
+                      {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.slice(0, 10).map((partner, idx) => (
+                        <span key={idx}>
+                          {partner}
+                          {idx < Math.min(9, tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.length - 1) ? ', ' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Notable Backers */}
+                {tokenUtility[selectedCrypto.symbol.toUpperCase()].backers && (
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <p className="text-xs font-semibold text-gray-600 mb-2">NOTABLE BACKERS & INVESTORS</p>
+                    <div className="text-sm text-black">
+                      {tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.map((backer, idx) => (
+                        <span key={idx}>
+                          {backer}
+                          {idx < tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.length - 1 ? ', ' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -2297,7 +2446,7 @@ export default function CryptoAggregator() {
       {/* XRP Exchange Balance Modal */}
       {showExchangeModal && xrpExchangeBalance && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowExchangeModal(false)}>
-          <div className="bg-slate-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-slate-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <img src="/XRPlogo.jpg" alt="XRP" className="w-10 h-10 rounded" />
@@ -2324,27 +2473,26 @@ export default function CryptoAggregator() {
               )}
             </div>
 
-            {/* Top 20 Exchange Wallets */}
+            {/* Top 20 Exchange Wallets - Scrollable */}
             <div className="mb-4">
               <h3 className="text-lg font-bold text-white mb-3">Top 20 Exchange Wallets</h3>
-              <div className="space-y-2">
+              <div className="max-h-[400px] overflow-y-auto space-y-1.5 pr-2">
                 {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
                   .sort((a, b) => {
                     const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
                     const bVal = parseInt(b[1].replace(/[^0-9]/g, ''));
                     return bVal - aVal;
                   })
+                  .slice(0, 20)
                   .map(([name, balance], index) => (
-                    <div key={name} className="bg-slate-700/50 rounded-lg p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#ffc93c]/20 flex items-center justify-center">
-                          <span className="text-[#ffc93c] font-bold text-sm">{index + 1}</span>
+                    <div key={name} className="bg-slate-700/50 rounded-lg p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-[#ffc93c]/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[#ffc93c] font-semibold text-xs">{index + 1}</span>
                         </div>
-                        <div>
-                          <div className="text-white font-semibold">{name}</div>
-                        </div>
+                        <div className="text-white text-sm">{name}</div>
                       </div>
-                      <div className="text-[#ffc93c] font-bold">{balance}</div>
+                      <div className="text-[#ffc93c] text-sm">{balance}</div>
                     </div>
                   ))}
               </div>
@@ -2379,7 +2527,7 @@ export default function CryptoAggregator() {
       {/* All Exchanges Breakdown Modal */}
       {showAllExchanges && xrpExchangeBalance && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]" onClick={() => setShowAllExchanges(false)}>
-          <div className="bg-slate-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-slate-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">All Exchange Wallets</h2>
               <button onClick={() => setShowAllExchanges(false)} className="p-2 hover:bg-slate-700 rounded-lg transition">
@@ -2387,7 +2535,7 @@ export default function CryptoAggregator() {
               </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {xrpExchangeBalance.topWallets && Object.entries(xrpExchangeBalance.topWallets)
                 .sort((a, b) => {
                   const aVal = parseInt(a[1].replace(/[^0-9]/g, ''));
@@ -2395,16 +2543,14 @@ export default function CryptoAggregator() {
                   return bVal - aVal;
                 })
                 .map(([name, balance], index) => (
-                  <div key={name} className="bg-slate-700/50 rounded-lg p-3 flex items-center justify-between hover:bg-slate-700 transition">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#ffc93c]/20 flex items-center justify-center">
-                        <span className="text-[#ffc93c] font-bold text-sm">{index + 1}</span>
+                  <div key={name} className="bg-slate-700/50 rounded-lg p-2 flex items-center justify-between hover:bg-slate-700 transition">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-[#ffc93c]/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[#ffc93c] font-semibold text-xs">{index + 1}</span>
                       </div>
-                      <div>
-                        <div className="text-white font-semibold">{name}</div>
-                      </div>
+                      <div className="text-white text-sm">{name}</div>
                     </div>
-                    <div className="text-[#ffc93c] font-bold">{balance}</div>
+                    <div className="text-[#ffc93c] text-sm">{balance}</div>
                   </div>
                 ))}
             </div>
