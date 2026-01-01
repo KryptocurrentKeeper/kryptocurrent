@@ -1940,9 +1940,9 @@ export default function CryptoAggregator() {
                 onClick={() => setShowExchangeModal(true)}
                 className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex flex-col items-center justify-center gap-1 text-center">
-                  <h3 className="text-base font-bold text-white">XRP on Exchanges</h3>
-                  <div className="text-xl font-bold text-[#ffc93c]">
+                <div className="flex items-center justify-center gap-3 text-center">
+                  <h3 className="text-lg font-bold text-white">XRP on Exchanges:</h3>
+                  <div className="text-2xl font-bold text-[#ffc93c]">
                     ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
                   </div>
                 </div>
@@ -2364,14 +2364,7 @@ export default function CryptoAggregator() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={closeChart}>
           <div className="bg-white rounded-xl p-6 max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
-                <div>
-                  <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
-                  <p className="text-gray-600">{selectedCrypto.symbol.toUpperCase()}</p>
-                </div>
-              </div>
-              <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg ml-auto">
                 <X size={24} className="text-black" />
               </button>
             </div>
@@ -2467,47 +2460,52 @@ export default function CryptoAggregator() {
       {/* XRP Exchange Balance Modal */}
       {showExchangeModal && xrpExchangeBalance && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowExchangeModal(false)}>
-          <div className="bg-slate-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <img src="/XRPlogo.jpg" alt="XRP" className="w-10 h-10 rounded" />
                 <div>
-                  <h2 className="text-2xl font-bold text-white">XRP on Exchanges</h2>
-                  <p className="text-gray-400 text-sm">Live on-chain data</p>
+                  <h2 className="text-2xl font-bold text-black">XRP on Exchanges</h2>
+                  <p className="text-gray-600 text-sm">Live on-chain data</p>
                 </div>
               </div>
-              <button onClick={() => setShowExchangeModal(false)} className="p-2 hover:bg-slate-700 rounded-lg transition">
-                <X size={24} className="text-white" />
+              <button onClick={() => setShowExchangeModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <X size={24} className="text-black" />
               </button>
             </div>
 
             {/* Total Balance */}
-            <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
-              <div className="text-sm text-gray-400 mb-1">Total XRP on Exchanges</div>
+            <div className="bg-gray-100 rounded-lg p-4 mb-6">
+              <div className="text-sm text-gray-600 mb-1">Total XRP on Exchanges</div>
               <div className="text-4xl font-bold text-[#ffc93c] mb-2">
                 ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
               </div>
               {xrpExchangeBalance.totalQueried && (
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-gray-600">
                   <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges</div>
                   <div className="text-xs text-gray-500 mt-1">1.2x adjustment for unknown remaining exchange wallets</div>
                 </div>
               )}
             </div>
 
-            {/* Top 20 Exchange Wallets - Scrollable */}
+            {/* Top 20 Exchange Wallets - Scrollable, sorted by XRP amount */}
             <div className="mb-4">
-              <h3 className="text-lg font-bold text-white mb-3">Top 20 Exchange Wallets</h3>
+              <h3 className="text-lg font-bold text-black mb-3">Top 20 Exchange Wallets</h3>
               <div className="max-h-[400px] overflow-y-auto space-y-1.5 pr-2">
                 {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
+                  .sort((a, b) => {
+                    const aVal = parseInt(a.balance.replace(/[^0-9]/g, ''));
+                    const bVal = parseInt(b.balance.replace(/[^0-9]/g, ''));
+                    return bVal - aVal;
+                  })
                   .slice(0, 20)
                   .map((wallet, index) => (
-                    <div key={`${wallet.exchange}-${index}`} className="bg-slate-700/50 rounded-lg p-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-white text-sm font-medium">{wallet.exchange}</div>
-                        <div className="text-[#ffc93c] text-sm">{wallet.balance}</div>
+                    <div key={`${wallet.exchange}-${index}`} className="bg-gray-100 rounded-lg p-2 text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-black font-medium truncate flex-shrink-0" style={{minWidth: '120px', maxWidth: '120px'}}>{wallet.exchange}</div>
+                        <div className="text-gray-600 font-mono truncate flex-1">{wallet.address}</div>
+                        <div className="text-[#ffc93c] font-bold whitespace-nowrap flex-shrink-0">{wallet.balance}</div>
                       </div>
-                      <div className="text-gray-400 text-xs font-mono truncate">{wallet.address}</div>
                     </div>
                   ))}
               </div>
@@ -2522,18 +2520,18 @@ export default function CryptoAggregator() {
             </button>
 
             {/* Metadata */}
-            <div className="mt-4 pt-4 border-t border-slate-700">
+            <div className="mt-4 pt-4 border-t border-gray-300">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-400">Data Source</p>
-                  <p className="text-white font-semibold">{xrpExchangeBalance.source}</p>
+                  <p className="text-gray-600">Data Source</p>
+                  <p className="text-black font-semibold">{xrpExchangeBalance.source}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400">Accuracy</p>
-                  <p className="text-white font-semibold">{xrpExchangeBalance.accuracy}</p>
+                  <p className="text-gray-600">Accuracy</p>
+                  <p className="text-black font-semibold">{xrpExchangeBalance.accuracy}</p>
                 </div>
               </div>
-              <p className="text-gray-400 text-xs mt-3">{xrpExchangeBalance.methodology}</p>
+              <p className="text-gray-600 text-xs mt-3">{xrpExchangeBalance.methodology}</p>
             </div>
           </div>
         </div>
@@ -2542,23 +2540,28 @@ export default function CryptoAggregator() {
       {/* All Exchanges Breakdown Modal */}
       {showAllExchanges && xrpExchangeBalance && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]" onClick={() => setShowAllExchanges(false)}>
-          <div className="bg-slate-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">All Exchange Wallets</h2>
-              <button onClick={() => setShowAllExchanges(false)} className="p-2 hover:bg-slate-700 rounded-lg transition">
-                <X size={24} className="text-white" />
+              <h2 className="text-2xl font-bold text-black">All Exchange Wallets</h2>
+              <button onClick={() => setShowAllExchanges(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <X size={24} className="text-black" />
               </button>
             </div>
 
             <div className="space-y-1.5">
               {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
+                .sort((a, b) => {
+                  const aVal = parseInt(a.balance.replace(/[^0-9]/g, ''));
+                  const bVal = parseInt(b.balance.replace(/[^0-9]/g, ''));
+                  return bVal - aVal;
+                })
                 .map((wallet, index) => (
-                  <div key={`${wallet.exchange}-${index}`} className="bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="text-white text-sm font-medium">{wallet.exchange}</div>
-                      <div className="text-[#ffc93c] text-sm">{wallet.balance}</div>
+                  <div key={`${wallet.exchange}-${index}`} className="bg-gray-100 rounded-lg p-2 hover:bg-gray-200 transition text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-black font-medium truncate flex-shrink-0" style={{minWidth: '120px', maxWidth: '120px'}}>{wallet.exchange}</div>
+                      <div className="text-gray-600 font-mono truncate flex-1">{wallet.address}</div>
+                      <div className="text-[#ffc93c] font-bold whitespace-nowrap flex-shrink-0">{wallet.balance}</div>
                     </div>
-                    <div className="text-gray-400 text-xs font-mono truncate">{wallet.address}</div>
                   </div>
                 ))}
             </div>
