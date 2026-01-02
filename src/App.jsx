@@ -1940,9 +1940,12 @@ export default function CryptoAggregator() {
                 onClick={() => setShowExchangeModal(true)}
                 className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-center gap-12 text-center">
-                  <h3 className="text-base font-bold text-white">XRP on Exchanges:</h3>
-                  <div className="text-xl font-bold text-[#ffc93c]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
+                    <h3 className="text-lg font-bold text-white">XRP on Exchanges</h3>
+                  </div>
+                  <div className="text-2xl font-bold text-[#ffc93c]">
                     ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
                   </div>
                 </div>
