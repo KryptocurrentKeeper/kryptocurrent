@@ -1940,7 +1940,7 @@ export default function CryptoAggregator() {
                 onClick={() => setShowExchangeModal(true)}
                 className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-center gap-6 text-center">
+                <div className="flex items-center justify-center gap-12 text-center">
                   <h3 className="text-base font-bold text-white">XRP on Exchanges:</h3>
                   <div className="text-xl font-bold text-[#ffc93c]">
                     ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
@@ -2371,11 +2371,11 @@ export default function CryptoAggregator() {
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
+                <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
                 <div>
-                  <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
-                  <p className="text-gray-600 text-xs text-center mt-1">{selectedCrypto.symbol.toUpperCase()}</p>
+                  <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
+                  <p className="text-gray-600 text-xs">{selectedCrypto.symbol.toUpperCase()}</p>
                 </div>
-                <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
@@ -2439,20 +2439,20 @@ export default function CryptoAggregator() {
             )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-gray-600 text-xs mb-1">Market Cap</p>
+              <div className="bg-[#ffc93c] rounded-lg p-3">
+                <p className="text-black text-xs mb-1 font-semibold">Market Cap</p>
                 <p className="font-bold text-black">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</p>
               </div>
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-gray-600 text-xs mb-1">24h High</p>
+              <div className="bg-[#ffc93c] rounded-lg p-3">
+                <p className="text-black text-xs mb-1 font-semibold">24h High</p>
                 <p className="font-bold text-black">${selectedCrypto.high_24h?.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-gray-600 text-xs mb-1">24h Low</p>
+              <div className="bg-[#ffc93c] rounded-lg p-3">
+                <p className="text-black text-xs mb-1 font-semibold">24h Low</p>
                 <p className="font-bold text-black">${selectedCrypto.low_24h?.toLocaleString()}</p>
               </div>
-              <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-gray-600 text-xs mb-1">All-Time High</p>
+              <div className="bg-[#ffc93c] rounded-lg p-3">
+                <p className="text-black text-xs mb-1 font-semibold">All-Time High</p>
                 <p className="font-bold text-black">${selectedCrypto.ath?.toLocaleString()}</p>
               </div>
             </div>
@@ -2525,21 +2525,6 @@ export default function CryptoAggregator() {
             >
               All {xrpExchangeBalance.queriedExchanges} Exchanges
             </button>
-
-            {/* Metadata */}
-            <div className="mt-4 pt-4 border-t border-gray-300">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-600">Data Source</p>
-                  <p className="text-black font-semibold">{xrpExchangeBalance.source}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Accuracy</p>
-                  <p className="text-black font-semibold">{xrpExchangeBalance.accuracy}</p>
-                </div>
-              </div>
-              <p className="text-gray-600 text-xs mt-3">{xrpExchangeBalance.methodology}</p>
-            </div>
           </div>
         </div>
       )}
