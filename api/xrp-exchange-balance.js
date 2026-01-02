@@ -155,48 +155,87 @@ export default async function handler(req, res) {
     let successCount = 0;
     const details = {};
     const addressMap = {}; // Store addresses with their exchange names
+    const failedAddresses = []; // Track failed addresses for retry
     
     console.log(`Querying ${exchanges.length} exchange wallets...`);
     
-    // Query XRP Ledger
-    for (const exchange of exchanges) {
-      try {
-        const response = await fetch('https://xrplcluster.com', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            method: 'account_info',
-            params: [{
-              account: exchange.address,
-              ledger_index: 'validated'
-            }]
-          })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
+    // Helper function to query a single exchange with retries
+    const queryExchangeWithRetry = async (exchange, maxRetries = 3) => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch('https://xrplcluster.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              method: 'account_info',
+              params: [{
+                account: exchange.address,
+                ledger_index: 'validated'
+              }]
+            })
+          });
           
-          if (data.result && data.result.account_data && data.result.account_data.Balance) {
-            const balanceInXRP = parseInt(data.result.account_data.Balance) / 1000000;
-            totalSampled += balanceInXRP;
-            details[exchange.name] = balanceInXRP;
-            addressMap[exchange.name] = exchange.address;
-            successCount++;
-            console.log(`✅ ${exchange.name}: ${balanceInXRP.toLocaleString()} XRP`);
-          } else if (data.result && data.result.error) {
-            console.log(`⚠️ ${exchange.name}: ${data.result.error_message || data.result.error}`);
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.result && data.result.account_data && data.result.account_data.Balance) {
+              const balanceInXRP = parseInt(data.result.account_data.Balance) / 1000000;
+              return { success: true, balance: balanceInXRP };
+            } else if (data.result && data.result.error) {
+              // If it's an "actNotFound" error, don't retry (account doesn't exist)
+              if (data.result.error === 'actNotFound') {
+                console.log(`⚠️ ${exchange.name}: Account not found (not activated)`);
+                return { success: false, error: 'actNotFound', noRetry: true };
+              }
+              console.log(`⚠️ ${exchange.name} (attempt ${attempt}): ${data.result.error_message || data.result.error}`);
+            }
+          } else {
+            console.log(`⚠️ ${exchange.name} (attempt ${attempt}): HTTP ${response.status}`);
+          }
+          
+          // If not the last attempt, wait before retrying (exponential backoff)
+          if (attempt < maxRetries) {
+            const waitTime = 500 * Math.pow(2, attempt - 1); // 500ms, 1000ms, 2000ms
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+          
+        } catch (error) {
+          console.error(`❌ ${exchange.name} (attempt ${attempt}):`, error.message);
+          
+          // If not the last attempt, wait before retrying
+          if (attempt < maxRetries) {
+            const waitTime = 500 * Math.pow(2, attempt - 1);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
           }
         }
-        
-        // 300ms delay
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-      } catch (error) {
-        console.error(`❌ ${exchange.name}:`, error.message);
       }
+      
+      return { success: false };
+    };
+    
+    // Query XRP Ledger with retry logic
+    for (const exchange of exchanges) {
+      const result = await queryExchangeWithRetry(exchange);
+      
+      if (result.success) {
+        totalSampled += result.balance;
+        details[exchange.name] = result.balance;
+        addressMap[exchange.name] = exchange.address;
+        successCount++;
+        console.log(`✅ ${exchange.name}: ${result.balance.toLocaleString()} XRP`);
+      } else if (!result.noRetry) {
+        failedAddresses.push(exchange);
+      }
+      
+      // Standard delay between queries
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
     
     console.log(`\n📊 Results: ${successCount}/${exchanges.length}`);
+    if (failedAddresses.length > 0) {
+      console.log(`⚠️ Failed after retries: ${failedAddresses.length}`);
+      console.log(`Failed exchanges: ${failedAddresses.map(e => e.name).join(', ')}`);
+    }
     console.log(`Total: ${totalSampled.toLocaleString()} XRP`);
     
     // If we got good data
