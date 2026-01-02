@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     
     // Top exchange addresses from XRP rich list (Jan 2026)
     // Excluding Ripple, personal wallets (chrislarsen, ahbritto)
-    // Now tracking 121 verified exchange wallets
+    // Now tracking 131 verified exchange wallets
     const exchanges = [
       { address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', name: 'Bithumb' },
       { address: 'rs8ZPbYqgecRcDzQpJYAMhSxSi5htsjnza', name: 'Binance' },
@@ -137,7 +137,18 @@ export default async function handler(req, res) {
       { address: 'raBSxYLSmuxTieTFDYNjkoWpuMoVuk213Y', name: 'Bitazza 2' },
       { address: 'rnBKit9uv2L3pH8HQwPKpDJhhwACKct3ro', name: 'WhiteBIT (Hot)' },
       { address: 'rwGM7ed8BVNydDcdndQGLrJPAyoCKjw7PJ', name: 'Orionx 3' },
-      { address: 'rL7ehXUB6Xhyakbz7SZ6tbMwNhekeFEMdb', name: 'Hotcoin Global' }
+      { address: 'rL7ehXUB6Xhyakbz7SZ6tbMwNhekeFEMdb', name: 'Hotcoin Global' },
+      // Additional Upbit wallets (batch 3)
+      { address: 'rfL1mn4VTCoHdhHhHMwqpShCFUaDBRk6Z5', name: 'Upbit 12' },
+      { address: 'rwa7YXssGVAL9yPKw6QJtCen2UqZbRQqpM', name: 'Upbit 13' },
+      { address: 'rNcAdhSLXBrJ3aZUq22HaNtNEPpB5fR8Ri', name: 'Upbit 14' },
+      { address: 'r38a3PtqW3M7LRESgaR4dyHjg3AxAmiZCt', name: 'Upbit 15' },
+      { address: 'rMNUAfSz2spLEbaBwPnGtxTzZCajJifnzH', name: 'Upbit 16' },
+      { address: 'rJWbw1u3oDDRcYLFqiWFjhGWRKVcBAWdgp', name: 'Upbit 17' },
+      { address: 'rs48xReB6gjKtTnTfii93iwUhjhTJsW78B', name: 'Upbit 18' },
+      { address: 'rJo4m69u9Wd1F8fN2RbgAsJEF6a4hW1nSi', name: 'Upbit 19' },
+      { address: 'rLgn612WAgRoZ285YmsQ4t7kb8Ui3csdoU', name: 'Upbit 20' },
+      { address: 'r4G689g4KePYLKkyyumM1iUppTP4nhZwVC', name: 'Upbit 21' }
     ];
     
     let totalSampled = 0;
@@ -190,9 +201,9 @@ export default async function handler(req, res) {
     
     // If we got good data
     if (successCount >= 8 && totalSampled > 1000000000) {
-      // These are major exchange wallets representing ~80-90% of total
-      // Apply 1.15x multiplier for remaining exchanges (lower since we have 121 wallets)
-      const estimatedTotal = Math.round(totalSampled * 1.15);
+      // These are major exchange wallets representing ~85-95% of total
+      // Apply 1.1x multiplier for remaining exchanges (lower since we have 131 wallets)
+      const estimatedTotal = Math.round(totalSampled * 1.1);
       
       console.log(`✅ Estimated (1.2x): ${estimatedTotal.toLocaleString()} XRP`);
       
@@ -267,8 +278,8 @@ export default async function handler(req, res) {
       lastUpdated: new Date().toISOString(),
       source: 'Baseline estimate',
       accuracy: 'Very High (95%+)',
-      queriedExchanges: 121,
-      totalExchanges: 121,
+      queriedExchanges: 131,
+      totalExchanges: 131,
       topWallets: [
         { exchange: 'Bithumb (2 wallets)', address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', balance: '1,822,192,574 XRP' },
         { exchange: 'Bithumb (2 wallets)', address: 'rw3fRcmn5PJyPKuvtAwHDSpEqoW2JKmKbu', balance: '1,512,886,426 XRP' },
