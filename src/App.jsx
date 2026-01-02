@@ -2365,7 +2365,7 @@ export default function CryptoAggregator() {
       {/* Chart Modal */}
       {selectedCrypto && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={closeChart}>
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg ml-auto">
                 <X size={24} className="text-black" />
