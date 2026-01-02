@@ -1724,7 +1724,7 @@ export default function CryptoAggregator() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="bg-[#ffc93c] py-6 mb-8">
           <div className="max-w-2xl mx-auto px-4">
-            <img src="/logo.png" alt="Kryptocurrent Logo" className="w-full" />
+            <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full" />
           </div>
         </div>
 
