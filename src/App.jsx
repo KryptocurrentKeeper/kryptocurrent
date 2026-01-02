@@ -2489,7 +2489,7 @@ export default function CryptoAggregator() {
               {xrpExchangeBalance.totalQueried && (
                 <div className="text-sm text-gray-600">
                   <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges</div>
-                  <div className="text-xs text-gray-500 mt-1">1.2x adjustment for remaining exchanges</div>
+                  <div className="text-xs text-gray-500 mt-1">1.15x adjustment for remaining exchanges</div>
                 </div>
               )}
             </div>
