@@ -11,6 +11,7 @@ export default function CryptoAggregator() {
   const [memes, setMemes] = useState([]);
   const [memesLoading, setMemesLoading] = useState(true);
   const [xrpExchangeBalance, setXrpExchangeBalance] = useState(null);
+  const [xrpExchangeLoading, setXrpExchangeLoading] = useState(true);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [showAllExchanges, setShowAllExchanges] = useState(false);
   const [miniChartData, setMiniChartData] = useState([]);
@@ -1612,11 +1613,13 @@ export default function CryptoAggregator() {
         if (cacheAge < fiveMinutes) {
           console.log(`✓ Using cached XRP exchange balance (${Math.floor(cacheAge / 60000)} minutes old)`);
           setXrpExchangeBalance(JSON.parse(cached));
+          setXrpExchangeLoading(false);
           return;
         }
       }
 
       console.log('Fetching XRP exchange balance from serverless API...');
+      setXrpExchangeLoading(true);
       
       // Call our Vercel serverless function (no CORS issues!)
       const response = await fetch('/api/xrp-exchange-balance');
@@ -1630,6 +1633,7 @@ export default function CryptoAggregator() {
       console.log('✓ Fetched XRP exchange balance:', balanceData);
       
       setXrpExchangeBalance(balanceData);
+      setXrpExchangeLoading(false);
       
       // Cache for 5 minutes
       localStorage.setItem('kryptocurrent_xrp_exchange_balance', JSON.stringify(balanceData));
@@ -1645,6 +1649,7 @@ export default function CryptoAggregator() {
         source: 'Fallback',
         error: true
       });
+      setXrpExchangeLoading(false);
     }
   };
 
@@ -1935,7 +1940,20 @@ export default function CryptoAggregator() {
           {/* XRP Sections - Side by side on desktop, stacked on mobile */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
             {/* XRP Exchange Balance */}
-            {xrpExchangeBalance && (
+            {xrpExchangeLoading ? (
+              <div className="p-3 bg-slate-700/50 rounded-xl border border-slate-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
+                    <h3 className="text-lg font-bold text-white">XRP on Exchanges</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5 text-[#ffc93c] animate-spin" />
+                    <span className="text-sm text-gray-400">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            ) : xrpExchangeBalance && (
               <div 
                 onClick={() => setShowExchangeModal(true)}
                 className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
@@ -2471,7 +2489,7 @@ export default function CryptoAggregator() {
               <div className="flex items-center gap-3">
                 <img src="/XRPlogo.jpg" alt="XRP" className="w-10 h-10 rounded" />
                 <div>
-                  <h2 className="text-2xl font-bold text-black">XRP on Exchanges</h2>
+                  <h2 className="text-2xl font-bold text-black">Total XRP on Exchanges</h2>
                   <p className="text-gray-600 text-sm">Live on-chain data</p>
                 </div>
               </div>
@@ -2482,13 +2500,12 @@ export default function CryptoAggregator() {
 
             {/* Total Balance */}
             <div className="bg-gray-100 rounded-lg p-4 mb-6">
-              <div className="text-sm text-gray-600 mb-1">Total XRP on Exchanges</div>
-              <div className="text-4xl font-bold text-green-600 mb-2">
+              <div className="text-5xl font-bold text-green-600 mb-2">
                 ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
               </div>
               {xrpExchangeBalance.totalQueried && (
                 <div className="text-sm text-gray-600">
-                  <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} exchanges</div>
+                  <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} out of {xrpExchangeBalance.totalExchanges} exchange wallets</div>
                   <div className="text-xs text-gray-500 mt-1">1.15x adjustment for remaining exchanges</div>
                 </div>
               )}
