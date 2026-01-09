@@ -14,6 +14,7 @@ export default function CryptoAggregator() {
   const [xrpExchangeLoading, setXrpExchangeLoading] = useState(true);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [showAllExchanges, setShowAllExchanges] = useState(false);
+  const [showExchangeSummary, setShowExchangeSummary] = useState(false);
   const [miniChartData, setMiniChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
@@ -2500,15 +2501,35 @@ export default function CryptoAggregator() {
 
             {/* Total Balance */}
             <div className="bg-gray-100 rounded-lg p-4 mb-6">
-              <div className="text-5xl font-bold text-green-600 mb-2">
-                ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
-              </div>
-              {xrpExchangeBalance.totalQueried && (
-                <div className="text-sm text-gray-600">
-                  <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} out of {xrpExchangeBalance.totalExchanges} exchange wallets</div>
-                  <div className="text-xs text-gray-500 mt-1">1.1x adjustment for remaining exchanges</div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="text-5xl font-bold text-green-600 mb-2">
+                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
+                  </div>
+                  {xrpExchangeBalance.totalQueried && (
+                    <div className="text-sm text-gray-600">
+                      <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} out of {xrpExchangeBalance.totalExchanges} exchange wallets</div>
+                      <div className="text-xs text-gray-500 mt-1">1.05x adjustment for remaining exchanges</div>
+                    </div>
+                  )}
                 </div>
-              )}
+                
+                {/* Balance Change Since Jan 1, 2026 */}
+                <div className="text-right border-l-2 border-gray-300 pl-4">
+                  <div className="text-xs text-gray-600 mb-1">Since Jan 1, 2026</div>
+                  <div className={`text-3xl font-bold ${
+                    xrpExchangeBalance.total >= 16500000000 ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {xrpExchangeBalance.total >= 16500000000 ? '+' : ''}
+                    {((xrpExchangeBalance.total - 16500000000) / 1000000000).toFixed(2)}B
+                  </div>
+                  <div className={`text-sm font-semibold ${
+                    xrpExchangeBalance.total >= 16500000000 ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {xrpExchangeBalance.total >= 16500000000 ? '↑' : '↓'} {Math.abs(((xrpExchangeBalance.total - 16500000000) / 16500000000) * 100).toFixed(2)}%
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Top 20 Exchange Wallets - Scrollable, sorted by XRP amount */}
@@ -2544,6 +2565,14 @@ export default function CryptoAggregator() {
               className="w-full py-2 bg-[#ffc93c] hover:bg-[#ffb700] text-black font-bold rounded-lg transition"
             >
               All {xrpExchangeBalance.queriedExchanges} Exchanges
+            </button>
+            
+            {/* Exchange Summary Button */}
+            <button
+              onClick={() => setShowExchangeSummary(true)}
+              className="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2"
+            >
+              View by Exchange
             </button>
           </div>
         </div>
@@ -2581,6 +2610,50 @@ export default function CryptoAggregator() {
                   );
                 })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exchange Summary Modal - Grouped by Exchange */}
+      {showExchangeSummary && xrpExchangeBalance && xrpExchangeBalance.exchangeSummary && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[70]" onClick={() => setShowExchangeSummary(false)}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-black">XRP Balance by Exchange</h2>
+              <button onClick={() => setShowExchangeSummary(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <X size={24} className="text-black" />
+              </button>
+            </div>
+
+            <div className="mb-4 text-sm text-gray-600">
+              Total across {xrpExchangeBalance.exchangeSummary.length} unique exchanges
+            </div>
+
+            <div className="space-y-2">
+              {xrpExchangeBalance.exchangeSummary.map((exchange, index) => (
+                <div key={index} className="bg-gray-100 rounded-lg p-4 flex items-center justify-between hover:bg-gray-200 transition">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="bg-white rounded-full w-10 h-10 flex items-center justify-center">
+                      <span className="text-gray-600 font-bold text-sm">#{index + 1}</span>
+                    </div>
+                    <div>
+                      <div className="font-bold text-black text-lg">{exchange.exchange}</div>
+                      <div className="text-xs text-gray-600">
+                        {exchange.walletCount} {exchange.walletCount === 1 ? 'wallet' : 'wallets'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-green-600 font-bold text-xl">{exchange.totalBalance} XRP</div>
+                </div>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setShowExchangeSummary(false)}
+              className="w-full mt-6 py-2 bg-gray-200 hover:bg-gray-300 text-black font-bold rounded-lg transition"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

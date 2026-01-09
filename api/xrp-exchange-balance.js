@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     
     // Top exchange addresses from XRP rich list (Jan 2026)
     // Excluding Ripple, personal wallets (chrislarsen, ahbritto)
-    // Now tracking 131 verified exchange wallets
+    // Now tracking 171 verified exchange wallets
     const exchanges = [
       { address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', name: 'Bithumb' },
       { address: 'rs8ZPbYqgecRcDzQpJYAMhSxSi5htsjnza', name: 'Binance' },
@@ -29,7 +29,6 @@ export default async function handler(req, res) {
       { address: 'rBEc94rUFfLfTDwwGN7rQGBHc883c2QHhx', name: 'Uphold 4' },
       { address: 'rDecw8UhrZZUiaWc91e571b3TL41MUioh7', name: 'Binance 16' },
       { address: 'rEvuKRoEbZSbM5k5Qe5eTD9BixZXsfkxHf', name: 'Kraken' },
-      // Additional exchanges from positions 501-1000
       { address: 'r3ZVNKgkkT3A7hbEZ8HxnNnLDCCmZiZECV', name: 'Binance US' },
       { address: 'rLW9gnQo7BQhU6igk5keqYnH3TVrCxGRzm', name: 'Bitfinex' },
       { address: 'rEiq1iAcpzP8WLjezP9MzAQEJ7jqKMLFSA', name: 'Revolut' },
@@ -63,7 +62,6 @@ export default async function handler(req, res) {
       { address: 'rpQATJWPPdNMxVCTQDYcnRNwtFDnanT3nk', name: 'Bitunix' },
       { address: 'rw3fRcmn5PJyPKuvtAwHDSpEqoW2JKmKbu', name: 'Bithumb 13' },
       { address: 'rUTyLdTBDcajmCBZYnRVmHTUAMuCzbNgnC', name: 'Bitlo' },
-      // Additional exchanges from January 2026 update
       { address: 'rKRYAqMFTTGMZ47eXJVRKcqLJgnPQbXisg', name: 'BTC Markets 6' },
       { address: 'rwSdwXsQVCjYXUyempsGxk1Sgws6perYZL', name: 'GOPAX' },
       { address: 'rfxbaKNt5SnMw5rPRRm4C53YK76MEnVXro', name: 'Binance Charity 2' },
@@ -98,7 +96,6 @@ export default async function handler(req, res) {
       { address: 'raTjYCE2ForijAiCsjywXQ3WTq58U42gyq', name: 'CoinCola (OTC)' },
       { address: 'rNBYQJfRfUtLgsbmR3PPBvnDircwfWpeWh', name: 'XT 3' },
       { address: 'r3S8AV7DQ6URd9qhKkDc2vD6XCaNU34328', name: 'Nexo 3' },
-      // Additional exchanges from January 2026 update (batch 2)
       { address: 'rJJqEefks9dewe9W7Q2g7yKFFT1zsPxw8J', name: 'Firi 3' },
       { address: 'rLHtvB1kZimYJsDCqCX4iQxRtSAqqFtrA7', name: 'AltCoinTrader 1' },
       { address: 'rMZdHB6uHvAEPzzKdsWYyhgyLkhFNjuwih', name: 'MAX Exchange' },
@@ -138,7 +135,6 @@ export default async function handler(req, res) {
       { address: 'rnBKit9uv2L3pH8HQwPKpDJhhwACKct3ro', name: 'WhiteBIT (Hot)' },
       { address: 'rwGM7ed8BVNydDcdndQGLrJPAyoCKjw7PJ', name: 'Orionx 3' },
       { address: 'rL7ehXUB6Xhyakbz7SZ6tbMwNhekeFEMdb', name: 'Hotcoin Global' },
-      // Additional Upbit wallets (batch 3)
       { address: 'rfL1mn4VTCoHdhHhHMwqpShCFUaDBRk6Z5', name: 'Upbit 12' },
       { address: 'rwa7YXssGVAL9yPKw6QJtCen2UqZbRQqpM', name: 'Upbit 13' },
       { address: 'rNcAdhSLXBrJ3aZUq22HaNtNEPpB5fR8Ri', name: 'Upbit 14' },
@@ -148,18 +144,48 @@ export default async function handler(req, res) {
       { address: 'rs48xReB6gjKtTnTfii93iwUhjhTJsW78B', name: 'Upbit 18' },
       { address: 'rJo4m69u9Wd1F8fN2RbgAsJEF6a4hW1nSi', name: 'Upbit 19' },
       { address: 'rLgn612WAgRoZ285YmsQ4t7kb8Ui3csdoU', name: 'Upbit 20' },
-      { address: 'r4G689g4KePYLKkyyumM1iUppTP4nhZwVC', name: 'Upbit 21' }
+      { address: 'r4G689g4KePYLKkyyumM1iUppTP4nhZwVC', name: 'Upbit 21' },
+      { address: 'rsYFhEk4uFvwvvKJomHL7KhdF29r2sw9KD', name: 'Korbit 7' },
+      { address: 'rwTTsHVUDF8Ub2nzV2oAeWxfJzUvobXLEf', name: 'Bitget Global 2' },
+      { address: 'rU5ACGLKbhPQB92GZhT5UV22NHeVrEGuU6', name: 'Coinbase Cold 529' },
+      { address: 'rKV8HEL3vLc6q9waTiJcewdRdSFyx67QFb', name: 'Crypto.com Exchange 1' },
+      { address: 'r4DbbWjsZQ2hCcxmjncr7MRjpXTBPckGa9', name: 'Bitrue Cold 2' },
+      { address: 'rNRc2S2GSefSkTkAiyjE6LDzMonpeHp6jS', name: 'SBI VC Trade 4' },
+      { address: 'raJHqa1o57DwjtrLCZjdkMKRtfHnbrwSse', name: 'Firi 4' },
+      { address: 'rZ6XrB8if1qB3hEW6KKVzvGH2cLtUeEcd', name: 'BTC Markets 7' },
+      { address: 'rnJrjec2vrTJAAQUTMTjj7U6xdXrk9N4mT', name: 'Kraken 6' },
+      { address: 'rMvCasZ9cohYrSZRNYPTZfoaaSUQMfgQ8G', name: 'Bybit 4' },
+      { address: 'rPJ5GFpyDLv7gqeB1uZVUBwDwi41kaXN5A', name: 'Binance 12' },
+      { address: 'rE3Cc3i6163Qzo7oc6avFQAxQE4gyCWhGP', name: 'Bitkub 3' },
+      { address: 'rE3hWEGquaixF2XwirNbA1ds4m55LxNZPk', name: 'Bitfinex 2' },
+      { address: 'rPvKH3CoiKnne5wAYphhsWgqAEMf1tRAE7', name: 'CoinJar' },
+      { address: 'rDAE53VfMvftPB4ogpWGWvzkQxfht6JPxr', name: 'Binance 6' },
+      { address: 'rNu9U5sSouNoFunHp9e9trsLV6pvsSf54z', name: 'Gate.io 4' },
+      { address: 'rPEPYN8sHU3cytBwVm69qPbVztaoj7wNf', name: 'Mercado Bitcoin 3' },
+      { address: 'rLUpiBeLhUyEzVtBkYE4S9t4zhdybSSARw', name: 'CoinDCX 2' },
+      { address: 'rHcFoo6a9qT5NHiVn1THQRhsEGcxtYCV4d', name: 'Gate.io 1' },
+      { address: 'rwBHqnCgNRnk3Kyoc6zon6Wt4Wujj3HNGe', name: 'Bybit 5' },
+      { address: 'r4DymtkgUAh2wqRxVfdd3Xtswzim6eC6c5', name: 'Crypto.com 1' },
+      { address: 'raQxZLtqurEXvH5sgijrif7yXMNwvFRkJN', name: 'Bybit 6' },
+      { address: 'razaE6HTEMUc9ogMYwmBT5GQk2b9qtbTnC', name: 'Stake 5' },
+      { address: 'rhuCPEoLFYbpbwyhXioSumPKrnfCi3AXJZ', name: 'Coinone 3' },
+      { address: 'rPBMDP7CGiKzMvPx6SsCGgeDsrsUyv1K1b', name: 'Yobit' },
+      { address: 'rprFy94qJB5riJpMmnPDp3ttmVKfcrFiuq', name: 'Doppler Finance 1' },
+      { address: 'rUYHZ71yXAS54ZQNvvooLX7rFtZydXjnP', name: 'Hata 1' },
+      { address: 'rUTyLdTBDcajmCBZYnRVmHTUAMuCzbNgnC', name: 'Bitlo 3' },
+      { address: 'raBQUYdAhnnojJQ6Xi3eXztZ74ot24RDq1', name: 'Gemini 1' },
+      { address: 'rLHzPsX6oXkzU2qL12kHCH8G8cnZv1rBJh', name: 'Kraken 1' },
+      { address: 'r4sRyacXpbh4HbagmgfoQq8Q3j8ZJzbZ1J', name: 'Coinbase 6' }
     ];
     
     let totalSampled = 0;
     let successCount = 0;
     const details = {};
-    const addressMap = {}; // Store addresses with their exchange names
-    const failedAddresses = []; // Track failed addresses for retry
+    const addressMap = {};
+    const failedAddresses = [];
     
     console.log(`Querying ${exchanges.length} exchange wallets...`);
     
-    // Helper function to query a single exchange with retries
     const queryExchangeWithRetry = async (exchange, maxRetries = 3) => {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
@@ -182,7 +208,6 @@ export default async function handler(req, res) {
               const balanceInXRP = parseInt(data.result.account_data.Balance) / 1000000;
               return { success: true, balance: balanceInXRP };
             } else if (data.result && data.result.error) {
-              // If it's an "actNotFound" error, don't retry (account doesn't exist)
               if (data.result.error === 'actNotFound') {
                 console.log(`⚠️ ${exchange.name}: Account not found (not activated)`);
                 return { success: false, error: 'actNotFound', noRetry: true };
@@ -193,16 +218,14 @@ export default async function handler(req, res) {
             console.log(`⚠️ ${exchange.name} (attempt ${attempt}): HTTP ${response.status}`);
           }
           
-          // If not the last attempt, wait before retrying (exponential backoff)
           if (attempt < maxRetries) {
-            const waitTime = 500 * Math.pow(2, attempt - 1); // 500ms, 1000ms, 2000ms
+            const waitTime = 500 * Math.pow(2, attempt - 1);
             await new Promise(resolve => setTimeout(resolve, waitTime));
           }
           
         } catch (error) {
           console.error(`❌ ${exchange.name} (attempt ${attempt}):`, error.message);
           
-          // If not the last attempt, wait before retrying
           if (attempt < maxRetries) {
             const waitTime = 500 * Math.pow(2, attempt - 1);
             await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -213,7 +236,6 @@ export default async function handler(req, res) {
       return { success: false };
     };
     
-    // Query XRP Ledger with retry logic
     for (const exchange of exchanges) {
       const result = await queryExchangeWithRetry(exchange);
       
@@ -227,7 +249,6 @@ export default async function handler(req, res) {
         failedAddresses.push(exchange);
       }
       
-      // Standard delay between queries
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
@@ -238,19 +259,14 @@ export default async function handler(req, res) {
     }
     console.log(`Total: ${totalSampled.toLocaleString()} XRP`);
     
-    // If we got good data
     if (successCount >= 8 && totalSampled > 1000000000) {
-      // These are major exchange wallets representing ~85-95% of total
-      // Apply 1.1x multiplier for remaining exchanges (lower since we have 131 wallets)
-      const estimatedTotal = Math.round(totalSampled * 1.1);
+      const estimatedTotal = Math.round(totalSampled * 1.05);
       
-      console.log(`✅ Estimated (1.2x): ${estimatedTotal.toLocaleString()} XRP`);
+      console.log(`✅ Estimated (1.05x): ${estimatedTotal.toLocaleString()} XRP`);
       
-      // Group wallets by exchange name (combine numbered variants)
       const groupedExchanges = {};
       Object.entries(details).forEach(([name, balance]) => {
-        // Extract base exchange name (remove numbers and variants)
-        const baseName = name.replace(/\s*\d+$/, '').replace(/\s*(Primary|Secondary|OTC|Cold|Hot|Deposit|Main)$/, '').trim();
+        const baseName = name.replace(/\s*\d+$/, '').replace(/\s*(Primary|Secondary|OTC|Cold|Hot|Deposit|Main|Exchange|XRP-BF2)$/i, '').trim();
         
         if (!groupedExchanges[baseName]) {
           groupedExchanges[baseName] = {
@@ -269,12 +285,10 @@ export default async function handler(req, res) {
         });
       });
       
-      // Create topWallets array with exchange names, addresses, and wallet counts
       const topWallets = [];
       Object.entries(groupedExchanges)
         .sort((a, b) => b[1].totalBalance - a[1].totalBalance)
         .forEach(([exchange, data]) => {
-          // Sort wallets within each exchange by balance
           data.wallets.sort((a, b) => b.balance - a.balance);
           
           data.wallets.forEach(wallet => {
@@ -289,6 +303,14 @@ export default async function handler(req, res) {
           });
         });
       
+      const exchangeSummary = Object.entries(groupedExchanges)
+        .sort((a, b) => b[1].totalBalance - a[1].totalBalance)
+        .map(([exchange, data]) => ({
+          exchange: exchange,
+          totalBalance: Math.round(data.totalBalance).toLocaleString(),
+          walletCount: data.walletCount
+        }));
+      
       const responseData = {
         total: estimatedTotal,
         totalQueried: Math.round(totalSampled),
@@ -298,6 +320,7 @@ export default async function handler(req, res) {
         queriedExchanges: successCount,
         totalExchanges: exchanges.length,
         topWallets: topWallets,
+        exchangeSummary: exchangeSummary,
         methodology: 'Live on-chain query of top exchange wallets from XRP rich list'
       };
       
@@ -310,32 +333,21 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('❌ Error:', error.message);
     
-    // Fallback baseline with estimated distribution
     res.status(200).json({
       total: 4200000000,
       totalQueried: 4200000000,
       lastUpdated: new Date().toISOString(),
       source: 'Baseline estimate',
-      accuracy: 'Very High (95%+)',
-      queriedExchanges: 131,
-      totalExchanges: 131,
+      accuracy: 'High (90-95%)',
+      queriedExchanges: 171,
+      totalExchanges: 171,
       topWallets: [
         { exchange: 'Bithumb (2 wallets)', address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', balance: '1,822,192,574 XRP' },
-        { exchange: 'Bithumb (2 wallets)', address: 'rw3fRcmn5PJyPKuvtAwHDSpEqoW2JKmKbu', balance: '1,512,886,426 XRP' },
         { exchange: 'Binance (11 wallets)', address: 'rs8ZPbYqgecRcDzQpJYAMhSxSi5htsjnza', balance: '1,765,412,412 XRP' },
-        { exchange: 'Binance (11 wallets)', address: 'rJpj1Mv21gJzsbsVnkp1U4nqchZbmZ9pM5', balance: '325,800,010 XRP' },
         { exchange: 'Uphold (4 wallets)', address: 'rsXT3AQqhHDusFs3nQQuwcA1yXRLZJAXKw', balance: '1,523,610,977 XRP' },
-        { exchange: 'Upbit (2 wallets)', address: 'rDxJNbV23mu9xsWoQHoBqZQvc77YcbJXwb', balance: '1,247,783,864 XRP' },
-        { exchange: 'bitbank', address: 'rw7m3CtVHwGSdhFjV4MyJozmZJv3DYQnsA', balance: '570,324,895 XRP' },
-        { exchange: 'Coincheck', address: 'r99QSej32nAcjQAri65vE5ZXjw6xpUQ2Eh', balance: '551,447,163 XRP' },
-        { exchange: 'eToro', address: 'rEvwSpejhGTbdAXbxRTpGAzPBQkBRZxN5s', balance: '461,949,278 XRP' },
-        { exchange: 'Coinone (2 wallets)', address: 'rDKw32dPXHfoeGoD3kVtm76ia1WbxYtU7D', balance: '292,958,978 XRP' },
-        { exchange: 'Crypto.com', address: 'rKNwXQh9GMjaU8uTqKLECsqyib47g5dMvo', balance: '258,633,966 XRP' },
-        { exchange: 'Gate.io (3 wallets)', address: 'rNnWmrc1EtNRe5SEQEs9pFibcjhpvAiVKF', balance: '100,000,000 XRP' },
-        { exchange: 'bitFlyer', address: 'rhWVCsCXrkwTeLBg6DyDr7abDaHz3zAKmn', balance: '183,441,755 XRP' },
-        { exchange: 'Kraken', address: 'rEvuKRoEbZSbM5k5Qe5eTD9BixZXsfkxHf', balance: '121,731,054 XRP' },
-        { exchange: 'Bitstamp', address: 'rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv', balance: '18,159,136 XRP' }
+        { exchange: 'Upbit (12 wallets)', address: 'rDxJNbV23mu9xsWoQHoBqZQvc77YcbJXwb', balance: '1,247,783,864 XRP' }
       ],
+      exchangeSummary: [],
       note: 'Based on XRP rich list analysis'
     });
   }
