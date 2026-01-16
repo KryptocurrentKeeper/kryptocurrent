@@ -186,9 +186,12 @@ export default async function handler(req, res) {
     
     console.log(`Querying ${exchanges.length} exchange wallets...`);
     
-    const queryExchangeWithRetry = async (exchange, maxRetries = 3) => {
+    const queryExchangeWithRetry = async (exchange, maxRetries = 2) => {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+          
           const response = await fetch('https://xrplcluster.com', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -198,8 +201,11 @@ export default async function handler(req, res) {
                 account: exchange.address,
                 ledger_index: 'validated'
               }]
-            })
+            }),
+            signal: controller.signal
           });
+          
+          clearTimeout(timeoutId);
           
           if (response.ok) {
             const data = await response.json();
@@ -219,16 +225,18 @@ export default async function handler(req, res) {
           }
           
           if (attempt < maxRetries) {
-            const waitTime = 500 * Math.pow(2, attempt - 1);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
           
         } catch (error) {
-          console.error(`❌ ${exchange.name} (attempt ${attempt}):`, error.message);
+          if (error.name === 'AbortError') {
+            console.error(`❌ ${exchange.name}: Timeout`);
+          } else {
+            console.error(`❌ ${exchange.name} (attempt ${attempt}):`, error.message);
+          }
           
           if (attempt < maxRetries) {
-            const waitTime = 500 * Math.pow(2, attempt - 1);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
         }
       }
@@ -249,7 +257,7 @@ export default async function handler(req, res) {
         failedAddresses.push(exchange);
       }
       
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
     console.log(`\n📊 Results: ${successCount}/${exchanges.length}`);
@@ -260,9 +268,9 @@ export default async function handler(req, res) {
     console.log(`Total: ${totalSampled.toLocaleString()} XRP`);
     
     if (successCount >= 8 && totalSampled > 1000000000) {
-      const estimatedTotal = Math.round(totalSampled * 1.05);
+      const estimatedTotal = Math.round(totalSampled);
       
-      console.log(`✅ Estimated (1.05x): ${estimatedTotal.toLocaleString()} XRP`);
+      console.log(`✅ Total: ${estimatedTotal.toLocaleString()} XRP`);
       
       const groupedExchanges = {};
       Object.entries(details).forEach(([name, balance]) => {

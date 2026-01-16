@@ -2509,7 +2509,6 @@ export default function CryptoAggregator() {
                   {xrpExchangeBalance.totalQueried && (
                     <div className="text-sm text-gray-600">
                       <div>Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} out of {xrpExchangeBalance.totalExchanges} exchange wallets</div>
-                      <div className="text-xs text-gray-500 mt-1">1.05x adjustment for remaining exchanges</div>
                     </div>
                   )}
                 </div>
@@ -2562,7 +2561,7 @@ export default function CryptoAggregator() {
             {/* Exchange Breakdown Button */}
             <button
               onClick={() => setShowAllExchanges(true)}
-              className="w-full py-2 bg-[#ffc93c] hover:bg-[#ffb700] text-black font-bold rounded-lg transition"
+              className="w-full py-2 bg-white hover:bg-gray-50 text-green-600 border-2 border-green-600 font-bold rounded-lg transition"
             >
               All {xrpExchangeBalance.queriedExchanges} Exchanges
             </button>
