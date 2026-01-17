@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     
     // Top exchange addresses from XRP rich list (Jan 2026)
     // Excluding Ripple, personal wallets (chrislarsen, ahbritto)
-    // Now tracking 171 verified exchange wallets
+    // Now tracking 160 verified exchange wallets
     const exchanges = [
       { address: 'rPyCQm8E5j78PDbrfKF24fRC7qUAk1kDMZ', name: 'Bithumb' },
       { address: 'rs8ZPbYqgecRcDzQpJYAMhSxSi5htsjnza', name: 'Binance' },
@@ -21,7 +21,6 @@ export default async function handler(req, res) {
       { address: 'rw7m3CtVHwGSdhFjV4MyJozmZJv3DYQnsA', name: 'bitbank' },
       { address: 'r99QSej32nAcjQAri65vE5ZXjw6xpUQ2Eh', name: 'Coincheck' },
       { address: 'rEvwSpejhGTbdAXbxRTpGAzPBQkBRZxN5s', name: 'eToro' },
-      { address: 'rJpj1Mv21gJzsbsVnkp1U4nqchZbmZ9pM5', name: 'Binance XRP-BF2' },
       { address: 'rDKw32dPXHfoeGoD3kVtm76ia1WbxYtU7D', name: 'Coinone' },
       { address: 'rKNwXQh9GMjaU8uTqKLECsqyib47g5dMvo', name: 'Crypto.com' },
       { address: 'rhWVCsCXrkwTeLBg6DyDr7abDaHz3zAKmn', name: 'bitFlyer' },
@@ -62,9 +61,7 @@ export default async function handler(req, res) {
       { address: 'rUTyLdTBDcajmCBZYnRVmHTUAMuCzbNgnC', name: 'Bitlo' },
       { address: 'rKRYAqMFTTGMZ47eXJVRKcqLJgnPQbXisg', name: 'BTC Markets 6' },
       { address: 'rwSdwXsQVCjYXUyempsGxk1Sgws6perYZL', name: 'GOPAX' },
-      { address: 'rfxbaKNt5SnMw5rPRRm4C53YK76MEnVXro', name: 'Binance Charity 2' },
       { address: 'rr6sWbuKMsYs5JkKNARxUpEPfZ3GNUjFE', name: 'Bitrue 4' },
-      { address: 'rfmS3zqrQrka8wVyhXifEeyTwe8AMz2Yhw', name: 'Axelar Bridge' },
       { address: 'rRmgo6NW1W7GHjC5qEpcpQnq8NE74ZS1P', name: 'Coinbase 10' },
       { address: 'rJGb4etn9GSwNHYVu7dNMbdiVgzqxaTSUG', name: 'First Ledger 1' },
       { address: 'r97KeayHuEsDwyU1yPBVtMLLoQr79QcRFe', name: 'bitbank 4' },
@@ -144,8 +141,6 @@ export default async function handler(req, res) {
       { address: 'r4G689g4KePYLKkyyumM1iUppTP4nhZwVC', name: 'Upbit 21' },
       { address: 'rsYFhEk4uFvwvvKJomHL7KhdF29r2sw9KD', name: 'Korbit 7' },
       { address: 'rwTTsHVUDF8Ub2nzV2oAeWxfJzUvobXLEf', name: 'Bitget Global 2' },
-      { address: 'rU5ACGLKbhPQB92GZhT5UV22NHeVrEGuU6', name: 'Coinbase Cold 529' },
-      { address: 'r4DbbWjsZQ2hCcxmjncr7MRjpXTBPckGa9', name: 'Bitrue Cold 2' },
       { address: 'rNRc2S2GSefSkTkAiyjE6LDzMonpeHp6jS', name: 'SBI VC Trade 4' },
       { address: 'raJHqa1o57DwjtrLCZjdkMKRtfHnbrwSse', name: 'Firi 4' },
       { address: 'rZ6XrB8if1qB3hEW6KKVzvGH2cLtUeEcd', name: 'BTC Markets 7' },
@@ -167,10 +162,18 @@ export default async function handler(req, res) {
       { address: 'rPBMDP7CGiKzMvPx6SsCGgeDsrsUyv1K1b', name: 'Yobit' },
       { address: 'rprFy94qJB5riJpMmnPDp3ttmVKfcrFiuq', name: 'Doppler Finance 1' },
       { address: 'rUYHZ71yXAS54ZQNvvooLX7rFtZydXjnP', name: 'Hata 1' },
-      { address: 'rUTyLdTBDcajmCBZYnRVmHTUAMuCzbNgnC', name: 'Bitlo 3' },
       { address: 'raBQUYdAhnnojJQ6Xi3eXztZ74ot24RDq1', name: 'Gemini 1' },
       { address: 'rLHzPsX6oXkzU2qL12kHCH8G8cnZv1rBJh', name: 'Kraken 1' },
-      { address: 'r4sRyacXpbh4HbagmgfoQq8Q3j8ZJzbZ1J', name: 'Coinbase 6' }
+      { address: 'r4sRyacXpbh4HbagmgfoQq8Q3j8ZJzbZ1J', name: 'Coinbase 6' },
+      { address: 'rKV8HEL3vLc6q9waTiJcewdRdSFyx67QFb', name: 'Crypto.com' },
+      { address: 'rHcFoo6a9qT5NHiVn1THQRhsEGcxtYCV4d', name: 'Gate.io' },
+      { address: 'rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv', name: 'Bitstamp 1' },
+      { address: 'rGDreBvnHrX1get7na3J4oowN19ny4GzFn', name: 'Bitget Global 1' },
+      { address: 'rGmWNTmi6STmrHKk5padm7jM8fLLQp2QBr', name: 'BTSE 2' },
+      { address: 'rNwUcrxYiTZ5cRAuEQVuQGDb7miaPRBVAd', name: 'Coins.ph 6' },
+      { address: 'r4FhxAcdu5UPiFY5FSYtrEKigHdcSysRdu', name: 'INDX' },
+      { address: 'raV5bXp9hNe5G4YFxLDSGHExL3bVyYmwZ9', name: 'Duel 1' },
+      { address: 'rnwg4PMzuRvZbKXN5z1yK9ben4oN17xSfw', name: 'Bitazza 1' }
     ];
     
     let totalSampled = 0;
