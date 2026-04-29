@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, X, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -15,13 +15,14 @@ export default function CryptoAggregator() {
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [chartTimeframe, setChartTimeframe] = useState('7');
-  const [pricesExpanded, setPricesExpanded] = useState(0);
-  const [priceCategory, setPriceCategory] = useState('utility');
+  const [visibleCount, setVisibleCount] = useState(96);
+  const [priceCategory, setPriceCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const pricesRef = useRef(null);
+  const sentinelRef = useRef(null);
 
   // Helper function to clean up text encoding issues
   const cleanText = (text) => {
@@ -212,6 +213,27 @@ export default function CryptoAggregator() {
     }
   };
 
+  // Lazy load: append 48 more cards when sentinel scrolls into view
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => prev + 48);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loading]);
+
+  // Reset visible count when category changes
+  useEffect(() => {
+    setVisibleCount(96);
+  }, [priceCategory]);
+
   // Debounced search effect
   useEffect(() => {
     if (searchQuery.trim().length >= 2) {
@@ -220,7 +242,7 @@ export default function CryptoAggregator() {
       }, 500);
       return () => clearTimeout(timeoutId);
     } else if (searchQuery.trim().length === 0 && priceCategory === 'search') {
-      setPriceCategory('utility');
+      setPriceCategory('all');
       setSearchResults([]);
     }
   }, [searchQuery]);
@@ -243,7 +265,7 @@ export default function CryptoAggregator() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchCryptoPrices = async (category = 'utility') => {
+  const fetchCryptoPrices = async (category = 'all') => {
     try {
       setLoading(true);
 
@@ -268,6 +290,9 @@ export default function CryptoAggregator() {
       if (category === 'search') {
         setLoading(false);
         return;
+      } else if (category === 'all') {
+        // Top 250 by market cap
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
       } else if (category === 'utility') {
         const utilityIds = 'ripple,ethereum,chainlink,bitcoin,solana,stellar,quant-network,hedera-hashgraph,vechain,matic-network,the-open-network,cardano,avalanche-2,near,internet-computer,kaspa,sui,xdce-crowd-sale,algorand,tezos,polkadot,bittensor,cosmos';
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${utilityIds}&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
@@ -275,9 +300,9 @@ export default function CryptoAggregator() {
         const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,casper-network,lcx,coti';
         url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${apiKeyParam}`;
       } else if (category === 'ai') {
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1${apiKeyParam}`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=100&page=1${apiKeyParam}`;
       } else if (category === 'meme') {
-        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1${apiKeyParam}`;
+        url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=100&page=1${apiKeyParam}`;
       }
 
       const response = await fetch(url);
@@ -291,16 +316,18 @@ export default function CryptoAggregator() {
           const newApiKeyParam = isPaidKey ? `&x-cg-pro-api-key=${newApiKey}` : `&x_cg_demo_api_key=${newApiKey}`;
 
           let retryUrl = '';
-          if (category === 'utility') {
+          if (category === 'all') {
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
+          } else if (category === 'utility') {
             const utilityIds = 'ripple,ethereum,chainlink,bitcoin,solana,stellar,quant-network,hedera-hashgraph,vechain,matic-network,the-open-network,cardano,avalanche-2,near,internet-computer,kaspa,sui,xdce-crowd-sale,algorand,tezos,polkadot,bittensor,cosmos';
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${utilityIds}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
           } else if (category === 'iso20022') {
             const iso20022Ids = 'ripple,stellar,algorand,hedera-hashgraph,quant-network,xdce-crowd-sale,iota,cardano,vechain,casper-network,lcx,coti';
             retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${iso20022Ids}&order=market_cap_desc&per_page=250&page=1${newApiKeyParam}`;
           } else if (category === 'ai') {
-            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=30&page=1${newApiKeyParam}`;
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=artificial-intelligence&order=market_cap_desc&per_page=100&page=1${newApiKeyParam}`;
           } else if (category === 'meme') {
-            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1${newApiKeyParam}`;
+            retryUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=100&page=1${newApiKeyParam}`;
           }
 
           const retryResponse = await fetch(retryUrl);
@@ -374,7 +401,7 @@ export default function CryptoAggregator() {
   const searchCrypto = async (query) => {
     if (!query || query.trim().length < 2) {
       setSearchResults([]);
-      setPriceCategory('utility');
+      setPriceCategory('all');
       return;
     }
 
@@ -419,7 +446,7 @@ export default function CryptoAggregator() {
     } catch (error) {
       console.error('Error searching crypto:', error);
       setSearchResults([]);
-      setPriceCategory('utility');
+      setPriceCategory('all');
     } finally {
       setIsSearching(false);
     }
@@ -476,19 +503,6 @@ export default function CryptoAggregator() {
     setMiniChartData([]);
   };
 
-  const handlePricesToggle = (action) => {
-    if (action === 'more') {
-      setPricesExpanded(prev => Math.min(prev + 1, 3));
-    } else {
-      setPricesExpanded(0);
-      if (pricesRef.current) {
-        setTimeout(() => {
-          pricesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  };
-
   const fetchXRPExchangeBalance = async () => {
     try {
       const cached = localStorage.getItem('kryptocurrent_xrp_exchange_balance');
@@ -542,19 +556,17 @@ export default function CryptoAggregator() {
       )
     );
 
-  // Show all by market cap — paginated via expand
-  const displayedPrices = validCryptoPrices.slice(
-    0,
-    pricesExpanded === 0 ? 24 : pricesExpanded === 1 ? 56 : pricesExpanded === 2 ? 96 : validCryptoPrices.length
-  );
+  // Lazy-loaded slice — starts at 96, grows by 48 as user scrolls
+  const displayedPrices = validCryptoPrices.slice(0, visibleCount);
+  const hasMore = visibleCount < validCryptoPrices.length;
 
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="bg-[#ffc93c] py-6 mb-8">
-          <div className="max-w-2xl mx-auto px-4">
-            <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full" />
+        <div className="bg-[#ffc93c] py-2 mb-6">
+          <div className="max-w-xs mx-auto px-4">
+            <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full h-10 object-contain" />
           </div>
         </div>
 
@@ -568,6 +580,12 @@ export default function CryptoAggregator() {
             {/* Category Toggle Buttons and Search */}
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                >
+                  All by Market Cap
+                </button>
                 <button
                   onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
@@ -610,7 +628,7 @@ export default function CryptoAggregator() {
                   )}
                   {!isSearching && searchQuery && (
                     <button
-                      onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('utility'); }}
+                      onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
                       aria-label="Clear search"
                     >
@@ -632,90 +650,71 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: 3 columns */}
+              {/* Mobile: 2 columns, single-line cards */}
               <div className="md:hidden">
-                <div className="grid grid-cols-3 gap-1.5">
-                  {validCryptoPrices.slice(0, pricesExpanded === 0 ? 12 : pricesExpanded === 1 ? 36 : pricesExpanded === 2 ? 72 : validCryptoPrices.length).map((crypto) => (
-                    <div
-                      key={crypto.id}
-                      onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-lg p-1.5 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10"
-                    >
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                        <h3 className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</h3>
-                      </div>
-                      <p className="text-xs font-bold whitespace-nowrap">
-                        ${crypto.current_price < 0.01
-                          ? crypto.current_price.toFixed(6)
-                          : crypto.current_price < 1
-                          ? crypto.current_price.toFixed(4)
-                          : crypto.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                      <div className={`flex items-center gap-0.5 text-xs ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
-                        <span>{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {validCryptoPrices.length > 12 && (
-                  <div className="mt-3 flex gap-2">
-                    {pricesExpanded > 0 && (
-                      <button onClick={() => handlePricesToggle('less')} className="flex-1 px-4 py-2 bg-slate-600 text-white hover:bg-slate-500 rounded-lg transition font-semibold text-sm">
-                        Show Less
-                      </button>
-                    )}
-                    {pricesExpanded < 3 && validCryptoPrices.length > (pricesExpanded === 0 ? 12 : pricesExpanded === 1 ? 36 : 72) && (
-                      <button onClick={() => handlePricesToggle('more')} className="flex-1 px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm">
-                        Show More
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop: 8 columns for max density */}
-              <div className="hidden md:block">
-                <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10"
+                      className="group flex items-center justify-between gap-1 bg-slate-700/50 rounded-lg px-2 py-1.5 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30"
                     >
-                      <div className="flex items-center gap-1 mb-1 min-w-0">
-                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                        <h3 className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</h3>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" loading="lazy" />
+                        <span className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
                       </div>
-                      <p className="text-xs font-bold whitespace-nowrap">
-                        ${crypto.current_price < 0.01
-                          ? crypto.current_price.toFixed(6)
-                          : crypto.current_price < 1
-                          ? crypto.current_price.toFixed(4)
-                          : crypto.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                      <div className={`flex items-center gap-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
-                        <span className="text-xs">{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className="text-xs font-bold">
+                          ${crypto.current_price < 0.001
+                            ? crypto.current_price.toFixed(6)
+                            : crypto.current_price < 1
+                            ? crypto.current_price.toFixed(4)
+                            : crypto.current_price >= 1000
+                            ? (crypto.current_price / 1000).toFixed(1) + 'k'
+                            : crypto.current_price.toFixed(2)}
+                        </span>
+                        <span className={`text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(1)}%
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-                {validCryptoPrices.length > 24 && (
-                  <div className="mt-3 flex gap-2">
-                    {pricesExpanded > 0 && (
-                      <button onClick={() => handlePricesToggle('less')} className="flex-1 px-4 py-2 bg-slate-600 text-white hover:bg-slate-500 rounded-lg transition font-semibold text-sm">
-                        Show Less
-                      </button>
-                    )}
-                    {pricesExpanded < 3 && validCryptoPrices.length > (pricesExpanded === 0 ? 24 : pricesExpanded === 1 ? 56 : 96) && (
-                      <button onClick={() => handlePricesToggle('more')} className="flex-1 px-4 py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold text-sm">
-                        Show More
-                      </button>
-                    )}
-                  </div>
-                )}
+                {hasMore && <div ref={sentinelRef} className="h-4 mt-2" />}
+              </div>
+
+              {/* Desktop: single-line cards, max columns */}
+              <div className="hidden md:block">
+                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-1">
+                  {displayedPrices.map((crypto) => (
+                    <div
+                      key={crypto.id}
+                      onClick={() => openChart(crypto)}
+                      className="group flex items-center justify-between gap-1.5 bg-slate-700/50 rounded-lg px-2.5 py-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-px hover:shadow-md hover:shadow-[#ffc93c]/10"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" loading="lazy" />
+                        <span className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-xs font-bold whitespace-nowrap">
+                          ${crypto.current_price < 0.001
+                            ? crypto.current_price.toFixed(6)
+                            : crypto.current_price < 1
+                            ? crypto.current_price.toFixed(4)
+                            : crypto.current_price >= 1000
+                            ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                            : crypto.current_price.toFixed(2)}
+                        </span>
+                        <span className={`text-xs font-semibold whitespace-nowrap ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Sentinel div — triggers lazy load when scrolled into view */}
+                {hasMore && <div ref={sentinelRef} className="h-4 mt-2" />}
               </div>
             </>
           )}
