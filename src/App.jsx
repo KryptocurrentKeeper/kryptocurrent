@@ -520,107 +520,90 @@ export default function CryptoAggregator() {
         </div>
 
         {/* Prices Section */}
-        <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-8">
-          <div className="flex flex-col gap-4 mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-white">Current Conditions</h2>
+        <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl px-4 pt-3 pb-4 mb-4">
+          {/* Category Toggle Buttons and Search */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2 mb-3">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+              >
+                Market Cap
+              </button>
+              <button
+                onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+              >
+                Utility Coins
+              </button>
+              <button
+                onClick={() => { setPriceCategory('ai'); setSearchQuery(''); setSearchResults([]); }}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'ai' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+              >
+                AI Coins
+              </button>
+              <button
+                onClick={() => { setPriceCategory('meme'); setSearchQuery(''); setSearchResults([]); }}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+              >
+                Meme Coins
+              </button>
             </div>
 
-            {/* Category Toggle Buttons and Search */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-                >
-                  Market Cap
-                </button>
-                <button
-                  onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-                >
-                  Utility
-                </button>
-                <button
-                  onClick={() => { setPriceCategory('iso20022'); setSearchQuery(''); setSearchResults([]); }}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'iso20022' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-                >
-                  ISO 20022
-                </button>
-                <button
-                  onClick={() => { setPriceCategory('ai'); setSearchQuery(''); setSearchResults([]); }}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'ai' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-                >
-                  Top AI Coins
-                </button>
-                <button
-                  onClick={() => { setPriceCategory('meme'); setSearchQuery(''); setSearchResults([]); }}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-                >
-                  Meme Coins
-                </button>
-              </div>
-
-              {/* Search Field */}
-              <div className="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search any crypto..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full md:w-64 px-4 py-2 pl-10 pr-10 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition"
-                  />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                  {isSearching && (
-                    <RefreshCw className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={18} />
-                  )}
-                  {!isSearching && searchQuery && (
-                    <button
-                      onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
-                      aria-label="Clear search"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                </div>
-                {priceCategory === 'search' && searchResults.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-1">Found {searchResults.length} results</p>
+            {/* Search Field */}
+            <div className="flex-shrink-0 md:ml-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search any crypto..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full md:w-56 px-4 py-1.5 pl-9 pr-9 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition text-xs"
+                />
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={15} />
+                {isSearching && (
+                  <RefreshCw className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={15} />
+                )}
+                {!isSearching && searchQuery && (
+                  <button
+                    onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }}
+                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
+                    aria-label="Clear search"
+                  >
+                    <X size={15} />
+                  </button>
                 )}
               </div>
+              {priceCategory === 'search' && searchResults.length > 0 && (
+                <p className="text-xs text-gray-400 mt-1">Found {searchResults.length} results</p>
+              )}
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8">
               <RefreshCw className="animate-spin mx-auto mb-2 text-[#ffc93c]" size={32} />
               <p className="text-gray-400">Loading prices...</p>
             </div>
           ) : (
             <>
-              {/* Mobile: 2 columns, full cards */}
+              {/* Mobile: 3 columns */}
               <div className="md:hidden">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-1.5">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:shadow-lg hover:shadow-[#ffc93c]/10"
+                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40"
                     >
-                      {/* Top row: logo + name + chart icon */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <img src={crypto.image} alt={crypto.name} className="w-7 h-7 flex-shrink-0 rounded-full" loading="lazy" />
-                          <div className="min-w-0">
-                            <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors leading-tight">{crypto.symbol.toUpperCase()}</div>
-                            <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
-                          </div>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <img src={crypto.image} alt={crypto.name} className="w-5 h-5 flex-shrink-0 rounded-full" loading="lazy" />
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
+                          <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
                         </div>
-                        <TrendingUp size={14} className="text-slate-500 group-hover:text-[#ffc93c] transition-colors flex-shrink-0 ml-1" />
                       </div>
-                      {/* Price */}
-                      <div className="text-sm font-bold text-white">
+                      <div className="text-xs font-bold text-white">
                         ${crypto.current_price < 0.001
                           ? crypto.current_price.toFixed(6)
                           : crypto.current_price < 1
@@ -629,9 +612,8 @@ export default function CryptoAggregator() {
                           ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
                           : crypto.current_price.toFixed(2)}
                       </div>
-                      {/* 24h change */}
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-1 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
                         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
                     </div>
@@ -642,28 +624,23 @@ export default function CryptoAggregator() {
                 </div>}
               </div>
 
-              {/* Desktop: full cards with logo, name, price, chart icon */}
+              {/* Desktop: compact cards, max columns */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+                <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10"
+                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
                     >
-                      {/* Top row: logo + name + chart icon */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <img src={crypto.image} alt={crypto.name} className="w-8 h-8 flex-shrink-0 rounded-full" loading="lazy" />
-                          <div className="min-w-0">
-                            <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors leading-tight">{crypto.symbol.toUpperCase()}</div>
-                            <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
-                          </div>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <img src={crypto.image} alt={crypto.name} className="w-6 h-6 flex-shrink-0 rounded-full" loading="lazy" />
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
+                          <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
                         </div>
-                        <TrendingUp size={14} className="text-slate-500 group-hover:text-[#ffc93c] transition-colors flex-shrink-0 ml-1" />
                       </div>
-                      {/* Price */}
-                      <div className="text-sm font-bold text-white">
+                      <div className="text-xs font-bold text-white">
                         ${crypto.current_price < 0.001
                           ? crypto.current_price.toFixed(6)
                           : crypto.current_price < 1
@@ -672,9 +649,8 @@ export default function CryptoAggregator() {
                           ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
                           : crypto.current_price.toFixed(2)}
                       </div>
-                      {/* 24h change */}
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-1 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
                         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
                     </div>
