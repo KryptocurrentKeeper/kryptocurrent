@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, X, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CryptoAggregator() {
   const [cryptoPrices, setCryptoPrices] = useState([]);
-  const [xrpExchangeBalance, setXrpExchangeBalance] = useState(null);
-  const [xrpExchangeLoading, setXrpExchangeLoading] = useState(true);
-  const [showExchangeModal, setShowExchangeModal] = useState(false);
-  const [showAllExchanges, setShowAllExchanges] = useState(false);
-  const [showExchangeSummary, setShowExchangeSummary] = useState(false);
   const [miniChartData, setMiniChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
@@ -213,7 +208,7 @@ export default function CryptoAggregator() {
     }
   };
 
-  // Lazy load: append 48 more cards when sentinel scrolls into view
+  // Lazy load: observe sentinel, load 48 more when it comes into view
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -223,11 +218,11 @@ export default function CryptoAggregator() {
           setVisibleCount(prev => prev + 48);
         }
       },
-      { rootMargin: '200px' }
+      { threshold: 0, rootMargin: '300px' }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loading]);
+  }, [visibleCount, loading]);
 
   // Reset visible count when category changes
   useEffect(() => {
@@ -249,21 +244,12 @@ export default function CryptoAggregator() {
 
   useEffect(() => {
     fetchCryptoPrices();
-    fetchXRPExchangeBalance();
   }, []);
 
   // Fetch prices when category changes
   useEffect(() => {
     fetchCryptoPrices(priceCategory);
   }, [priceCategory]);
-
-  // Auto-refresh XRP Exchange Balance every 5 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchXRPExchangeBalance();
-    }, 300000);
-    return () => clearInterval(interval);
-  }, []);
 
   const fetchCryptoPrices = async (category = 'all') => {
     try {
@@ -503,43 +489,6 @@ export default function CryptoAggregator() {
     setMiniChartData([]);
   };
 
-  const fetchXRPExchangeBalance = async () => {
-    try {
-      const cached = localStorage.getItem('kryptocurrent_xrp_exchange_balance');
-      const cacheTimestamp = localStorage.getItem('kryptocurrent_xrp_exchange_balance_timestamp');
-
-      if (cached && cacheTimestamp) {
-        const cacheAge = Date.now() - parseInt(cacheTimestamp);
-        if (cacheAge < 5 * 60 * 1000) {
-          setXrpExchangeBalance(JSON.parse(cached));
-          setXrpExchangeLoading(false);
-          return;
-        }
-      }
-
-      setXrpExchangeLoading(true);
-      const response = await fetch('/api/xrp-exchange-balance');
-
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-      const balanceData = await response.json();
-      setXrpExchangeBalance(balanceData);
-      setXrpExchangeLoading(false);
-      localStorage.setItem('kryptocurrent_xrp_exchange_balance', JSON.stringify(balanceData));
-      localStorage.setItem('kryptocurrent_xrp_exchange_balance_timestamp', Date.now().toString());
-    } catch (error) {
-      console.error('Error fetching XRP exchange balance:', error);
-      setXrpExchangeBalance({
-        total: 4180000000,
-        change7d: -2.1,
-        lastUpdated: new Date().toISOString(),
-        source: 'Fallback',
-        error: true
-      });
-      setXrpExchangeLoading(false);
-    }
-  };
-
   // Filter and deduplicate prices
   const validCryptoPrices = cryptoPrices
     .filter(crypto =>
@@ -564,7 +513,7 @@ export default function CryptoAggregator() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="bg-[#ffc93c] py-2 mb-6">
+        <div className="bg-[#ffc93c] py-2">
           <div className="max-w-xs mx-auto px-4">
             <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full h-10 object-contain" />
           </div>
@@ -584,19 +533,19 @@ export default function CryptoAggregator() {
                   onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
                 >
-                  All by Market Cap
+                  Market Cap
                 </button>
                 <button
                   onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
                 >
-                  Top Real-World Coins
+                  Utility
                 </button>
                 <button
                   onClick={() => { setPriceCategory('iso20022'); setSearchQuery(''); setSearchResults([]); }}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'iso20022' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
                 >
-                  ISO 20022 Coins
+                  ISO 20022
                 </button>
                 <button
                   onClick={() => { setPriceCategory('ai'); setSearchQuery(''); setSearchResults([]); }}
@@ -608,7 +557,7 @@ export default function CryptoAggregator() {
                   onClick={() => { setPriceCategory('meme'); setSearchQuery(''); setSearchResults([]); }}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
                 >
-                  Top Meme Coins
+                  Meme Coins
                 </button>
               </div>
 
@@ -650,42 +599,43 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: 2 columns, single-line cards */}
+              {/* Mobile: 3 columns, full info per card */}
               <div className="md:hidden">
-                <div className="grid grid-cols-2 gap-1">
+                <div className="grid grid-cols-3 gap-1.5">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group flex items-center justify-between gap-1 bg-slate-700/50 rounded-lg px-2 py-1.5 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30"
+                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30"
                     >
-                      <div className="flex items-center gap-1 min-w-0">
+                      <div className="flex items-center gap-1 mb-1">
                         <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" loading="lazy" />
-                        <span className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
+                        <span className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <span className="text-xs font-bold">
-                          ${crypto.current_price < 0.001
-                            ? crypto.current_price.toFixed(6)
-                            : crypto.current_price < 1
-                            ? crypto.current_price.toFixed(4)
-                            : crypto.current_price >= 1000
-                            ? (crypto.current_price / 1000).toFixed(1) + 'k'
-                            : crypto.current_price.toFixed(2)}
-                        </span>
-                        <span className={`text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(1)}%
-                        </span>
+                      <div className="text-xs font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                        ${crypto.current_price < 0.001
+                          ? crypto.current_price.toFixed(6)
+                          : crypto.current_price < 1
+                          ? crypto.current_price.toFixed(4)
+                          : crypto.current_price >= 1000
+                          ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                          : crypto.current_price.toFixed(2)}
+                      </div>
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+                        {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
                     </div>
                   ))}
                 </div>
-                {hasMore && <div ref={sentinelRef} className="h-4 mt-2" />}
+                {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center">
+                  <RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} />
+                </div>}
               </div>
 
               {/* Desktop: single-line cards, max columns */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-1">
+                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-1.5">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
@@ -713,66 +663,12 @@ export default function CryptoAggregator() {
                     </div>
                   ))}
                 </div>
-                {/* Sentinel div — triggers lazy load when scrolled into view */}
-                {hasMore && <div ref={sentinelRef} className="h-4 mt-2" />}
+                {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center">
+                  <RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} />
+                </div>}
               </div>
             </>
           )}
-
-          {/* XRP Sections */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* XRP Exchange Balance */}
-            {xrpExchangeLoading ? (
-              <div className="p-3 bg-slate-700/50 rounded-xl border border-slate-600">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
-                    <h3 className="text-lg font-bold text-white">XRP on Exchanges</h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="w-5 h-5 text-[#ffc93c] animate-spin" />
-                    <span className="text-sm text-gray-400">Loading...</span>
-                  </div>
-                </div>
-              </div>
-            ) : xrpExchangeBalance && (
-              <div
-                onClick={() => setShowExchangeModal(true)}
-                className="p-3 bg-slate-700/50 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700 hover:border-[#ffc93c]/50 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src="/XRPlogo.jpg" alt="XRP" className="w-8 h-8 rounded" />
-                    <h3 className="text-lg font-bold text-white">XRP on Exchanges</h3>
-                  </div>
-                  <div className="text-2xl font-bold text-[#ffc93c]">
-                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ETF Tracker */}
-            <div className="p-3 bg-slate-700/50 rounded-xl">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 flex-1">
-                  <img src="/XRPlogo.jpg" alt="XRP" className="w-6 h-6 rounded" />
-                  <div>
-                    <h3 className="text-base font-bold text-white">XRP ETF Tracker</h3>
-                    <p className="text-xs text-gray-300 hidden md:block">Track spot ETF stats from our good friends at XRP Insights</p>
-                  </div>
-                </div>
-                <a
-                  href="https://xrp-insights.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 md:px-4 py-1.5 md:py-2 bg-[#ffc93c] text-black hover:bg-[#ffb700] rounded-lg transition font-semibold whitespace-nowrap text-xs md:text-sm"
-                >
-                  Visit →
-                </a>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -899,163 +795,6 @@ export default function CryptoAggregator() {
         </div>
       )}
 
-      {/* XRP Exchange Balance Modal */}
-      {showExchangeModal && xrpExchangeBalance && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowExchangeModal(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <img src="/XRPlogo.jpg" alt="XRP" className="w-10 h-10 rounded" />
-                <div>
-                  <h2 className="text-2xl font-bold text-black">Total XRP on Exchanges</h2>
-                  <p className="text-gray-600 text-sm">Live on-chain data</p>
-                </div>
-              </div>
-              <button onClick={() => setShowExchangeModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
-                <X size={24} className="text-black" />
-              </button>
-            </div>
-
-            <div className="bg-gray-100 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="text-5xl font-bold text-green-600 mb-2">
-                    ~{(xrpExchangeBalance.total / 1000000000).toFixed(2)}B XRP
-                  </div>
-                  {xrpExchangeBalance.totalQueried && (
-                    <div className="text-sm text-gray-600">
-                      Queried: {(xrpExchangeBalance.totalQueried / 1000000000).toFixed(2)}B from {xrpExchangeBalance.queriedExchanges} out of {xrpExchangeBalance.totalExchanges} exchange wallets
-                    </div>
-                  )}
-                </div>
-                <div className="text-right border-l-2 border-gray-300 pl-4">
-                  <div className="text-xs text-gray-600 mb-1">Since Jan 1, 2026</div>
-                  <div className={`text-3xl font-bold ${xrpExchangeBalance.total >= 16500000000 ? 'text-red-600' : 'text-green-600'}`}>
-                    {xrpExchangeBalance.total >= 16500000000 ? '+' : ''}
-                    {((xrpExchangeBalance.total - 16500000000) / 1000000000).toFixed(2)}B
-                  </div>
-                  <div className={`text-sm font-semibold ${xrpExchangeBalance.total >= 16500000000 ? 'text-red-600' : 'text-green-600'}`}>
-                    {xrpExchangeBalance.total >= 16500000000 ? '↑' : '↓'} {Math.abs(((xrpExchangeBalance.total - 16500000000) / 16500000000) * 100).toFixed(2)}%
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <h3 className="text-lg font-bold text-black mb-3">Top 20 Exchange Wallets</h3>
-              <div className="max-h-[400px] overflow-y-auto space-y-1.5 pr-2">
-                {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
-                  .sort((a, b) => {
-                    const aVal = parseInt(a.balance.replace(/[^0-9]/g, ''));
-                    const bVal = parseInt(b.balance.replace(/[^0-9]/g, ''));
-                    return bVal - aVal;
-                  })
-                  .slice(0, 20)
-                  .map((wallet, index) => {
-                    const cleanExchangeName = wallet.exchange.replace(/\s*\(\d+\s*wallets?\)/, '');
-                    return (
-                      <div key={`${wallet.exchange}-${index}`} className="bg-gray-100 rounded-lg p-2 text-xs">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="text-black font-medium truncate flex-shrink-0" style={{ minWidth: '100px', maxWidth: '100px' }}>{cleanExchangeName}</div>
-                          <div className="text-gray-600 font-mono truncate flex-1">{wallet.address}</div>
-                          <div className="text-green-600 font-bold whitespace-nowrap flex-shrink-0">{wallet.balance}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowAllExchanges(true)}
-              className="w-full py-2 bg-white hover:bg-gray-50 text-green-600 border-2 border-green-600 font-bold rounded-lg transition"
-            >
-              All {xrpExchangeBalance.queriedExchanges} Exchanges
-            </button>
-            <button
-              onClick={() => setShowExchangeSummary(true)}
-              className="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2"
-            >
-              View by Exchange
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* All Exchanges Breakdown Modal */}
-      {showAllExchanges && xrpExchangeBalance && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]" onClick={() => setShowAllExchanges(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-black">All Exchange Wallets</h2>
-              <button onClick={() => setShowAllExchanges(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
-                <X size={24} className="text-black" />
-              </button>
-            </div>
-            <div className="space-y-1.5">
-              {xrpExchangeBalance.topWallets && Array.isArray(xrpExchangeBalance.topWallets) && xrpExchangeBalance.topWallets
-                .sort((a, b) => {
-                  const aVal = parseInt(a.balance.replace(/[^0-9]/g, ''));
-                  const bVal = parseInt(b.balance.replace(/[^0-9]/g, ''));
-                  return bVal - aVal;
-                })
-                .map((wallet, index) => {
-                  const cleanExchangeName = wallet.exchange.replace(/\s*\(\d+\s*wallets?\)/, '');
-                  return (
-                    <div key={`${wallet.exchange}-${index}`} className="bg-gray-100 rounded-lg p-2 hover:bg-gray-200 transition text-xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-black font-medium truncate flex-shrink-0" style={{ minWidth: '100px', maxWidth: '100px' }}>{cleanExchangeName}</div>
-                        <div className="text-gray-600 font-mono truncate flex-1">{wallet.address}</div>
-                        <div className="text-green-600 font-bold whitespace-nowrap flex-shrink-0">{wallet.balance}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Exchange Summary Modal */}
-      {showExchangeSummary && xrpExchangeBalance && xrpExchangeBalance.exchangeSummary && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[70]" onClick={() => setShowExchangeSummary(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-black">XRP Balance by Exchange</h2>
-              <button onClick={() => setShowExchangeSummary(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
-                <X size={24} className="text-black" />
-              </button>
-            </div>
-            <div className="mb-4 text-sm text-gray-600">
-              Total across {xrpExchangeBalance.exchangeSummary.length} unique exchanges
-            </div>
-            <div className="space-y-2">
-              {xrpExchangeBalance.exchangeSummary.map((exchange, index) => (
-                <div key={index} className="bg-gray-100 rounded-lg p-4 flex items-center justify-between hover:bg-gray-200 transition">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="bg-white rounded-full w-10 h-10 flex items-center justify-center">
-                      <span className="text-gray-600 font-bold text-sm">#{index + 1}</span>
-                    </div>
-                    <div>
-                      <div className="font-bold text-black text-lg">{exchange.exchange}</div>
-                      <div className="text-xs text-gray-600">
-                        {exchange.walletCount} {exchange.walletCount === 1 ? 'wallet' : 'wallets'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-green-600 font-bold text-xl">{exchange.totalBalance} XRP</div>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowExchangeSummary(false)}
-              className="w-full mt-6 py-2 bg-gray-200 hover:bg-gray-300 text-black font-bold rounded-lg transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
