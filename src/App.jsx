@@ -599,20 +599,28 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: 3 columns, full info per card */}
+              {/* Mobile: 2 columns, full cards */}
               <div className="md:hidden">
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30"
+                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:shadow-lg hover:shadow-[#ffc93c]/10"
                     >
-                      <div className="flex items-center gap-1 mb-1">
-                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" loading="lazy" />
-                        <span className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
+                      {/* Top row: logo + name + chart icon */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img src={crypto.image} alt={crypto.name} className="w-7 h-7 flex-shrink-0 rounded-full" loading="lazy" />
+                          <div className="min-w-0">
+                            <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors leading-tight">{crypto.symbol.toUpperCase()}</div>
+                            <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
+                          </div>
+                        </div>
+                        <TrendingUp size={14} className="text-slate-500 group-hover:text-[#ffc93c] transition-colors flex-shrink-0 ml-1" />
                       </div>
-                      <div className="text-xs font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                      {/* Price */}
+                      <div className="text-sm font-bold text-white">
                         ${crypto.current_price < 0.001
                           ? crypto.current_price.toFixed(6)
                           : crypto.current_price < 1
@@ -621,9 +629,10 @@ export default function CryptoAggregator() {
                           ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
                           : crypto.current_price.toFixed(2)}
                       </div>
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-                        {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                      {/* 24h change */}
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-1 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
                     </div>
                   ))}
@@ -633,32 +642,40 @@ export default function CryptoAggregator() {
                 </div>}
               </div>
 
-              {/* Desktop: single-line cards, max columns */}
+              {/* Desktop: full cards with logo, name, price, chart icon */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-1.5">
+                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group flex items-center justify-between gap-1.5 bg-slate-700/50 rounded-lg px-2.5 py-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/30 hover:-translate-y-px hover:shadow-md hover:shadow-[#ffc93c]/10"
+                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10"
                     >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <img src={crypto.image} alt={crypto.name} className="w-4 h-4 flex-shrink-0" loading="lazy" />
-                        <span className="font-semibold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</span>
+                      {/* Top row: logo + name + chart icon */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img src={crypto.image} alt={crypto.name} className="w-8 h-8 flex-shrink-0 rounded-full" loading="lazy" />
+                          <div className="min-w-0">
+                            <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors leading-tight">{crypto.symbol.toUpperCase()}</div>
+                            <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
+                          </div>
+                        </div>
+                        <TrendingUp size={14} className="text-slate-500 group-hover:text-[#ffc93c] transition-colors flex-shrink-0 ml-1" />
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="text-xs font-bold whitespace-nowrap">
-                          ${crypto.current_price < 0.001
-                            ? crypto.current_price.toFixed(6)
-                            : crypto.current_price < 1
-                            ? crypto.current_price.toFixed(4)
-                            : crypto.current_price >= 1000
-                            ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                            : crypto.current_price.toFixed(2)}
-                        </span>
-                        <span className={`text-xs font-semibold whitespace-nowrap ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
-                        </span>
+                      {/* Price */}
+                      <div className="text-sm font-bold text-white">
+                        ${crypto.current_price < 0.001
+                          ? crypto.current_price.toFixed(6)
+                          : crypto.current_price < 1
+                          ? crypto.current_price.toFixed(4)
+                          : crypto.current_price >= 1000
+                          ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                          : crypto.current_price.toFixed(2)}
+                      </div>
+                      {/* 24h change */}
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-1 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
                     </div>
                   ))}
