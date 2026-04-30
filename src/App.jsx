@@ -2,25 +2,55 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, X, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Known stablecoin IDs to filter from all non-stable sections
+// Known stablecoin / wrapped / yield-bearing token IDs — filtered from all non-stable views
 const STABLECOIN_IDS = new Set([
-  // USD stables
-  'tether','usd-coin','dai','binance-usd','true-usd','pax-dollar','usdd',
-  'gemini-dollar','paypal-usd','first-digital-usd','frax','liquity-usd',
-  'eurc','usdb','usdx','mountain-protocol-usdm','ondo-us-dollar-yield',
-  'ripple-usd','usde','ethena-usde','usual-usd','resolv-usr',
-  'sky-usds','deusd','usual','stasis-eurs','tether-eurt',
-  // Gold-backed
-  'tether-gold','pax-gold','cache-gold',
-  // Wrapped/staked ETH
+  // ── USD Fiat-backed ──
+  'tether','usd-coin','binance-usd','true-usd','pax-dollar','gemini-dollar',
+  'paypal-usd','first-digital-usd','fdusd','usdd','eurc','usdb','usdx',
+  'mountain-protocol-usdm','ondo-us-dollar-yield','ripple-usd','usde',
+  'ethena-usde','usual-usd','resolv-usr','sky-usds','deusd','usual',
+  'frax','liquity-usd','crvusd','susd','sfrxeth','usdy','usdm',
+  'ageur','angle-protocol','bean','float-protocol','fei-usd','neutrino',
+  'terra-usd','terrausd','tribe','mai','mimatic','mim','spell-token',
+  'origin-dollar','ousd','dollar-on-chain','tbtc-token',
+  // ── EUR / GBP / other fiat stables ──
+  'stasis-eurs','tether-eurt','ageur','ceur','eure',
+  // ── Commodity-backed ──
+  'tether-gold','pax-gold','cache-gold','digix-gold','xaut','paxg',
+  // ── Wrapped / Liquid-staked ETH ──
   'staked-ether','wrapped-steth','staked-frax-ether','rocket-pool-eth',
-  'wrapped-ether','weth','coinbase-wrapped-staked-eth',
-  // Wrapped BTC
-  'wrapped-bitcoin','coinbase-wrapped-bitcoin','tbtc',
-  // Other wrapped
-  'wrapped-eeth','kelp-dao-restaked-eth','renzo-restaked-eth',
-  'ether-fi-staked-eth','mantle-staked-ether',
+  'wrapped-ether','weth','coinbase-wrapped-staked-eth','wrapped-eeth',
+  'kelp-dao-restaked-eth','renzo-restaked-eth','ether-fi-staked-eth',
+  'mantle-staked-ether','liquid-staked-ethereum','lido-staked-ether',
+  'frax-ether','ankr-staked-eth','stakewise-staked-eth','swell-staked-ether',
+  'stader-staked-bnb','origin-ether','dinero','nodal-staked-eth',
+  'bedrock-unieth','ether-fi','weeth','ezeth','rseth','oseth','meth',
+  // ── Wrapped / Bridged BTC ──
+  'wrapped-bitcoin','coinbase-wrapped-bitcoin','tbtc','sobtc',
+  'renbtc','hbtc','btcb','sbtc','wbtc','cbbtc',
+  // ── Restaking / Liquid restaking ──
+  'eigenlayer','symbiotic','karak-network','puffer-finance','ion-protocol',
+  // ── Yield-bearing / RWA stable derivatives ──
+  'ondo-finance','ondo-us-dollar-yield','backed-ib01','sdai','savings-dai',
+  'aave-v2','compound-coin',
 ]);
+
+// Additional runtime filter: catch unknown stables by price proximity to $1 (±2%)
+// and known stable naming patterns
+const isLikelyStable = (coin) => {
+  if (!coin) return false;
+  if (STABLECOIN_IDS.has(coin.id)) return true;
+  const p = coin.current_price;
+  // Price within 2% of $1 with very low volatility = stable
+  if (p && p > 0.96 && p < 1.04 && Math.abs(coin.price_change_percentage_24h ?? 0) < 0.5) return true;
+  // Catch wrapped/staked naming patterns
+  const id = (coin.id || '').toLowerCase();
+  const sym = (coin.symbol || '').toLowerCase();
+  if (/^w(btc|eth|bnb|avax|sol|matic)$/.test(sym)) return true;
+  if (id.includes('wrapped') || id.includes('staked-') || id.includes('bridged')) return true;
+  if (sym.startsWith('st') && id.includes('eth')) return true;
+  return false;
+};
 
 export default function CryptoAggregator() {
   const [cryptoPrices, setCryptoPrices] = useState([]);
@@ -359,15 +389,6 @@ export default function CryptoAggregator() {
       founders: 'Donald J. Trump and associated team; launched via trump.meme official website'
     },
   };
-    },
-    'ATOM': {
-      utility: 'IBC ecosystem for interoperable chains',
-      adoption: 'Noble USDC, dYdX v4',
-      partnerships: ['Noble (USDC)', 'dYdX v4', 'Osmosis', 'Solana IBC (incoming)'],
-      backers: ['Interchain Foundation', 'ICO-funded', 'Limited traditional VC'],
-      founders: 'Jae Kwon (with Ethan Buchman)'
-    }
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -494,8 +515,8 @@ export default function CryptoAggregator() {
           const retryData = await retryResponse.json();
           if (Array.isArray(retryData) && retryData.length > 0) {
             let filteredData = retryData;
-            if (category === 'ai') filteredData = retryData.filter(coin => coin.id !== 'chainlink' && !STABLECOIN_IDS.has(coin.id));
-            else if (category === 'all' || category === 'meme') filteredData = retryData.filter(coin => !STABLECOIN_IDS.has(coin.id));
+            if (category === 'ai') filteredData = retryData.filter(coin => coin.id !== 'chainlink' && !isLikelyStable(coin));
+            else if (category === 'all' || category === 'meme') filteredData = retryData.filter(coin => !isLikelyStable(coin));
             setCryptoPrices(filteredData);
             localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(filteredData));
             localStorage.setItem(`kryptocurrent_prices_${category}_timestamp`, Date.now().toString());
@@ -520,12 +541,11 @@ export default function CryptoAggregator() {
       if (Array.isArray(data) && data.length > 0) {
         let filteredData = data;
         if (category === 'ai') {
-          filteredData = data.filter(coin => coin.id !== 'chainlink' && !STABLECOIN_IDS.has(coin.id));
+          filteredData = data.filter(coin => coin.id !== 'chainlink' && !isLikelyStable(coin));
         } else if (category === 'meme') {
-          filteredData = data.filter(coin => !STABLECOIN_IDS.has(coin.id));
+          filteredData = data.filter(coin => !isLikelyStable(coin));
         } else if (category === 'all') {
-          // Remove stablecoins and wrapped tokens from market cap list
-          filteredData = data.filter(coin => !STABLECOIN_IDS.has(coin.id));
+          filteredData = data.filter(coin => !isLikelyStable(coin));
         } else if (category === 'utility') {
           const utilityOrder = [
             'ripple', 'ethereum', 'chainlink', 'bitcoin', 'solana', 'stellar',
@@ -747,7 +767,8 @@ export default function CryptoAggregator() {
   const validCryptoPrices = cryptoPrices
     .filter(crypto =>
       crypto && crypto.id && crypto.symbol &&
-      crypto.current_price !== null && crypto.current_price !== undefined
+      crypto.current_price !== null && crypto.current_price !== undefined &&
+      !isLikelyStable(crypto)
     )
     .filter((crypto, index, self) =>
       index === self.findIndex(c => c.id === crypto.id ||
