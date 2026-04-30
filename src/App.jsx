@@ -84,6 +84,7 @@ export default function CryptoAggregator() {
   const [kuratedDisplayCount, setKuratedDisplayCount] = useState(8);
   const [showKuratedPicker, setShowKuratedPicker] = useState(false);
   const [kuratedPickerSearch, setKuratedPickerSearch] = useState('');
+  const [allCoinsMaster, setAllCoinsMaster] = useState([]); // full pool for picker
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const dragItemIndex = useRef(null);
 
@@ -527,6 +528,7 @@ export default function CryptoAggregator() {
   useEffect(() => {
     fetchCryptoPrices();
     fetchStablePrices();
+    fetchAllCoinsMaster();
   }, []);
 
   // Fetch prices when category changes
@@ -750,6 +752,37 @@ export default function CryptoAggregator() {
     }
   };
 
+  // Fetch a broad master pool for the Kurated picker — top 250 by market cap
+  const fetchAllCoinsMaster = async () => {
+    try {
+      const cached = localStorage.getItem('kc_master_pool');
+      const cacheTs = localStorage.getItem('kc_master_pool_ts');
+      if (cached && cacheTs && Date.now() - Number(cacheTs) < 10 * 60 * 1000) {
+        setAllCoinsMaster(JSON.parse(cached));
+        return;
+      }
+      const COINGECKO_API_KEYS = [
+        'CG-pDYwrEULGCyoK3cDn37ZMws6',
+        import.meta.env.VITE_COINGECKO_API_KEY,
+      ];
+      const validKeys = COINGECKO_API_KEYS.filter(Boolean);
+      const key = validKeys[0];
+      const isPaid = key === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
+      const apiParam = key ? (isPaid ? `&x-cg-pro-api-key=${key}` : `&x_cg_demo_api_key=${key}`) : '';
+      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1${apiParam}`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setAllCoinsMaster(data);
+        localStorage.setItem('kc_master_pool', JSON.stringify(data));
+        localStorage.setItem('kc_master_pool_ts', String(Date.now()));
+      }
+    } catch (e) {
+      console.error('Error fetching master pool:', e);
+    }
+  };
+
   const fetchChartData = async (coinId, timeframe = '7d') => {
     setChartLoading(true);
     try {
@@ -866,8 +899,8 @@ export default function CryptoAggregator() {
 
   const validStablePrices = stablePrices.filter(c => c && c.id && c.symbol && c.current_price != null);
 
-  // All available coins pool (for picker + kurated display)
-  const allCoinsPool = [...validCryptoPrices, ...validStablePrices]
+  // All available coins pool for picker — use master pool if available, fall back to current view
+  const allCoinsPool = (allCoinsMaster.length > 0 ? allCoinsMaster : [...validCryptoPrices, ...validStablePrices])
     .filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
 
   // Kurated: get full coin objects for the saved IDs, in saved order
