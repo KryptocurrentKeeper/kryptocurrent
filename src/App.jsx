@@ -1,23 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TrendingUp, TrendingDown, RefreshCw, X, Search } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, X, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+// Known stablecoin IDs to filter from market cap list
+const STABLECOIN_IDS = new Set([
+  'tether','usd-coin','dai','binance-usd','true-usd','pax-dollar','usdd',
+  'gemini-dollar','tether-eurt','stasis-eurs','paypal-usd','first-digital-usd',
+  'frax','liquity-usd','eurc','usdb','usdx','mountain-protocol-usdm','ondo-us-dollar-yield',
+  'ripple-usd','tether-gold','pax-gold','staked-ether','wrapped-steth','wrapped-bitcoin',
+  'coinbase-wrapped-bitcoin','wrapped-ether','weth','staked-frax-ether','rocket-pool-eth',
+]);
 
 export default function CryptoAggregator() {
   const [cryptoPrices, setCryptoPrices] = useState([]);
+  const [stablePrices, setStablePrices] = useState([]);
+  const [stableLoading, setStableLoading] = useState(true);
   const [miniChartData, setMiniChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
+  const [selectedCryptoIndex, setSelectedCryptoIndex] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [chartTimeframe, setChartTimeframe] = useState('7');
   const [visibleCount, setVisibleCount] = useState(96);
   const [priceCategory, setPriceCategory] = useState('all');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const touchStartX = useRef(null);
 
   const pricesRef = useRef(null);
   const sentinelRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   // Helper function to clean up text encoding issues
   const cleanText = (text) => {
@@ -208,7 +223,18 @@ export default function CryptoAggregator() {
     }
   };
 
-  // Lazy load: observe sentinel, load 48 more when it comes into view
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -244,6 +270,7 @@ export default function CryptoAggregator() {
 
   useEffect(() => {
     fetchCryptoPrices();
+    fetchStablePrices();
   }, []);
 
   // Fetch prices when category changes
@@ -347,6 +374,9 @@ export default function CryptoAggregator() {
         let filteredData = data;
         if (category === 'ai') {
           filteredData = data.filter(coin => coin.id !== 'chainlink');
+        } else if (category === 'all') {
+          // Remove stablecoins and wrapped tokens from market cap list
+          filteredData = data.filter(coin => !STABLECOIN_IDS.has(coin.id));
         } else if (category === 'utility') {
           const utilityOrder = [
             'ripple', 'ethereum', 'chainlink', 'bitcoin', 'solana', 'stellar',
@@ -438,6 +468,30 @@ export default function CryptoAggregator() {
     }
   };
 
+  const fetchStablePrices = async () => {
+    setStableLoading(true);
+    try {
+      const COINGECKO_API_KEYS = [
+        'CG-pDYwrEULGCyoK3cDn37ZMws6',
+        import.meta.env.VITE_COINGECKO_API_KEY,
+      ];
+      const validKeys = COINGECKO_API_KEYS.filter(Boolean);
+      const currentKey = validKeys[0];
+      const isPaidKey = currentKey === 'CG-pDYwrEULGCyoK3cDn37ZMws6';
+      const apiKeyParam = currentKey ? (isPaidKey ? `&x-cg-pro-api-key=${currentKey}` : `&x_cg_demo_api_key=${currentKey}`) : '';
+      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=stablecoins&order=market_cap_desc&per_page=50&page=1${apiKeyParam}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) setStablePrices(data);
+      }
+    } catch (e) {
+      console.error('Error fetching stablecoins:', e);
+    } finally {
+      setStableLoading(false);
+    }
+  };
+
   const fetchChartData = async (coinId, days = '7') => {
     setChartLoading(true);
     try {
@@ -457,25 +511,36 @@ export default function CryptoAggregator() {
     }
   };
 
-  const openChart = async (crypto) => {
+  const openChart = async (crypto, index) => {
     setSelectedCrypto(crypto);
+    setSelectedCryptoIndex(index ?? null);
     setChartTimeframe('7');
     fetchChartData(crypto.id, '7');
-
     try {
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto.id}/market_chart?vs_currency=usd&days=30&interval=daily`);
       if (response.ok) {
         const data = await response.json();
-        const formattedData = data.prices.map(([timestamp, price]) => ({
-          time: timestamp,
-          price: price
-        }));
-        setMiniChartData(formattedData);
+        setMiniChartData(data.prices.map(([timestamp, price]) => ({ time: timestamp, price })));
       }
     } catch (error) {
-      console.error('Error fetching mini chart:', error);
       setMiniChartData([]);
     }
+  };
+
+  const navigateCrypto = (direction) => {
+    if (selectedCryptoIndex === null) return;
+    const list = priceCategory === 'stable' ? stablePrices : displayedPrices;
+    const newIndex = selectedCryptoIndex + direction;
+    if (newIndex < 0 || newIndex >= list.length) return;
+    openChart(list[newIndex], newIndex);
+  };
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) navigateCrypto(diff > 0 ? 1 : -1);
+    touchStartX.current = null;
   };
 
   const changeChartTimeframe = (days) => {
@@ -492,22 +557,24 @@ export default function CryptoAggregator() {
   // Filter and deduplicate prices
   const validCryptoPrices = cryptoPrices
     .filter(crypto =>
-      crypto &&
-      crypto.id &&
-      crypto.symbol &&
-      crypto.current_price !== null &&
-      crypto.current_price !== undefined
+      crypto && crypto.id && crypto.symbol &&
+      crypto.current_price !== null && crypto.current_price !== undefined
     )
     .filter((crypto, index, self) =>
-      index === self.findIndex(c =>
-        c.id === crypto.id ||
-        (c.symbol.toLowerCase() === crypto.symbol.toLowerCase() && c.name.toLowerCase() === crypto.name.toLowerCase())
-      )
+      index === self.findIndex(c => c.id === crypto.id ||
+        (c.symbol.toLowerCase() === crypto.symbol.toLowerCase() && c.name.toLowerCase() === crypto.name.toLowerCase()))
     );
+
+  const validStablePrices = stablePrices.filter(c => c && c.id && c.symbol && c.current_price != null);
 
   // Lazy-loaded slice — starts at 96, grows by 48 as user scrolls
   const displayedPrices = validCryptoPrices.slice(0, visibleCount);
   const hasMore = visibleCount < validCryptoPrices.length;
+
+  const activeCategory = priceCategory;
+  const dropdownLabel = {
+    all: 'Market Cap', utility: 'Utility Coins', ai: 'AI Coins', meme: 'Meme Coins', stable: 'Stable Coins'
+  }[activeCategory] || 'Market Cap';
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -521,36 +588,61 @@ export default function CryptoAggregator() {
 
         {/* Prices Section */}
         <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl px-4 pt-3 pb-4 mb-4">
-          {/* Category Toggle Buttons and Search — all on one line */}
+
+          {/* ── Controls row ── */}
           <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none">
-            <div className="flex gap-1.5 flex-shrink-0">
+
+            {/* Mobile: single dropdown. Desktop: dropdown + flat buttons */}
+
+            {/* Dropdown (visible on both; on desktop it's the first item) */}
+            <div className="relative flex-shrink-0" ref={dropdownRef}>
               <button
-                onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                onClick={() => setDropdownOpen(o => !o)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${['all','utility','ai','meme','stable'].includes(activeCategory) ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
               >
-                Market Cap
+                {dropdownLabel}
+                <ChevronDown size={12} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-              <button
-                onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-              >
-                Utility Coins
-              </button>
-              <button
-                onClick={() => { setPriceCategory('ai'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'ai' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-              >
-                AI Coins
-              </button>
-              <button
-                onClick={() => { setPriceCategory('meme'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
-              >
-                Meme Coins
-              </button>
+              {dropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-30 min-w-[140px]">
+                  {[
+                    { key: 'all', label: 'Market Cap' },
+                    { key: 'utility', label: 'Utility Coins' },
+                    { key: 'ai', label: 'AI Coins' },
+                    { key: 'meme', label: 'Meme Coins' },
+                    { key: 'stable', label: 'Stable Coins' },
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => { setPriceCategory(key); setSearchQuery(''); setSearchResults([]); setDropdownOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-700 transition first:rounded-t-lg last:rounded-b-lg ${activeCategory === key ? 'text-[#ffc93c]' : 'text-white'}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Search Field */}
+            {/* Desktop-only flat buttons */}
+            <div className="hidden md:flex gap-1.5 flex-shrink-0">
+              {[
+                { key: 'utility', label: 'Utility Coins' },
+                { key: 'ai', label: 'AI Coins' },
+                { key: 'meme', label: 'Meme Coins' },
+                { key: 'stable', label: 'Stable Coins' },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => { setPriceCategory(key); setSearchQuery(''); setSearchResults([]); }}
+                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${activeCategory === key ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
             <div className="flex-shrink-0 ml-auto">
               <div className="relative">
                 <input
@@ -558,18 +650,12 @@ export default function CryptoAggregator() {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-32 md:w-48 px-3 py-1.5 pl-8 pr-8 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition text-xs"
+                  className="w-28 md:w-48 px-3 py-1.5 pl-8 pr-8 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition text-xs"
                 />
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={13} />
-                {isSearching && (
-                  <RefreshCw className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={13} />
-                )}
+                {isSearching && <RefreshCw className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={13} />}
                 {!isSearching && searchQuery && (
-                  <button
-                    onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
-                    aria-label="Clear search"
-                  >
+                  <button onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition" aria-label="Clear search">
                     <X size={13} />
                   </button>
                 )}
@@ -580,95 +666,107 @@ export default function CryptoAggregator() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-8">
-              <RefreshCw className="animate-spin mx-auto mb-2 text-[#ffc93c]" size={32} />
-              <p className="text-gray-400">Loading prices...</p>
-            </div>
+          {/* ── Stable Coins section (shown when category = stable, or always on desktop as a separate block) ── */}
+          {activeCategory === 'stable' ? (
+            /* Full-page stable coins view */
+            stableLoading ? (
+              <div className="text-center py-8"><RefreshCw className="animate-spin mx-auto text-[#ffc93c]" size={28} /></div>
+            ) : (
+              <>
+                <div className="md:hidden">
+                  <div className="grid grid-cols-3 gap-2">
+                    {validStablePrices.map((crypto, i) => (
+                      <StableCard key={crypto.id} crypto={crypto} onClick={() => openChart(crypto, i)} />
+                    ))}
+                  </div>
+                </div>
+                <div className="hidden md:block">
+                  <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                    {validStablePrices.map((crypto, i) => (
+                      <DesktopCard key={crypto.id} crypto={crypto} onClick={() => openChart(crypto, i)} />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
           ) : (
+            /* Normal price cards */
             <>
-              {/* Mobile: 3 columns — big logo, ticker, price, % change. No coin name. */}
-              <div className="md:hidden">
-                <div className="grid grid-cols-3 gap-2">
-                  {displayedPrices.map((crypto) => (
-                    <div
-                      key={crypto.id}
-                      onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-xl p-2.5 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 flex flex-col items-center text-center"
-                    >
-                      <img src={crypto.image} alt={crypto.name} className="w-10 h-10 rounded-full mb-1.5" loading="lazy" />
-                      <div className="font-bold text-sm group-hover:text-[#ffc93c] transition-colors mb-1">{crypto.symbol.toUpperCase()}</div>
-                      <div className="text-xs font-bold text-white mb-0.5">
-                        ${crypto.current_price < 0.001
-                          ? crypto.current_price.toFixed(6)
-                          : crypto.current_price < 1
-                          ? crypto.current_price.toFixed(4)
-                          : crypto.current_price >= 1000
-                          ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                          : crypto.current_price.toFixed(2)}
-                      </div>
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-                        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
-                      </div>
-                    </div>
-                  ))}
+              {loading ? (
+                <div className="text-center py-8">
+                  <RefreshCw className="animate-spin mx-auto mb-2 text-[#ffc93c]" size={32} />
+                  <p className="text-gray-400">Loading prices...</p>
                 </div>
-                {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center">
-                  <RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} />
-                </div>}
-              </div>
+              ) : (
+                <>
+                  {/* Mobile */}
+                  <div className="md:hidden">
+                    <div className="grid grid-cols-3 gap-2">
+                      {displayedPrices.map((crypto, i) => (
+                        <MobileCard key={crypto.id} crypto={crypto} onClick={() => openChart(crypto, i)} />
+                      ))}
+                    </div>
+                    {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center"><RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} /></div>}
+                  </div>
 
-              {/* Desktop: big logo, large ticker, name, price + % on one line */}
-              <div className="hidden md:block">
-                <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-                  {displayedPrices.map((crypto) => (
-                    <div
-                      key={crypto.id}
-                      onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
-                    >
-                      {/* Logo + ticker + name */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={crypto.image} alt={crypto.name} className="w-9 h-9 flex-shrink-0 rounded-full" loading="lazy" />
-                        <div className="min-w-0">
-                          <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
-                          <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
-                        </div>
-                      </div>
-                      {/* Price + % change on one line */}
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-white whitespace-nowrap">
-                          ${crypto.current_price < 0.001
-                            ? crypto.current_price.toFixed(6)
-                            : crypto.current_price < 1
-                            ? crypto.current_price.toFixed(4)
-                            : crypto.current_price >= 1000
-                            ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                            : crypto.current_price.toFixed(2)}
-                        </span>
-                        <span className={`flex items-center gap-0.5 text-xs font-semibold whitespace-nowrap ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
-                        </span>
+                  {/* Desktop */}
+                  <div className="hidden md:block">
+                    <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                      {displayedPrices.map((crypto, i) => (
+                        <DesktopCard key={crypto.id} crypto={crypto} onClick={() => openChart(crypto, i)} />
+                      ))}
+                    </div>
+                    {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center"><RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} /></div>}
+                  </div>
+
+                  {/* Desktop Stable Coins sub-section */}
+                  {!stableLoading && validStablePrices.length > 0 && (
+                    <div className="hidden md:block mt-6">
+                      <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Stable Coins</h3>
+                      <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                        {validStablePrices.map((crypto, i) => (
+                          <DesktopCard key={crypto.id} crypto={crypto} onClick={() => openChart(crypto, i)} />
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-                {hasMore && <div ref={sentinelRef} className="h-8 mt-2 flex items-center justify-center">
-                  <RefreshCw className="animate-spin text-[#ffc93c]/40" size={16} />
-                </div>}
-              </div>
+                  )}
+                </>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* Chart Modal */}
+      {/* Chart Modal with swipe navigation */}
       {selectedCrypto && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={closeChart}>
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+          onClick={closeChart}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative" onClick={(e) => e.stopPropagation()}>
+            {/* Prev / Next nav arrows */}
+            {selectedCryptoIndex !== null && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigateCrypto(-1); }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-gray-100 hover:bg-[#ffc93c] rounded-full transition z-10"
+                  aria-label="Previous coin"
+                >
+                  <ChevronLeft size={20} className="text-black" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigateCrypto(1); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gray-100 hover:bg-[#ffc93c] rounded-full transition z-10"
+                  aria-label="Next coin"
+                >
+                  <ChevronRight size={20} className="text-black" />
+                </button>
+              </>
+            )}
+
+            <div className="flex items-center justify-between mb-4">
               <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg ml-auto">
                 <X size={24} className="text-black" />
               </button>
@@ -713,10 +811,7 @@ export default function CryptoAggregator() {
                     <p className="text-xs font-semibold text-gray-600 mb-2">TOP PARTNERSHIPS & COLLABORATIONS (2025-2026)</p>
                     <div className="text-sm text-black">
                       {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.slice(0, 10).map((partner, idx) => (
-                        <span key={idx}>
-                          {partner}
-                          {idx < Math.min(9, tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.length - 1) ? ', ' : ''}
-                        </span>
+                        <span key={idx}>{partner}{idx < Math.min(9, tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.length - 1) ? ', ' : ''}</span>
                       ))}
                     </div>
                   </div>
@@ -726,10 +821,7 @@ export default function CryptoAggregator() {
                     <p className="text-xs font-semibold text-gray-600 mb-2">NOTABLE BACKERS & INVESTORS</p>
                     <div className="text-sm text-black">
                       {tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.map((backer, idx) => (
-                        <span key={idx}>
-                          {backer}
-                          {idx < tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.length - 1 ? ', ' : ''}
-                        </span>
+                        <span key={idx}>{backer}{idx < tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.length - 1 ? ', ' : ''}</span>
                       ))}
                     </div>
                   </div>
@@ -756,7 +848,6 @@ export default function CryptoAggregator() {
               </div>
             </div>
 
-            {/* Chart Timeframe Buttons */}
             <div className="flex gap-2 mb-4">
               {['1', '7', '30', '90', '365'].map((days) => (
                 <button
@@ -783,10 +874,67 @@ export default function CryptoAggregator() {
                 </LineChart>
               </ResponsiveContainer>
             )}
+
+            {/* Swipe hint on mobile */}
+            {selectedCryptoIndex !== null && (
+              <p className="text-center text-xs text-gray-400 mt-3 md:hidden">← Swipe to navigate →</p>
+            )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
 
+/* ── Shared card sub-components ── */
+function formatPrice(p) {
+  if (p < 0.001) return p.toFixed(6);
+  if (p < 1) return p.toFixed(4);
+  if (p >= 1000) return p.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  return p.toFixed(2);
+}
+
+function MobileCard({ crypto, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      className="group bg-slate-700/50 rounded-xl p-2.5 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 flex flex-col items-center text-center"
+    >
+      <img src={crypto.image} alt={crypto.name} className="w-10 h-10 rounded-full mb-1.5" loading="lazy" />
+      <div className="font-bold text-sm group-hover:text-[#ffc93c] transition-colors mb-1">{crypto.symbol.toUpperCase()}</div>
+      <div className="text-xs font-bold text-white mb-0.5">${formatPrice(crypto.current_price)}</div>
+      <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+      </div>
+    </div>
+  );
+}
+
+function StableCard({ crypto, onClick }) {
+  return <MobileCard crypto={crypto} onClick={onClick} />;
+}
+
+function DesktopCard({ crypto, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <img src={crypto.image} alt={crypto.name} className="w-9 h-9 flex-shrink-0 rounded-full" loading="lazy" />
+        <div className="min-w-0">
+          <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
+          <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-xs font-bold text-white whitespace-nowrap">${formatPrice(crypto.current_price)}</span>
+        <span className={`flex items-center gap-0.5 text-xs font-semibold whitespace-nowrap ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+        </span>
+      </div>
     </div>
   );
 }
