@@ -2,13 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, X, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Known stablecoin IDs to filter from market cap list
+// Known stablecoin IDs to filter from all non-stable sections
 const STABLECOIN_IDS = new Set([
+  // USD stables
   'tether','usd-coin','dai','binance-usd','true-usd','pax-dollar','usdd',
-  'gemini-dollar','tether-eurt','stasis-eurs','paypal-usd','first-digital-usd',
-  'frax','liquity-usd','eurc','usdb','usdx','mountain-protocol-usdm','ondo-us-dollar-yield',
-  'ripple-usd','tether-gold','pax-gold','staked-ether','wrapped-steth','wrapped-bitcoin',
-  'coinbase-wrapped-bitcoin','wrapped-ether','weth','staked-frax-ether','rocket-pool-eth',
+  'gemini-dollar','paypal-usd','first-digital-usd','frax','liquity-usd',
+  'eurc','usdb','usdx','mountain-protocol-usdm','ondo-us-dollar-yield',
+  'ripple-usd','usde','ethena-usde','usual-usd','resolv-usr',
+  'sky-usds','deusd','usual','stasis-eurs','tether-eurt',
+  // Gold-backed
+  'tether-gold','pax-gold','cache-gold',
+  // Wrapped/staked ETH
+  'staked-ether','wrapped-steth','staked-frax-ether','rocket-pool-eth',
+  'wrapped-ether','weth','coinbase-wrapped-staked-eth',
+  // Wrapped BTC
+  'wrapped-bitcoin','coinbase-wrapped-bitcoin','tbtc',
+  // Other wrapped
+  'wrapped-eeth','kelp-dao-restaked-eth','renzo-restaked-eth',
+  'ether-fi-staked-eth','mantle-staked-ether',
 ]);
 
 export default function CryptoAggregator() {
@@ -30,6 +41,7 @@ export default function CryptoAggregator() {
   const [isSearching, setIsSearching] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeExiting, setSwipeExiting] = useState(0); // -1 = exit left, 1 = exit right, 0 = none
   const touchStartX = useRef(null);
   const currentSwipeX = useRef(0);
 
@@ -54,168 +66,299 @@ export default function CryptoAggregator() {
       .replace(/\u00A0/g, ' ');
   };
 
-  // Token utility information
+  // Token utility information — covers Market Cap, Utility, AI, and Meme categories
   const tokenUtility = {
+    // ── MARKET CAP / UTILITY COINS ──
+    'BTC': {
+      utility: 'Digital store of value and peer-to-peer payment network secured by proof-of-work mining',
+      adoption: 'U.S. Strategic Bitcoin Reserve established 2025, 172+ corporate treasuries, Lightning Network processing millions of micropayments, spot Bitcoin ETFs holding $100B+',
+      partnerships: ['BlackRock (IBIT ETF)', 'Fidelity (FBTC ETF)', 'MicroStrategy (treasury)', 'El Salvador (legal tender)', 'Lightning Network', 'JPMorgan (collateral)', 'Tesla', 'U.S. Federal Reserve pilots'],
+      backers: ['MicroStrategy / Strategy', 'BlackRock', 'Fidelity', 'Marathon Digital', 'Tesla', 'Block (Square)'],
+      founders: 'Satoshi Nakamoto (pseudonymous; identity unknown)'
+    },
+    'ETH': {
+      utility: 'Programmable smart-contract platform powering DeFi, NFTs, stablecoins, and tokenized real-world assets',
+      adoption: '$50B+ DeFi TVL, BlackRock BUIDL fund on-chain, Base and Arbitrum L2s processing millions of daily transactions, spot ETH ETFs approved in the U.S.',
+      partnerships: ['JP Morgan (Onyx)', 'Microsoft (Azure integration)', 'BlackRock/BNY Mellon (BUIDL fund)', 'Visa (settlement)', 'Google Cloud', 'Consensys', 'EY', 'UBS', 'Standard Chartered'],
+      backers: ['Ethereum Foundation', 'ConsenSys (Joseph Lubin)', 'BlackRock', 'Grayscale', 'Fidelity'],
+      founders: 'Vitalik Buterin; co-founders Gavin Wood, Charles Hoskinson, Anthony Di Iorio, Joseph Lubin'
+    },
+    'BNB': {
+      utility: 'Native token of the BNB Chain ecosystem — pays gas fees, funds DeFi on BSC, powers opBNB L2 and BNB Greenfield decentralized storage',
+      adoption: 'BNB Chain hosts 1B+ total transactions, 30+ public companies hold BNB in treasury, Agoda and Mastercard integrations processing $27B in transactions, 21+ global regulatory licenses for Binance',
+      partnerships: ['Mastercard (commerce integration)', 'Agoda (travel payments)', 'BBVA', 'Circle (USDC on BSC)', 'PancakeSwap (leading DEX)', 'YZi Labs', 'B Strategy treasury firm'],
+      backers: ['Binance (Changpeng Zhao / Yi He)', 'YZi Labs', 'Windtree Therapeutics ($520M treasury)', 'B Strategy ($1B treasury)'],
+      founders: 'Changpeng Zhao (CZ) and Yi He, co-founders of Binance; current CEO Richard Teng'
+    },
+    'SOL': {
+      utility: 'High-throughput Layer-1 blockchain for DeFi, NFTs, consumer apps, and payments — 65,000+ TPS at sub-cent fees',
+      adoption: 'Visa USDC settlement pilot, PayPal PYUSD deployment, top DEX volume globally, Solana Pay at retail merchants',
+      partnerships: ['Visa (USDC settlement)', 'PayPal (PYUSD)', 'Shopify/Stripe', 'JP Morgan (bond tokenization)', 'Revolut', 'Chainlink', 'Google Cloud (validator)', 'Coinbase'],
+      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'Jump Trading', 'FTX Ventures (historic)'],
+      founders: 'Anatoly Yakovenko (with Raj Gokal and Greg Fitzgerald), Solana Labs'
+    },
     'XRP': {
-      utility: 'Global cross-border settlements & liquidity provisioning',
-      adoption: 'Ripple ODL in 70+ countries, $15B+ annual volume, 300+ bank/fintech partnerships',
-      partnerships: ['SBI Holdings (RLUSD Japan)', 'BNY Mellon (RLUSD custody)', 'Mastercard/WebBank/Gemini', 'Mizuho Bank/SMBC Nikko', 'Archax (RWA tokenization)', 'Franklin Templeton', 'DBS Group', 'Ctrl Alt/Dubai Land Dept', 'Modulr (UK/Europe)', 'AMINA Bank'],
+      utility: 'Global cross-border payment settlements and on-demand liquidity provisioning for financial institutions',
+      adoption: 'Ripple ODL active in 70+ countries, $15B+ annual payment volume, 300+ bank and fintech partnerships, RLUSD stablecoin launched 2025',
+      partnerships: ['SBI Holdings (RLUSD Japan)', 'BNY Mellon (RLUSD custody)', 'Mastercard/WebBank/Gemini', 'Mizuho Bank/SMBC Nikko', 'Archax (RWA tokenization)', 'Franklin Templeton', 'DBS Group', 'Modulr (UK/Europe)', 'AMINA Bank'],
       backers: ['Andreessen Horowitz (a16z)', 'Tetragon Financial', 'SBI Holdings', 'Pantera Capital', 'Fortress Investment Group'],
       founders: 'Jed McCaleb, Arthur Britto, David Schwartz, Chris Larsen (Ripple Labs)'
     },
-    'ETH': {
-      utility: 'Smart contracts, DeFi, NFTs, tokenized RWAs',
-      adoption: '$500B+ DeFi TVL, BlackRock/BNY Mellon funds, L2 dominance (Base, Arbitrum)',
-      partnerships: ['JP Morgan', 'Microsoft', 'Consensys', 'EY', 'BlackRock/BNY Mellon', 'Standard Chartered', 'Accenture', 'UBS/Fidelity', 'Visa', 'Google Cloud'],
-      backers: ['Joseph Lubin (ConsenSys)', 'Vitalik Buterin', 'BlackRock', 'Grayscale', 'Fidelity'],
-      founders: 'Vitalik Buterin (primary), with co-founders including Gavin Wood, Charles Hoskinson, Anthony Di Iorio, Joseph Lubin'
-    },
-    'LINK': {
-      utility: 'Decentralized oracles for smart contracts',
-      adoption: '2,000+ projects, CCIP for RWAs, SWIFT/DTCC pilots',
-      partnerships: ['SWIFT (pilots)', 'DTCC (fund data)', 'Mastercard', 'Euroclear', 'Fidelity International', 'UBS/ANZ', 'Deutsche Börse', 'SBI Group', 'GLEIF', 'Chainalysis'],
-      backers: ['Fundamental Labs', 'Nirvana Capital', 'Grayscale Trust'],
-      founders: 'Sergey Nazarov (with Steve Ellis)'
-    },
-    'BTC': {
-      utility: 'Store of value + payments (Lightning)',
-      adoption: 'Nation-state reserves, corporate treasuries, surging Lightning volume',
-      partnerships: ['Nation-state reserves (U.S.)', 'MicroStrategy (treasury)', 'Lightning Network', 'BlackRock ETFs', 'JPMorgan (collateral)', 'Tesla', 'El Salvador', 'Corporate treasuries (172+)', 'Fedwire pilots', 'Grayscale Trust'],
-      backers: ['MicroStrategy', 'BlackRock (ETFs)', 'Tesla', 'Marathon Digital', 'Fidelity'],
-      founders: 'Satoshi Nakamoto (pseudonymous/unknown identity)'
-    },
-    'SOL': {
-      utility: 'High-throughput payments, DeFi, consumer apps',
-      adoption: 'Visa pilot, PayPal PYUSD, top DEX volume, mobile integration',
-      partnerships: ['Visa (pilots)', 'PayPal (PYUSD)', 'Shopify/Stripe', 'JP Morgan (bonds)', 'Revolut', 'Chainlink', 'Google Cloud', 'Mysten Labs', 'Coinbase (DEX)', 'Facebook Diem alumni'],
-      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'Alameda Research', 'Jump Trading'],
-      founders: 'Anatoly Yakovenko (with Raj Gokal and Greg Fitzgerald)'
-    },
-    'XLM': {
-      utility: 'Low-cost remittances & CBDC infrastructure',
-      adoption: 'MoneyGram, Ukraine CBDC pilot, Circle USDC issuer',
-      partnerships: ['MoneyGram', 'Circle (USDC issuer)', 'Mastercard', 'Franklin Templeton', 'Ukraine CBDC pilot', 'Paxos/Ondo (RWAs)', 'Visa', 'IBM', 'SureRemit', 'Wormhole'],
-      backers: ['Stripe (seed)', 'Circle (USDC)', 'MoneyGram'],
-      founders: 'Jed McCaleb (with Joyce Kim)'
-    },
-    'QNT': {
-      utility: 'Enterprise blockchain interoperability',
-      adoption: 'SWIFT/BIS projects, LACChain CBDC, UK digital bonds',
-      partnerships: ['ECB (digital euro)', 'SWIFT/BIS projects', 'Oracle', 'SIA', 'LACChain CBDC', 'UK digital bonds', 'Overledger enterprise clients'],
-      backers: ['Private enterprise-focused', 'Limited public VC details'],
-      founders: 'Gilbert Verdian'
-    },
-    'HBAR': {
-      utility: 'Enterprise DLT for payments, tokenization',
-      adoption: 'Council (Google, Boeing), 20B+ transactions, abrdn RWAs',
-      partnerships: ['Google', 'Boeing', 'IBM', 'abrdn (RWAs)', 'Nairobi Securities Exchange', 'NATO DIANA (2026)', 'ServiceNow'],
-      backers: ['Google', 'Boeing', 'IBM', 'abrdn'],
-      founders: 'Leemon Baird (with Mance Harmon)'
-    },
-    'VET': {
-      utility: 'Supply-chain traceability & carbon credits',
-      adoption: 'Walmart China, PwC/DNV, enterprise NFTs',
-      partnerships: ['Walmart China', 'PwC/DNV', 'BMW', 'DHL', 'Franklin Templeton/BitGo', 'Boston Consulting Group', 'Crypto.com', 'Valour ETPs'],
-      backers: ['PwC', 'DNV', 'Enterprise-focused'],
-      founders: 'Sunny Lu'
-    },
-    'POL': {
-      utility: 'Ethereum scaling + enterprise sidechains',
-      adoption: 'Starbucks/Adidas/JPMorgan usage, AggLayer',
-      partnerships: ['Starbucks', 'Nike', 'Adidas', 'JPMorgan', 'Mastercard', 'Calastone', 'Cypher Capital', 'Manifold Trading', 'Reliance Jio', 'Stripe'],
-      backers: ['Sequoia Capital India', 'SoftBank Vision Fund', 'Tiger Global', 'Andreessen Horowitz', 'Binance Labs'],
-      founders: 'Jaynti Kanani, Sandeep Nailwal, Anurag Arjun, Mihailo Bjelic'
-    },
-    'TON': {
-      utility: 'Mass-scale payments & mini-apps via Telegram',
-      adoption: '900M+ Telegram users, wallet adoption, growing DeFi/stablecoins',
-      partnerships: ['Telegram (Mini Apps)', 'Sequoia Capital/Benchmark ($400M)', 'BitGo/Kraken/SkyBridge', 'Crypto.com', 'Chainlink'],
-      backers: ['Sequoia Capital', 'Ribbit Capital', 'Benchmark', 'Pantera Capital', 'Vy Capital'],
-      founders: 'Nikolai Durov and Pavel Durov (Telegram founders); community-led after Telegram exit'
+    'DOGE': {
+      utility: 'Peer-to-peer digital currency and tipping token; increasingly used for retail payments and social tipping on platforms like X',
+      adoption: 'Accepted by Tesla merchandise, SpaceX mission funded with DOGE, AMC Theatres, Dallas Mavericks; billions in daily trading volume; Elon Musk advocacy drives mainstream awareness',
+      partnerships: ['Tesla (merch payments)', 'SpaceX (DOGE-1 mission)', 'Dallas Mavericks', 'AMC Theatres', 'Newegg', 'Bitpay merchants'],
+      backers: ['Elon Musk (public advocate)', 'Tesla', 'Mark Cuban (early supporter)', 'Retail community'],
+      founders: 'Billy Markus and Jackson Palmer (created as a joke/meme in December 2013)'
     },
     'ADA': {
-      utility: 'Identity, governance, real-fi in emerging markets',
-      adoption: 'Ethiopia credentials (5M+ users), World Mobile telecom',
-      partnerships: ['Ethiopia (credentials)', 'World Mobile (telecom)', 'Chainlink', 'Google/Oracle', 'Dune Analytics', 'Pyth Oracle', 'Tier-1 stablecoins incoming'],
-      backers: ['Input Output Global (IOG)', 'EMURGO', 'ICO-funded'],
-      founders: 'Charles Hoskinson'
-    },
-    'RLUSD': {
-      utility: 'Enterprise-grade stablecoin on XRPL/Ethereum',
-      adoption: 'Launched 2025, used in Ripple Payments, MiCA-compliant',
-      partnerships: ['SBI VC Trade (Japan)', 'Uphold/Bitstamp/Bitso', 'MoonPay/Independent Reserve', 'CoinMENA/Bullish', 'BNY Mellon', 'Mastercard/WebBank/Gemini'],
-      backers: ['Fortress', 'Citadel affiliates', 'Pantera', 'Galaxy Digital'],
-      founders: 'Ripple Labs (company-created stablecoin; key figures Brad Garlinghouse, Chris Larsen)'
+      utility: 'Proof-of-stake blockchain for identity, governance, and financial services in emerging markets; peer-reviewed academic approach',
+      adoption: 'Ethiopian government student credential system for 5M+ students, World Mobile telecom connectivity, growing DeFi and stablecoin ecosystem via Chang upgrade',
+      partnerships: ['Ethiopia Ministry of Education (credentials)', 'World Mobile (telecom)', 'Chainlink (oracles)', 'Google/Oracle (cloud)', 'Input Output Global (IOG)', 'EMURGO'],
+      backers: ['Input Output Global (IOG)', 'EMURGO', 'Cardano Foundation', 'ICO community backers'],
+      founders: 'Charles Hoskinson (co-founder of Ethereum; founded IOHK / Input Output Global)'
     },
     'AVAX': {
-      utility: 'Institutional subnets, tokenized assets',
-      adoption: 'Citi/WisdomTree/Deloitte RWAs, Project Guardian',
-      partnerships: ['Citi/WisdomTree/Deloitte', 'JP Morgan Onyx', 'SMBC (stablecoins)', 'Crypto Finance AG', 'SkyBridge', 'Galaxy Digital/Pantera/VanEck'],
-      backers: ['Polychain Capital', 'Andreessen Horowitz', 'Three Arrows Capital', 'Galaxy Digital', 'ParaFi Capital'],
-      founders: 'Emin Gün Sirer (with Maofan Yin and Kevin Sekniqi)'
+      utility: 'Modular Layer-1 with custom subnets for institutional DeFi, tokenized assets, and gaming applications',
+      adoption: 'Citi, WisdomTree, and Deloitte RWA projects, MAS Project Guardian participation, $600M+ DeFi TVL, Evergreen subnet for institutional finance',
+      partnerships: ['Citi/WisdomTree/Deloitte (RWAs)', 'JP Morgan Onyx', 'SMBC (stablecoins)', 'T. Rowe Price', 'SkyBridge Capital', 'AWS (cloud)', 'Galaxy Digital'],
+      backers: ['Polychain Capital', 'Andreessen Horowitz', 'Galaxy Digital', 'Bain Capital Crypto', 'ParaFi Capital'],
+      founders: 'Emin Gün Sirer (with Maofan Yin and Kevin Sekniqi), Cornell University researchers'
     },
-    'NEAR': {
-      utility: 'AI integration, account abstraction, cross-chain',
-      adoption: 'AI + DeFi growth, intents for swaps',
-      partnerships: ['Google Cloud', 'LayerZero', 'THORChain/Everclear', 'Frax Finance', 'Deutsche Telekom (validator)'],
-      backers: ['Andreessen Horowitz', 'Pantera Capital', 'Three Arrows Capital', 'Dragonfly Capital', 'Tiger Global'],
-      founders: 'Illia Polosukhin (with Alexander Skidanov)'
+    'TON': {
+      utility: 'Blockchain integrated natively into Telegram for mass-market payments, mini-apps, and Web3 onboarding for Telegram\'s 900M+ users',
+      adoption: 'Telegram wallet with millions of active users, TON Space wallet, growing DeFi and stablecoin ecosystem, Notcoin viral mini-app with 35M+ players',
+      partnerships: ['Telegram (native integration)', 'Sequoia Capital / Benchmark ($400M raise)', 'Bitget/Kraken/OKX (exchanges)', 'Chainlink (oracles)', 'Tether (USDT on TON)'],
+      backers: ['Sequoia Capital', 'Ribbit Capital', 'Benchmark', 'Pantera Capital', 'Vy Capital'],
+      founders: 'Originally Nikolai Durov and Pavel Durov (Telegram); TON Foundation now community-led after Telegram handover'
     },
-    'ICP': {
-      utility: 'On-chain cloud & decentralized web',
-      adoption: 'Fully on-chain apps (OpenChat/DSCVR)',
-      partnerships: ['Microsoft Azure', 'Google Cloud', 'SWIFT', 'Chain Fusion (Solana/Doge)', 'Caffeine AI partners'],
-      backers: ['Andreessen Horowitz', 'Polychain Capital', 'Multicoin Capital', 'Amino Capital', 'SV Angel'],
-      founders: 'Dominic Williams (DFINITY Foundation)'
-    },
-    'KAS': {
-      utility: 'Ultra-fast DAG payments',
-      adoption: '10 blocks/sec, merchant adoption',
-      partnerships: ['WhiteBIT', 'Tangem/Ledger (wallets)', 'Zealous Swap (DeFi)'],
-      backers: ['Fair-launched', 'Community-driven', 'Limited institutional VC'],
-      founders: 'Yonatan Sompolinsky'
+    'LINK': {
+      utility: 'Decentralized oracle network connecting smart contracts to real-world data, enabling DeFi, RWAs, CCIP cross-chain messaging',
+      adoption: '2,000+ blockchain integrations, SWIFT and DTCC institutional pilots, Cross-Chain Interoperability Protocol (CCIP) powering $1T+ in secured value',
+      partnerships: ['SWIFT (pilot)', 'DTCC (fund tokenization)', 'Mastercard', 'Euroclear', 'Fidelity International', 'Deutsche Börse', 'SBI Group', 'GLEIF', 'ANZ Bank'],
+      backers: ['Fundamental Labs', 'Nirvana Capital', 'Grayscale Chainlink Trust', 'Framework Ventures'],
+      founders: 'Sergey Nazarov (with Steve Ellis); Chainlink Labs'
     },
     'SUI': {
-      utility: 'High-throughput for gaming & DeFi',
-      adoption: 'DeepBook DEX, Mysten Labs backing',
-      partnerships: ['BytePlus', 'ONE Championship', 'SEED', 'Grayscale/21Shares (ETPs)', 'Google Cloud'],
-      backers: ['Andreessen Horowitz', 'FTX Ventures', 'Binance Labs', 'Coinbase Ventures', 'Jump Crypto'],
-      founders: 'Evan Cheng, Sam Blackshear, Adeniyi Abiodun, George Danezis, Kostas Chalkias (Mysten Labs; ex-Diem team)'
-    },
-    'XDC': {
-      utility: 'Enterprise trade finance & payments',
-      adoption: 'TradeFinex/R3 partnerships, USDC native',
-      partnerships: ['SBI Japan', 'Contour (trade finance)', 'VERT Capital', 'SIX Swiss Exchange', 'Ankr'],
-      backers: ['LDA Capital', 'Enterprise-focused', 'Limited public VC'],
-      founders: 'Ritesh Kakkad (with Atul Khekade)'
-    },
-    'ALGO': {
-      utility: 'Institutional & CBDC focus',
-      adoption: 'Italy SIA, Marshall Islands crypto',
-      partnerships: ['Wormhole', 'Google (Agent Payments)', 'ISDA (derivatives)', 'Marshall Islands', 'Paxos/Ondo (RWAs)'],
-      backers: ['Union Square Ventures', 'Pillar VC', 'ICO backers'],
-      founders: 'Silvio Micali'
-    },
-    'XTZ': {
-      utility: 'Self-amending, institutional baking',
-      adoption: 'Societe Generale/Ubisoft, formal verification',
-      partnerships: ['Societe Generale', 'Ubisoft', 'Manchester United', 'Red Bull Racing'],
-      backers: ['Tim Draper', 'Polychain Capital', 'ICO-funded'],
-      founders: 'Arthur Breitman (with Kathleen Breitman)'
+      utility: 'High-performance Layer-1 blockchain optimized for gaming, NFTs, and DeFi using novel object-based Move programming language',
+      adoption: 'DeepBook native DEX, Sui Name Service, growing gaming ecosystem, institutional ETPs from Grayscale and 21Shares, $1B+ DeFi TVL',
+      partnerships: ['Google Cloud (validator)', 'Grayscale (ETP)', '21Shares (ETP)', 'BytePlus', 'ONE Championship', 'Circle (USDC native)'],
+      backers: ['Andreessen Horowitz (a16z)', 'Binance Labs', 'Coinbase Ventures', 'Jump Crypto', 'Franklin Templeton'],
+      founders: 'Evan Cheng, Sam Blackshear, Adeniyi Abiodun, George Danezis, Kostas Chalkias — Mysten Labs (ex-Meta/Diem team)'
     },
     'DOT': {
-      utility: 'Sovereign interoperable chains & parachains',
-      adoption: '100+ connected chains, growing RWA volume, JAM upgrades upcoming',
-      partnerships: ['Moonbeam (EVM)', 'Acala (DeFi)', 'Centrifuge (RWAs)', 'Hydration', 'Mythos'],
-      backers: ['Polychain Capital', 'Web3 Foundation', 'ICO-funded'],
-      founders: 'Gavin Wood (with Robert Habermeier and Peter Czaban)'
+      utility: 'Heterogeneous multi-chain network enabling sovereign parachains to share security and communicate via XCM messaging protocol',
+      adoption: '100+ connected parachains, JAM upgrade enabling smart contracts, RWA tokenization on Centrifuge, growing DeFi ecosystem on Hydration and Moonbeam',
+      partnerships: ['Moonbeam (EVM parachain)', 'Acala (DeFi hub)', 'Centrifuge (RWAs)', 'Hydration (DEX)', 'Mythos (gaming)', 'Bifrost (liquid staking)'],
+      backers: ['Web3 Foundation', 'Polychain Capital', 'Arrington XRP Capital', 'ICO community'],
+      founders: 'Gavin Wood (Ethereum co-founder, invented Solidity); with Robert Habermeier and Peter Czaban — Web3 Foundation'
     },
+    'TRX': {
+      utility: 'High-throughput Layer-1 blockchain primarily used for USDT stablecoin transfers; powers decentralized applications and content platforms',
+      adoption: 'Largest USDT network by volume (billions daily), JustLend DeFi protocol, TRON DAO Reserve backing, Sun.io ecosystem',
+      partnerships: ['Tether (USDT on TRON)', 'Samsung Blockchain', 'Opera Browser', 'BitTorrent (acquired)', 'JustSwap DEX'],
+      backers: ['TRON Foundation', 'Justin Sun personal investment', 'Binance (early supporter)'],
+      founders: 'Justin Sun; TRON Foundation'
+    },
+    'NEAR': {
+      utility: 'AI-native Layer-1 blockchain with account abstraction, chain signatures for multi-chain access, and NEAR AI agent framework',
+      adoption: 'Chain Abstraction enabling access to all chains from one account, growing AI agent ecosystem, NEAR Intents for cross-chain swaps, Deutsche Telekom validator',
+      partnerships: ['Google Cloud (validator/partner)', 'LayerZero (interop)', 'Deutsche Telekom (validator)', 'Frax Finance', 'Binance (launchpad)', 'Nansen Analytics'],
+      backers: ['Andreessen Horowitz (a16z)', 'Pantera Capital', 'Dragonfly Capital', 'Tiger Global', 'Coinbase Ventures'],
+      founders: 'Illia Polosukhin (ex-Google AI researcher) and Alexander Skidanov; NEAR Foundation'
+    },
+    'ICP': {
+      utility: 'Decentralized cloud computing platform running smart contracts at web speed entirely on-chain, hosting dApps without traditional servers',
+      adoption: 'OpenChat and DSCVR social apps fully on-chain, Chain Fusion connecting BTC/ETH/Solana natively, Caffeine AI no-code dApp builder',
+      partnerships: ['DFINITY Foundation', 'Microsoft Azure (integration)', 'Google Cloud', 'SWIFT (pilot)', 'Chain Fusion (BTC/Solana/ETH)'],
+      backers: ['Andreessen Horowitz (a16z)', 'Polychain Capital', 'Multicoin Capital', 'SV Angel', 'Amino Capital'],
+      founders: 'Dominic Williams; DFINITY Foundation (Swiss non-profit)'
+    },
+    'KAS': {
+      utility: 'Ultra-fast proof-of-work DAG (Directed Acyclic Graph) blockchain achieving 10 blocks per second for near-instant payments',
+      adoption: 'Growing merchant adoption, Kaspa DeFi ecosystem emerging, Tangem and Ledger hardware wallet support, fair-launch community following',
+      partnerships: ['WhiteBIT (exchange)', 'Tangem (hardware wallet)', 'Ledger (wallet support)', 'KuCoin/Binance (listings)', 'Zealous Swap (DeFi)'],
+      backers: ['Fair-launched — no VC funding, no ICO, no premine; community-driven'],
+      founders: 'Yonatan Sompolinsky (Hebrew University researcher who proposed the GHOSTDAG protocol)'
+    },
+    'XLM': {
+      utility: 'Low-cost global payments and remittances with sub-second finality; CBDC infrastructure and cross-border stablecoin rails',
+      adoption: 'MoneyGram On-Ramp integration, Circle USDC issued on Stellar, Ukraine CBDC pilot, Franklin Templeton money market fund on Stellar',
+      partnerships: ['MoneyGram (on-ramp)', 'Circle (USDC issuer)', 'Mastercard', 'Franklin Templeton (BENJI fund)', 'Ukraine CBDC pilot', 'IBM', 'Wormhole (bridge)'],
+      backers: ['Stripe (seed investor)', 'Circle', 'Stellar Development Foundation'],
+      founders: 'Jed McCaleb (Ripple co-founder) with Joyce Kim; Stellar Development Foundation'
+    },
+    'HBAR': {
+      utility: 'Enterprise-grade distributed ledger for tokenization, micropayments, and supply chain using hashgraph consensus (aBFT)',
+      adoption: 'Governing Council includes Google, Boeing, IBM; 20B+ lifetime transactions, abrdn RWA tokenization, NATO DIANA dual-use program 2026',
+      partnerships: ['Google', 'Boeing', 'IBM', 'abrdn (RWAs)', 'Standard Bank', 'Nairobi Securities Exchange', 'NATO DIANA', 'ServiceNow', 'Ubisoft'],
+      backers: ['Google', 'Boeing', 'IBM', 'Deutsche Telekom', 'abrdn', 'LG Electronics'],
+      founders: 'Dr. Leemon Baird (inventor of hashgraph) and Mance Harmon; Hedera Governing Council'
+    },
+    'VET': {
+      utility: 'Enterprise blockchain for supply chain traceability, carbon credit management, and product lifecycle management with dual-token model',
+      adoption: 'Walmart China food tracking, PwC/DNV supply chain audits, BMW carbon footprint tracking, DNV MyStory product authentication',
+      partnerships: ['Walmart China', 'PwC', 'DNV (Det Norske Veritas)', 'BMW', 'DHL', 'Franklin Templeton/BitGo', 'Boston Consulting Group', 'Crypto.com'],
+      backers: ['PwC', 'DNV', 'Breyer Capital', 'Enterprise-focused investors'],
+      founders: 'Sunny Lu (former CIO of Louis Vuitton China); VeChain Foundation'
+    },
+    'POL': {
+      utility: 'Ethereum scaling via AggLayer — aggregates ZK-proof L2 chains into unified liquidity, enabling near-zero-cost Ethereum transactions',
+      adoption: 'Starbucks Odyssey NFT rewards, Nike .Swoosh, JPMorgan Onyx, Mastercard Polygon ID, 50,000+ dApps deployed',
+      partnerships: ['Starbucks (Odyssey)', 'Nike (.Swoosh)', 'Adidas', 'JPMorgan Onyx', 'Mastercard (Polygon ID)', 'Stripe', 'Reliance Jio', 'Reddit (collectible avatars)'],
+      backers: ['Sequoia Capital India', 'SoftBank Vision Fund', 'Tiger Global', 'Andreessen Horowitz', 'Binance Labs', 'Mark Cuban'],
+      founders: 'Jaynti Kanani, Sandeep Nailwal, Anurag Arjun, Mihailo Bjelic; Polygon Labs'
+    },
+    'QNT': {
+      utility: 'Enterprise blockchain interoperability via Overledger — connects legacy financial systems, banks, and multiple blockchains without a central hub',
+      adoption: 'SWIFT BIS Innovation Office projects, LACChain CBDC infrastructure, UK government digital bond pilots, ECB digital euro consultation',
+      partnerships: ['SWIFT/BIS (innovation projects)', 'ECB (digital euro)', 'Oracle', 'SIA (SWIFT messaging)', 'UK digital bonds', 'LACChain (LatAm CBDC)'],
+      backers: ['Enterprise-funded; limited public VC disclosure'],
+      founders: 'Gilbert Verdian (cybersecurity executive, former UK NHS and Australian government)'
+    },
+    'ALGO': {
+      utility: 'Pure proof-of-stake blockchain for CBDCs, institutional finance, and digital identity with sub-4-second finality and carbon-negative status',
+      adoption: 'Marshall Islands national digital currency (SOV), SIA Italian payments infrastructure, Lofty.ai real estate tokenization, ISDA derivatives pilot',
+      partnerships: ['Marshall Islands (SOV currency)', 'SIA (payments)', 'ISDA (derivatives)', 'Wormhole (bridge)', 'Google (Agent Payments)', 'Paxos/Ondo (RWAs)', 'FIFA (NFTs)'],
+      backers: ['Union Square Ventures', 'Pillar VC', 'Arrington XRP Capital', 'ICO backers', 'Algorand Foundation'],
+      founders: 'Silvio Micali (MIT professor, Turing Award winner for cryptography)'
+    },
+    'XTZ': {
+      utility: 'Self-amending proof-of-stake blockchain with on-chain governance; widely used for institutional NFTs and formal verification of smart contracts',
+      adoption: 'Societe Generale digital bond issuance, Ubisoft NFT collectibles, Manchester United and Red Bull Racing partnerships, ArtBasel art tokenization',
+      partnerships: ['Societe Generale (bond issuance)', 'Ubisoft (NFTs)', 'Manchester United', 'Red Bull Racing', 'ArtBasel', 'Interpop', 'McLaren Racing'],
+      backers: ['Tim Draper', 'Polychain Capital', 'Tezos Foundation (ICO $232M)', 'Animoca Brands'],
+      founders: 'Arthur Breitman and Kathleen Breitman; Tezos Foundation (Swiss)'
+    },
+    'XDC': {
+      utility: 'Hybrid enterprise blockchain optimized for trade finance, supply chain, and cross-border payments; interoperable with ISO 20022 financial messaging',
+      adoption: 'TradeFinex trade finance platform, R3 Corda integration, USDC native on XDC, SIX Swiss Exchange integration for tokenized securities',
+      partnerships: ['SBI Japan', 'R3 Corda', 'Contour (trade finance)', 'VERT Capital', 'SIX Swiss Exchange', 'Ankr', 'Globacap'],
+      backers: ['LDA Capital', 'XinFin enterprise investors', 'XDC Foundation'],
+      founders: 'Ritesh Kakkad and Atul Khekade; XinFin Network / XDC Foundation'
+    },
+    'ATOM': {
+      utility: 'Hub-and-spoke interoperability layer connecting sovereign blockchains via IBC protocol; ATOM secures the Cosmos Hub',
+      adoption: 'Noble USDC (multi-billion USDC on IBC), dYdX v4 live on Cosmos, 100+ IBC-connected chains, Osmosis leading IBC DEX',
+      partnerships: ['Noble (USDC on IBC)', 'dYdX v4 (derivatives)', 'Osmosis (DEX)', 'Axelar (bridge)', 'Stride (liquid staking)', 'Interchain Foundation'],
+      backers: ['Interchain Foundation', 'All In Bits (Tendermint)', 'ICO community', 'Paradigm (Osmosis)'],
+      founders: 'Jae Kwon (inventor of Tendermint BFT) and Ethan Buchman; Interchain Foundation'
+    },
+    // ── AI COINS ──
     'TAO': {
-      utility: 'Decentralized machine-learning',
-      adoption: 'Fast-growing AI sector, subnet revenue',
-      partnerships: ['Chainlink (interoperability)', 'General TAO Ventures', 'Subnet projects (AIT Protocol)'],
-      backers: ['Polychain Capital', 'Digital Currency Group', 'dao5', 'Pantera Capital', 'Foundry'],
-      founders: 'Jacob Robert Steeves (with Ala Shaabana)'
+      utility: 'Decentralized marketplace for machine learning models — contributors train and serve AI across 128 specialized subnets and earn TAO based on output quality',
+      adoption: 'First physically-backed TAO ETP on SIX Swiss Exchange (Deutsche Digital Assets/Safello, Nov 2025), Bitcoin-style halving in Dec 2025, 9.6M TAO in circulation, Grayscale Form 10 filing for Bittensor Trust',
+      partnerships: ['Grayscale (Trust filing)', 'Deutsche Digital Assets (ETP)', 'Safello (ETP)', 'SIX Swiss Exchange', 'Chainlink (interoperability)', 'General TAO Ventures'],
+      backers: ['Polychain Capital ($200M+)', 'Digital Currency Group', 'dao5', 'Pantera Capital', 'Foundry Digital'],
+      founders: 'Jacob Robert Steeves (ex-Google engineer) and Ala Shaabana (ex-University of Toronto); OpenTensor Foundation'
+    },
+    'RNDR': {
+      utility: 'Decentralized GPU rendering and AI compute marketplace connecting creators needing processing power with idle GPU operators worldwide',
+      adoption: 'Major film studios and VFX houses using distributed rendering, expansion into AI inference workloads, Render Compute (Dispersed) subnet launched mid-2025, available on Coinbase in Germany (Oct 2025)',
+      partnerships: ['NVIDIA (hardware integration)', 'Apple (Metal rendering support)', 'Otoy (founding company)', 'Solana (network migration)', 'Coinbase (listing)', 'Grayscale'],
+      backers: ['Multicoin Capital', 'Alameda Research (historic)', 'Animoca Brands', 'Andreessen Horowitz', 'Coinbase Ventures'],
+      founders: 'Jules Urbach (CEO of OTOY Inc.) and Brendan Eich (creator of JavaScript, co-founder of Mozilla); Render Foundation'
+    },
+    'FET': {
+      utility: 'Decentralized AI platform for deploying autonomous economic agents (AEAs) that negotiate, transact, and execute tasks in supply chain, energy, mobility, and DeFi',
+      adoption: 'Merged into Artificial Superintelligence Alliance (ASI) with SingularityNET and Ocean Protocol, autonomous parking systems in Cambridge, energy-grid optimization deployments, DeltaV AI agent platform',
+      partnerships: ['SingularityNET (ASI Alliance)', 'Ocean Protocol (ASI Alliance)', 'Bosch (IoT agents)', 'Deutsche Telekom', 'Datarella', 'BMW (mobility agents)'],
+      backers: ['Binance Launchpad (IEO 2019)', 'Outlier Ventures', 'Lemniscap', 'Hashed', 'DFG (Digital Finance Group)'],
+      founders: 'Humayun Sheikh (CEO), Toby Simpson (COO), Thomas Hain (CTO); Fetch.ai Ltd (Cambridge, UK)'
+    },
+    'WLD': {
+      utility: 'Global proof-of-humanity identity protocol using iris-scanning orbs to issue World IDs, enabling Sybil-resistant access to AI services and UBI distributions',
+      adoption: '10M+ verified users across 160+ countries, World ID integrated into Minecraft, Reddit, Shopify, and OpenAI tools; pilot universal basic income distributions in multiple countries',
+      partnerships: ['OpenAI (co-founder Sam Altman)', 'Shopify (World ID merchant verification)', 'Reddit (identity)', 'Minecraft', 'Okta', 'Match Group'],
+      backers: ['Andreessen Horowitz (a16z)', 'Khosla Ventures', 'Reid Hoffman', 'Sam Altman (OpenAI CEO)', 'Tiger Global', 'Coinbase Ventures'],
+      founders: 'Sam Altman (OpenAI CEO) and Alex Blania; Tools for Humanity'
+    },
+    'GRT': {
+      utility: 'Decentralized indexing protocol for querying blockchain data — the "Google of blockchains" enabling fast GraphQL queries for dApps',
+      adoption: '70B+ queries served monthly across Ethereum, Polygon, Arbitrum, Solana and 40+ networks; used by Uniswap, Aave, Compound, and hundreds of major DeFi protocols',
+      partnerships: ['Uniswap (primary user)', 'Aave', 'Compound', 'Decentraland', 'Gnosis', 'Livepeer', 'Balancer', 'Synthetix'],
+      backers: ['Multicoin Capital', 'ParaFi Capital', 'Coinbase Ventures', 'Digital Currency Group', 'Framework Ventures'],
+      founders: 'Yaniv Tal, Jannis Pohlmann, Brandon Ramirez; Edge & Node'
+    },
+    'FIL': {
+      utility: 'Decentralized storage network where users rent spare hard drive capacity in exchange for FIL tokens — a decentralized alternative to AWS S3',
+      adoption: 'Over 10 exabytes of storage capacity onboarded, partnerships with Internet Archive and USC Shoah Foundation for data preservation, used by NFT platforms and Web3 projects',
+      partnerships: ['Internet Archive (data preservation)', 'USC Shoah Foundation', 'Protocol Labs', 'Filecoin Foundation', 'Textile', 'Pinata', 'Estuary'],
+      backers: ['Andreessen Horowitz (a16z)', 'Sequoia Capital', 'Union Square Ventures', 'Y Combinator', 'Winklevoss Capital'],
+      founders: 'Juan Benet; Protocol Labs (also created IPFS)'
+    },
+    'INJ': {
+      utility: 'Layer-1 blockchain purpose-built for decentralized finance — orderbook DEX infrastructure, derivatives, prediction markets, and on-chain RWAs',
+      adoption: 'Helix decentralized derivatives exchange, growing institutional RWA tokenization, $500M+ TVL, cross-chain DeFi hub connecting Ethereum, Cosmos, and Solana',
+      partnerships: ['Helix Exchange (native DEX)', 'Google Cloud', 'Wormhole', 'LayerZero', 'Jump Crypto', 'Pantera Capital', 'Binance Labs'],
+      backers: ['Binance Labs', 'Pantera Capital', 'Jump Crypto', 'Mark Cuban', 'Hashed'],
+      founders: 'Eric Chen and Albert Chon; Injective Labs'
+    },
+    'VIRTUAL': {
+      utility: 'Launchpad and tokenization protocol for AI agents — enables creation, deployment, and monetization of autonomous AI agents on Base/Ethereum',
+      adoption: 'Largest AI agent launchpad by TVL, hundreds of AI agents tokenized including AIXBT (crypto analyst) and Luna, 100M+ agent interactions monthly',
+      partnerships: ['Coinbase Base (native L2)', 'Binance (listing)', 'OKX', 'ai16z (ecosystem)', 'ElizaOS framework'],
+      backers: ['Pantera Capital', 'Hack VC', 'Coinbase Ventures', 'Spartan Group', 'Mechanism Capital'],
+      founders: 'Jansen Teng and team; Virtuals Protocol'
+    },
+    'RENDER': {
+      utility: 'Decentralized GPU rendering and AI compute marketplace — same as RNDR (rebranded to RENDER on Solana migration)',
+      adoption: 'Distributed 3D rendering for film/VFX studios, AI inference subnet (Dispersed) launched 2025, deep integration with creative software tools',
+      partnerships: ['NVIDIA', 'Apple', 'Otoy (founding company)', 'Solana Foundation', 'Coinbase'],
+      backers: ['Multicoin Capital', 'Animoca Brands', 'Andreessen Horowitz', 'Coinbase Ventures'],
+      founders: 'Jules Urbach (OTOY CEO) and Brendan Eich (JavaScript creator, Mozilla co-founder)'
+    },
+    'AIOZ': {
+      utility: 'Decentralized AI and media streaming network — distributed AI training, video transcoding, and CDN using idle computing resources worldwide',
+      adoption: 'AI training workloads for enterprises, video streaming CDN used by media companies, growing node network with thousands of contributors globally',
+      partnerships: ['AIOZ Foundation', 'Binance (listing)', 'Bybit', 'Gate.io'],
+      backers: ['AIOZ Foundation', 'Community-funded'],
+      founders: 'AIOZ Network team; Singapore-based'
+    },
+    // ── MEME COINS ──
+    'SHIB': {
+      utility: 'Ethereum-based meme token with expanding ecosystem including ShibaSwap DEX, Shibarium Layer-2 network, and Shib: The Metaverse virtual world',
+      adoption: 'Listed on Robinhood and all major exchanges, 1M+ wallet holders, Shibarium processing millions of transactions, active token burn mechanism reducing supply',
+      partnerships: ['Welly\'s (fast food chain)', 'Shiba Inu x Margaritaville (metaverse)', 'Unification (Shibarium validators)', 'AMC Theatres', 'Binance (listing)'],
+      backers: ['Community-driven; no institutional VC', 'Vitalik Buterin received 50% of supply (donated/burned most)'],
+      founders: 'Ryoshi (anonymous; identity unknown); Shiba Inu community-led'
+    },
+    'PEPE': {
+      utility: 'Pure community-driven meme coin based on the iconic "Pepe the Frog" internet character; no formal roadmap or utility beyond speculative value and culture',
+      adoption: 'Reached $1B+ market cap within weeks of launch (2023), listed on Binance, OKX, and all major exchanges, billions in daily trading volume during peaks',
+      partnerships: ['Binance (listing)', 'OKX', 'Coinbase', 'Community-organized promotions'],
+      backers: ['No institutional backers; 100% community-driven'],
+      founders: 'Anonymous team launched in April 2023; inspired by Matt Furie\'s "Pepe the Frog" character (2005)'
+    },
+    'BONK': {
+      utility: 'First major Solana-native meme coin; community utility token used across 350+ DeFi, NFT, and gaming integrations on Solana',
+      adoption: 'Airdropped to Solana NFT holders and traders Dec 2022 reviving ecosystem, BonkDAO governs initiatives, BURNmas event burned 1.69T BONK (Dec 2024), deep DEX liquidity on Raydium and Orca',
+      partnerships: ['Solana Foundation (ecosystem support)', 'Raydium DEX', 'Orca DEX', 'Jupiter Aggregator', 'BonkBot (Telegram trading bot)', 'Coinbase (listing)'],
+      backers: ['Community airdrop — no VC funding or presale; fair launch'],
+      founders: 'Anonymous core contributors; BonkDAO community governance'
+    },
+    'WIF': {
+      utility: 'Pure Solana-native meme coin featuring a Shiba Inu dog with a hat; no utility claims — value driven entirely by community and meme culture',
+      adoption: 'Listed on Binance, Coinbase, and all major exchanges (2024), reached $4.83 ATH (March 2024), consistently top Solana DEX volume, Vegas sphere advertisement funded by community',
+      partnerships: ['Binance (March 2024 listing)', 'Coinbase', 'Las Vegas Sphere (community-funded ad campaign)'],
+      backers: ['No institutional backers; 100% community-driven'],
+      founders: 'Anonymous developer launched November 2023 on Solana; no official team or roadmap'
+    },
+    'FLOKI': {
+      utility: 'Meme coin with expanding DeFi ecosystem including Valhalla P2E metaverse game, FlokiFi Locker, and TokenFi token creation platform',
+      adoption: 'Aggressive global marketing campaign (London buses, Singapore MRT ads), Valhalla metaverse game beta live, hundreds of thousands of community members, TokenFi enabling no-code token launches',
+      partnerships: ['Binance (listing)', 'OKX', 'Bitmain (mining support)', 'Various sports sponsorships', 'TokenFi (sister project)'],
+      backers: ['Community-driven', 'Elon Musk dog name inspiration drove initial viral growth'],
+      founders: 'FLOKI core team (pseudonymous); named after Elon Musk\'s Shiba Inu dog'
+    },
+    'TRUMP': {
+      utility: 'Political meme coin launched by Donald Trump; official merchandise and community token with no formal utility infrastructure',
+      adoption: 'Launched January 2025 days before Trump inauguration; briefly reached $70+ price, $12B+ market cap at peak, listed on major exchanges immediately',
+      partnerships: ['Official Trump team launch', 'Coinbase', 'Binance', 'Major centralized exchanges'],
+      backers: ['Trump Organization affiliated launch', 'Retail community speculation'],
+      founders: 'Donald J. Trump and associated team; launched via trump.meme official website'
+    },
+  };
     },
     'ATOM': {
       utility: 'IBC ecosystem for interoperable chains',
@@ -351,7 +494,8 @@ export default function CryptoAggregator() {
           const retryData = await retryResponse.json();
           if (Array.isArray(retryData) && retryData.length > 0) {
             let filteredData = retryData;
-            if (category === 'ai') filteredData = retryData.filter(coin => coin.id !== 'chainlink');
+            if (category === 'ai') filteredData = retryData.filter(coin => coin.id !== 'chainlink' && !STABLECOIN_IDS.has(coin.id));
+            else if (category === 'all' || category === 'meme') filteredData = retryData.filter(coin => !STABLECOIN_IDS.has(coin.id));
             setCryptoPrices(filteredData);
             localStorage.setItem(`kryptocurrent_prices_${category}`, JSON.stringify(filteredData));
             localStorage.setItem(`kryptocurrent_prices_${category}_timestamp`, Date.now().toString());
@@ -376,7 +520,9 @@ export default function CryptoAggregator() {
       if (Array.isArray(data) && data.length > 0) {
         let filteredData = data;
         if (category === 'ai') {
-          filteredData = data.filter(coin => coin.id !== 'chainlink');
+          filteredData = data.filter(coin => coin.id !== 'chainlink' && !STABLECOIN_IDS.has(coin.id));
+        } else if (category === 'meme') {
+          filteredData = data.filter(coin => !STABLECOIN_IDS.has(coin.id));
         } else if (category === 'all') {
           // Remove stablecoins and wrapped tokens from market cap list
           filteredData = data.filter(coin => !STABLECOIN_IDS.has(coin.id));
@@ -495,21 +641,35 @@ export default function CryptoAggregator() {
     }
   };
 
-  const fetchChartData = async (coinId, days = '7') => {
+  const fetchChartData = async (coinId, timeframe = '7d') => {
     setChartLoading(true);
     try {
-      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+      // Map timeframe key to CoinGecko params
+      const params = {
+        '1h':  { days: '1',    interval: 'minutely' },
+        '1d':  { days: '1',    interval: 'hourly'   },
+        '1w':  { days: '7',    interval: 'daily'    },
+        '1m':  { days: '30',   interval: 'daily'    },
+        '1y':  { days: '365',  interval: 'daily'    },
+        '5y':  { days: '1825', interval: 'weekly'   },
+      };
+      const { days, interval } = params[timeframe] || params['1w'];
+      const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}${interval !== 'daily' ? `&interval=${interval}` : ''}`;
+      const response = await fetch(url);
       const data = await response.json();
-      const formattedData = data.prices.map(([timestamp, price]) => ({
-        time: days === '1'
-          ? new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          : new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        price: price
-      }));
+      const formattedData = data.prices.map(([timestamp, price]) => {
+        const d = new Date(timestamp);
+        let label;
+        if (timeframe === '1h') label = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        else if (timeframe === '1d') label = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        else if (timeframe === '5y') label = d.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
+        else label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return { time: label, price };
+      });
       setChartData(formattedData);
-      setChartLoading(false);
     } catch (error) {
       console.error('Error fetching chart data:', error);
+    } finally {
       setChartLoading(false);
     }
   };
@@ -517,8 +677,10 @@ export default function CryptoAggregator() {
   const openChart = async (crypto, index) => {
     setSelectedCrypto(crypto);
     setSelectedCryptoIndex(index ?? null);
-    setChartTimeframe('7');
-    fetchChartData(crypto.id, '7');
+    setChartTimeframe('1w');
+    setSwipeOffset(0);
+    setSwipeExiting(0);
+    fetchChartData(crypto.id, '1w');
     try {
       const response = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto.id}/market_chart?vs_currency=usd&days=30&interval=daily`);
       if (response.ok) {
@@ -530,18 +692,16 @@ export default function CryptoAggregator() {
     }
   };
 
-  const navigateCrypto = (direction) => {
-    if (selectedCryptoIndex === null) return;
-    const list = priceCategory === 'stable' ? stablePrices : displayedPrices;
-    const newIndex = selectedCryptoIndex + direction;
-    if (newIndex < 0 || newIndex >= list.length) return;
-    openChart(list[newIndex], newIndex);
+  const changeChartTimeframe = (tf) => {
+    setChartTimeframe(tf);
+    fetchChartData(selectedCrypto.id, tf);
   };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     currentSwipeX.current = 0;
     setIsSwiping(true);
+    setSwipeExiting(0);
   };
   const handleTouchMove = (e) => {
     if (touchStartX.current === null) return;
@@ -552,15 +712,29 @@ export default function CryptoAggregator() {
   const handleTouchEnd = () => {
     const diff = currentSwipeX.current;
     setIsSwiping(false);
-    setSwipeOffset(0);
     touchStartX.current = null;
     currentSwipeX.current = 0;
-    if (Math.abs(diff) > 60) navigateCrypto(diff < 0 ? 1 : -1);
+    if (Math.abs(diff) > 60) {
+      const direction = diff < 0 ? 1 : -1;
+      const screenWidth = window.innerWidth;
+      // Animate card flying off screen
+      setSwipeExiting(diff < 0 ? -1 : 1);
+      setSwipeOffset(diff < 0 ? -screenWidth : screenWidth);
+      setTimeout(() => {
+        navigateCrypto(direction);
+      }, 280);
+    } else {
+      // Spring back to center
+      setSwipeOffset(0);
+    }
   };
 
-  const changeChartTimeframe = (days) => {
-    setChartTimeframe(days);
-    fetchChartData(selectedCrypto.id, days);
+  const navigateCrypto = (direction) => {
+    if (selectedCryptoIndex === null) return;
+    const list = priceCategory === 'stable' ? validStablePrices : displayedPrices;
+    const newIndex = selectedCryptoIndex + direction;
+    if (newIndex < 0 || newIndex >= list.length) return;
+    openChart(list[newIndex], newIndex);
   };
 
   const closeChart = () => {
@@ -765,13 +939,15 @@ export default function CryptoAggregator() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{ overflow: 'hidden' }}
         >
           <div
             className="bg-white rounded-2xl w-full max-w-lg max-h-[93vh] overflow-y-auto relative shadow-2xl"
             style={{
               transform: `translateX(${swipeOffset}px)`,
-              transition: isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
+              transition: isSwiping ? 'none' : 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)',
               willChange: 'transform',
+              touchAction: 'pan-y',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -819,13 +995,20 @@ export default function CryptoAggregator() {
 
               {/* ── Chart timeframe buttons ── */}
               <div className="flex gap-1.5 mb-3 justify-center">
-                {['1', '7', '30', '90', '365'].map((days) => (
+                {[
+                  { key: '1h', label: '1H' },
+                  { key: '1d', label: '1D' },
+                  { key: '1w', label: '1W' },
+                  { key: '1m', label: '1M' },
+                  { key: '1y', label: '1Y' },
+                  { key: '5y', label: '5Y' },
+                ].map(({ key, label }) => (
                   <button
-                    key={days}
-                    onClick={() => changeChartTimeframe(days)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition ${chartTimeframe === days ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    key={key}
+                    onClick={() => changeChartTimeframe(key)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition ${chartTimeframe === key ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   >
-                    {days === '1' ? '24H' : days === '7' ? '7D' : days === '30' ? '30D' : days === '90' ? '90D' : '1Y'}
+                    {label}
                   </button>
                 ))}
               </div>
