@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { TrendingUp, TrendingDown, RefreshCw, X, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { TrendingUp, TrendingDown, RefreshCw, X, Search, ChevronDown, ChevronLeft, ChevronRight, Plus, Trash2, GripVertical, Settings, LogOut, Mail, Star } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Known stablecoin / wrapped / yield-bearing token IDs — filtered from all non-stable views
@@ -71,9 +71,21 @@ export default function CryptoAggregator() {
   const [isSearching, setIsSearching] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [swipeExiting, setSwipeExiting] = useState(0); // -1 = exit left, 1 = exit right, 0 = none
+  const [swipeExiting, setSwipeExiting] = useState(0);
   const touchStartX = useRef(null);
   const currentSwipeX = useRef(0);
+
+  // ── Kurated / Auth state ──
+  const [user, setUser] = useState(null); // { email }
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [kuratedCoins, setKuratedCoins] = useState([]); // array of coin ids in order
+  const [kuratedDisplayCount, setKuratedDisplayCount] = useState(8);
+  const [showKuratedPicker, setShowKuratedPicker] = useState(false);
+  const [kuratedPickerSearch, setKuratedPickerSearch] = useState('');
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const dragItemIndex = useRef(null);
 
   const pricesRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -400,6 +412,83 @@ export default function CryptoAggregator() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // ── Load persisted auth + kurated preferences ──
+  useEffect(() => {
+    const savedUser = localStorage.getItem('kc_user');
+    if (savedUser) {
+      const u = JSON.parse(savedUser);
+      setUser(u);
+      // Logged-in users land on Kurated
+      setPriceCategory('kurated');
+    }
+    const savedCoins = localStorage.getItem('kc_kurated_coins');
+    if (savedCoins) setKuratedCoins(JSON.parse(savedCoins));
+    const savedCount = localStorage.getItem('kc_kurated_count');
+    if (savedCount) setKuratedDisplayCount(Number(savedCount));
+  }, []);
+
+  // Persist kurated coins whenever they change
+  useEffect(() => {
+    if (kuratedCoins.length > 0) {
+      localStorage.setItem('kc_kurated_coins', JSON.stringify(kuratedCoins));
+    }
+  }, [kuratedCoins]);
+
+  // Persist display count
+  useEffect(() => {
+    localStorage.setItem('kc_kurated_count', String(kuratedDisplayCount));
+  }, [kuratedDisplayCount]);
+
+  const handleLogin = () => {
+    const email = authEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setAuthError('Please enter a valid email address.');
+      return;
+    }
+    const u = { email };
+    localStorage.setItem('kc_user', JSON.stringify(u));
+    setUser(u);
+    setShowAuthModal(false);
+    setAuthEmail('');
+    setAuthError('');
+    setPriceCategory('kurated');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('kc_user');
+    setUser(null);
+    setPriceCategory('all');
+  };
+
+  // ── Kurated coin management ──
+  const addToKurated = (coinId) => {
+    if (kuratedCoins.includes(coinId)) return;
+    setKuratedCoins(prev => [...prev, coinId]);
+  };
+
+  const removeFromKurated = (coinId) => {
+    setKuratedCoins(prev => prev.filter(id => id !== coinId));
+  };
+
+  // Drag-to-reorder handlers
+  const onDragStart = (index) => { dragItemIndex.current = index; };
+  const onDragEnter = (index) => { setDragOverIndex(index); };
+  const onDragEnd = () => {
+    if (dragItemIndex.current === null || dragOverIndex === null) return;
+    const reordered = [...kuratedCoins];
+    const [moved] = reordered.splice(dragItemIndex.current, 1);
+    reordered.splice(dragOverIndex, 0, moved);
+    setKuratedCoins(reordered);
+    dragItemIndex.current = null;
+    setDragOverIndex(null);
+  };
+
+  // Touch drag for mobile reorder
+  const touchDragStart = useRef(null);
+  const onTouchDragStart = (index, e) => {
+    touchDragStart.current = { index, startY: e.touches[0].clientY };
+  };
 
 
   useEffect(() => {
@@ -777,13 +866,36 @@ export default function CryptoAggregator() {
 
   const validStablePrices = stablePrices.filter(c => c && c.id && c.symbol && c.current_price != null);
 
+  // All available coins pool (for picker + kurated display)
+  const allCoinsPool = [...validCryptoPrices, ...validStablePrices]
+    .filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+
+  // Kurated: get full coin objects for the saved IDs, in saved order
+  const kuratedCoinObjects = kuratedCoins
+    .map(id => allCoinsPool.find(c => c.id === id))
+    .filter(Boolean)
+    .slice(0, kuratedDisplayCount);
+
+  // Grid columns based on display count
+  const kuratedGridClass = (count) => {
+    if (count === 1)  return 'grid-cols-1';
+    if (count === 4)  return 'grid-cols-2 md:grid-cols-4';
+    if (count === 8)  return 'grid-cols-2 md:grid-cols-4 lg:grid-cols-8';
+    if (count === 12) return 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6';
+    if (count === 16) return 'grid-cols-4 md:grid-cols-4 lg:grid-cols-8';
+    if (count === 20) return 'grid-cols-4 md:grid-cols-5 lg:grid-cols-10';
+    if (count === 40) return 'grid-cols-4 md:grid-cols-6 lg:grid-cols-10';
+    return 'grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10'; // 300
+  };
+
   // Lazy-loaded slice — starts at 96, grows by 48 as user scrolls
   const displayedPrices = validCryptoPrices.slice(0, visibleCount);
   const hasMore = visibleCount < validCryptoPrices.length;
 
   const activeCategory = priceCategory;
   const dropdownLabel = {
-    all: 'Market Cap', utility: 'Utility Coins', ai: 'AI Coins', meme: 'Meme Coins', stable: 'Stable Coins'
+    kurated: 'Kurated', all: 'Market Cap', utility: 'Utility Coins',
+    ai: 'AI Coins', meme: 'Meme Coins', stable: 'Stable Coins'
   }[activeCategory] || 'Market Cap';
 
   return (
@@ -791,8 +903,31 @@ export default function CryptoAggregator() {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4">
         <div className="bg-[#ffc93c] py-2">
-          <div className="max-w-xs mx-auto px-4">
-            <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full h-10 object-contain" />
+          <div className="flex items-center justify-between px-2">
+            <div className="flex-1" />
+            <div className="max-w-sm w-full mx-auto">
+              <img src="/logo.png?v=2" alt="Kryptocurrent Logo" className="w-full h-14 object-contain" />
+            </div>
+            <div className="flex-1 flex justify-end">
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 px-2 py-1 bg-black/20 hover:bg-black/30 rounded-lg text-black text-xs font-semibold transition"
+                  title={`Logged in as ${user.email}`}
+                >
+                  <LogOut size={13} />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="flex items-center gap-1 px-2 py-1 bg-black/20 hover:bg-black/30 rounded-lg text-black text-xs font-semibold transition"
+                >
+                  <Mail size={13} />
+                  <span className="hidden sm:inline">Login</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -814,6 +949,7 @@ export default function CryptoAggregator() {
               {dropdownOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl min-w-[150px]" style={{ zIndex: 9999 }}>
                   {[
+                    ...(user ? [{ key: 'kurated', label: '⭐ Kurated' }] : []),
                     { key: 'all', label: 'Market Cap' },
                     { key: 'utility', label: 'Utility Coins' },
                     { key: 'ai', label: 'AI Coins' },
@@ -838,9 +974,10 @@ export default function CryptoAggregator() {
               )}
             </div>
 
-            {/* Desktop only: flat buttons for all categories */}
+            {/* Desktop only: flat buttons */}
             <div className="hidden md:flex gap-1.5 flex-shrink-0 flex-wrap">
               {[
+                ...(user ? [{ key: 'kurated', label: '⭐ Kurated' }] : []),
                 { key: 'all', label: 'Market Cap' },
                 { key: 'utility', label: 'Utility Coins' },
                 { key: 'ai', label: 'AI Coins' },
@@ -855,6 +992,14 @@ export default function CryptoAggregator() {
                   {label}
                 </button>
               ))}
+              {!user && (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap bg-slate-700/50 text-[#ffc93c] hover:bg-slate-700 border border-[#ffc93c]/30"
+                >
+                  ⭐ Login for Kurated
+                </button>
+              )}
             </div>
 
             {/* Search */}
@@ -880,6 +1025,78 @@ export default function CryptoAggregator() {
               )}
             </div>
           </div>
+
+          {/* ── Kurated Section ── */}
+          {activeCategory === 'kurated' && user && (
+            <div>
+              {/* Kurated toolbar */}
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="text-sm font-bold text-[#ffc93c]">⭐ {user.email.split('@')[0]}'s Kurated</span>
+                <div className="flex items-center gap-1 ml-auto flex-wrap">
+                  {/* Display count selector */}
+                  <span className="text-xs text-gray-400 mr-1">Show:</span>
+                  {[1, 4, 8, 12, 16, 20, 40, 300].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setKuratedDisplayCount(n)}
+                      className={`px-2 py-1 rounded text-xs font-bold transition ${kuratedDisplayCount === n ? 'bg-[#ffc93c] text-black' : 'bg-slate-700 text-white hover:bg-slate-600'}`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setShowKuratedPicker(true)}
+                    className="flex items-center gap-1 px-3 py-1 bg-[#ffc93c] text-black rounded-lg text-xs font-bold hover:bg-[#ffb700] transition ml-1"
+                  >
+                    <Plus size={12} /> Add Coins
+                  </button>
+                </div>
+              </div>
+
+              {kuratedCoinObjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <Star size={40} className="mx-auto text-[#ffc93c]/30 mb-3" />
+                  <p className="text-gray-400 text-sm mb-3">Your Kurated section is empty.</p>
+                  <button
+                    onClick={() => setShowKuratedPicker(true)}
+                    className="px-4 py-2 bg-[#ffc93c] text-black rounded-lg font-bold text-sm hover:bg-[#ffb700] transition"
+                  >
+                    + Add Coins
+                  </button>
+                </div>
+              ) : (
+                <div className={`grid ${kuratedGridClass(kuratedDisplayCount)} gap-2`}>
+                  {kuratedCoinObjects.map((crypto, i) => (
+                    <div
+                      key={crypto.id}
+                      draggable
+                      onDragStart={() => onDragStart(i)}
+                      onDragEnter={() => onDragEnter(i)}
+                      onDragEnd={onDragEnd}
+                      onDragOver={(e) => e.preventDefault()}
+                      className={`relative ${dragOverIndex === i ? 'opacity-50 scale-95' : ''} transition-all`}
+                    >
+                      <button
+                        onClick={() => removeFromKurated(crypto.id)}
+                        className="absolute top-1 right-1 z-10 w-4 h-4 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center"
+                        title="Remove"
+                      >
+                        <X size={8} className="text-white" />
+                      </button>
+                      <div className="absolute top-1 left-1 z-10 cursor-grab text-gray-500 hover:text-gray-300">
+                        <GripVertical size={12} />
+                      </div>
+                      <KuratedCard
+                        crypto={crypto}
+                        count={kuratedDisplayCount}
+                        onClick={() => openChart(crypto, i)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── Stable Coins section (shown when category = stable, or always on desktop as a separate block) ── */}
           {activeCategory === 'stable' ? (
@@ -1131,6 +1348,105 @@ export default function CryptoAggregator() {
           </div>
         </div>
       )}
+
+      {/* ── Auth Modal ── */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowAuthModal(false)}>
+          <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-extrabold text-black">Create Account</h2>
+                <p className="text-gray-500 text-sm mt-1">Enter your email to get started</p>
+              </div>
+              <button onClick={() => setShowAuthModal(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} className="text-black" /></button>
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={authEmail}
+                onChange={e => { setAuthEmail(e.target.value); setAuthError(''); }}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-black focus:border-[#ffc93c] focus:outline-none transition text-sm"
+                autoFocus
+              />
+              {authError && <p className="text-red-500 text-xs mt-2">{authError}</p>}
+            </div>
+            <button
+              onClick={handleLogin}
+              className="w-full py-3 bg-[#ffc93c] text-black font-extrabold rounded-xl hover:bg-[#ffb700] transition text-sm"
+            >
+              Continue with Email
+            </button>
+            <p className="text-center text-xs text-gray-400 mt-4">No password needed. Your Kurated section is saved to this device.</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Kurated Coin Picker Modal ── */}
+      {showKuratedPicker && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setShowKuratedPicker(false)}>
+          <div className="bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-700" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-700 flex-shrink-0">
+              <div>
+                <h2 className="text-xl font-extrabold text-white">Add Coins to Kurated</h2>
+                <p className="text-gray-400 text-xs mt-0.5">{kuratedCoins.length} coins added · drag cards to reorder</p>
+              </div>
+              <button onClick={() => setShowKuratedPicker(false)} className="p-2 hover:bg-slate-700 rounded-full"><X size={20} className="text-white" /></button>
+            </div>
+            <div className="px-5 py-3 flex-shrink-0">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search coins..."
+                  value={kuratedPickerSearch}
+                  onChange={e => setKuratedPickerSearch(e.target.value)}
+                  className="w-full px-4 py-2 pl-9 bg-slate-800 text-white rounded-xl border border-slate-600 focus:border-[#ffc93c] focus:outline-none text-sm"
+                  autoFocus
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+              </div>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 pb-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {allCoinsPool
+                  .filter(c => {
+                    const q = kuratedPickerSearch.toLowerCase();
+                    return !q || c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q);
+                  })
+                  .map(coin => {
+                    const added = kuratedCoins.includes(coin.id);
+                    return (
+                      <button
+                        key={coin.id}
+                        onClick={() => added ? removeFromKurated(coin.id) : addToKurated(coin.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition text-left ${added ? 'bg-[#ffc93c]/10 border-[#ffc93c]/50 text-[#ffc93c]' : 'bg-slate-800 border-slate-700 text-white hover:border-slate-500'}`}
+                      >
+                        <img src={coin.image} alt={coin.name} className="w-7 h-7 rounded-full flex-shrink-0" loading="lazy" />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-xs truncate">{coin.symbol.toUpperCase()}</div>
+                          <div className="text-xs text-gray-400 truncate">${formatPrice(coin.current_price)}</div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {added ? <X size={12} /> : <Plus size={12} />}
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+            <div className="px-5 pb-5 flex-shrink-0 border-t border-slate-700 pt-3">
+              <button
+                onClick={() => setShowKuratedPicker(false)}
+                className="w-full py-2.5 bg-[#ffc93c] text-black font-extrabold rounded-xl hover:bg-[#ffb700] transition"
+              >
+                Done — {kuratedCoins.length} coins in Kurated
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1151,7 +1467,7 @@ function MobileCard({ crypto, onClick }) {
     >
       <img src={crypto.image} alt={crypto.name} className="w-10 h-10 rounded-full mb-1.5" loading="lazy" />
       <div className="font-extrabold text-base leading-tight group-hover:text-[#ffc93c] transition-colors mb-1">{crypto.symbol.toUpperCase()}</div>
-      <div className="text-lg font-extrabold text-[#ffc93c] mb-0.5 text-center">${formatPrice(crypto.current_price)}</div>
+      <div className="text-lg font-extrabold text-white mb-0.5 text-center">${formatPrice(crypto.current_price)}</div>
       <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
         {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
@@ -1170,7 +1486,6 @@ function DesktopCard({ crypto, onClick }) {
       onClick={onClick}
       className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
     >
-      {/* Logo + ticker row */}
       <div className="flex items-center gap-2 mb-2">
         <img src={crypto.image} alt={crypto.name} className="w-9 h-9 flex-shrink-0 rounded-full" loading="lazy" />
         <div className="min-w-0">
@@ -1178,11 +1493,46 @@ function DesktopCard({ crypto, onClick }) {
           <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
         </div>
       </div>
-      {/* Price — yellow, larger, centered */}
-      <div className="text-lg font-extrabold text-[#ffc93c] text-center mb-1 truncate">${formatPrice(crypto.current_price)}</div>
-      {/* % change — smaller, secondary */}
+      <div className="text-lg font-extrabold text-white text-center mb-1 truncate">${formatPrice(crypto.current_price)}</div>
       <div className={`flex items-center justify-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
         {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+      </div>
+    </div>
+  );
+}
+
+// KuratedCard sizes up/down based on display count
+function KuratedCard({ crypto, count, onClick }) {
+  // Fewer cards = bigger cards = more padding and text
+  const isLarge  = count <= 4;
+  const isMedium = count <= 12 && count > 4;
+
+  return (
+    <div
+      onClick={onClick}
+      className={`group bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#ffc93c]/10 flex flex-col items-center text-center w-full
+        ${isLarge ? 'p-6' : isMedium ? 'p-4' : 'p-2.5'}`}
+    >
+      <img
+        src={crypto.image}
+        alt={crypto.name}
+        className={`rounded-full mb-2 ${isLarge ? 'w-16 h-16' : isMedium ? 'w-12 h-12' : 'w-8 h-8'}`}
+        loading="lazy"
+      />
+      <div className={`font-extrabold group-hover:text-[#ffc93c] transition-colors mb-1 truncate w-full
+        ${isLarge ? 'text-xl' : isMedium ? 'text-base' : 'text-xs'}`}>
+        {crypto.symbol.toUpperCase()}
+      </div>
+      {(isLarge || isMedium) && (
+        <div className={`text-gray-400 truncate w-full mb-1 ${isLarge ? 'text-sm' : 'text-xs'}`}>{crypto.name}</div>
+      )}
+      <div className={`font-extrabold text-white truncate w-full
+        ${isLarge ? 'text-2xl mb-2' : isMedium ? 'text-lg mb-1' : 'text-sm mb-0.5'}`}>
+        ${formatPrice(crypto.current_price)}
+      </div>
+      <div className={`flex items-center justify-center gap-0.5 font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'} ${isLarge ? 'text-base' : 'text-xs'}`}>
+        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={isLarge ? 14 : 9} /> : <TrendingDown size={isLarge ? 14 : 9} />}
         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
       </div>
     </div>
