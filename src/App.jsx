@@ -521,56 +521,56 @@ export default function CryptoAggregator() {
 
         {/* Prices Section */}
         <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl px-4 pt-3 pb-4 mb-4">
-          {/* Category Toggle Buttons and Search */}
-          <div className="flex flex-col md:flex-row md:items-center gap-2 mb-3">
-            <div className="flex flex-wrap gap-1.5">
+          {/* Category Toggle Buttons and Search — all on one line */}
+          <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none">
+            <div className="flex gap-1.5 flex-shrink-0">
               <button
                 onClick={() => { setPriceCategory('all'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'all' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
               >
                 Market Cap
               </button>
               <button
                 onClick={() => { setPriceCategory('utility'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'utility' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
               >
                 Utility Coins
               </button>
               <button
                 onClick={() => { setPriceCategory('ai'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'ai' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'ai' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
               >
                 AI Coins
               </button>
               <button
                 onClick={() => { setPriceCategory('meme'); setSearchQuery(''); setSearchResults([]); }}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${priceCategory === 'meme' ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
               >
                 Meme Coins
               </button>
             </div>
 
             {/* Search Field */}
-            <div className="flex-shrink-0 md:ml-2">
+            <div className="flex-shrink-0 ml-auto">
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search any crypto..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-56 px-4 py-1.5 pl-9 pr-9 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition text-xs"
+                  className="w-32 md:w-48 px-3 py-1.5 pl-8 pr-8 bg-slate-700/50 text-white rounded-lg border border-slate-600 focus:border-[#ffc93c] focus:outline-none focus:ring-2 focus:ring-[#ffc93c]/20 transition text-xs"
                 />
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={15} />
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={13} />
                 {isSearching && (
-                  <RefreshCw className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={15} />
+                  <RefreshCw className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#ffc93c] animate-spin" size={13} />
                 )}
                 {!isSearching && searchQuery && (
                   <button
                     onClick={() => { setSearchQuery(''); setSearchResults([]); setPriceCategory('all'); }}
-                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
                     aria-label="Clear search"
                   >
-                    <X size={15} />
+                    <X size={13} />
                   </button>
                 )}
               </div>
@@ -587,23 +587,18 @@ export default function CryptoAggregator() {
             </div>
           ) : (
             <>
-              {/* Mobile: 3 columns */}
+              {/* Mobile: 3 columns — big logo, ticker, price, % change. No coin name. */}
               <div className="md:hidden">
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-3 gap-2">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40"
+                      className="group bg-slate-700/50 rounded-xl p-2.5 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 flex flex-col items-center text-center"
                     >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <img src={crypto.image} alt={crypto.name} className="w-5 h-5 flex-shrink-0 rounded-full" loading="lazy" />
-                        <div className="min-w-0">
-                          <div className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
-                          <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
-                        </div>
-                      </div>
-                      <div className="text-xs font-bold text-white">
+                      <img src={crypto.image} alt={crypto.name} className="w-10 h-10 rounded-full mb-1.5" loading="lazy" />
+                      <div className="font-bold text-sm group-hover:text-[#ffc93c] transition-colors mb-1">{crypto.symbol.toUpperCase()}</div>
+                      <div className="text-xs font-bold text-white mb-0.5">
                         ${crypto.current_price < 0.001
                           ? crypto.current_price.toFixed(6)
                           : crypto.current_price < 1
@@ -612,7 +607,7 @@ export default function CryptoAggregator() {
                           ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
                           : crypto.current_price.toFixed(2)}
                       </div>
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
                         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
                       </div>
@@ -624,34 +619,38 @@ export default function CryptoAggregator() {
                 </div>}
               </div>
 
-              {/* Desktop: compact cards, max columns */}
+              {/* Desktop: big logo, large ticker, name, price + % on one line */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
+                <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                   {displayedPrices.map((crypto) => (
                     <div
                       key={crypto.id}
                       onClick={() => openChart(crypto)}
-                      className="group bg-slate-700/50 rounded-lg p-2 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
+                      className="group bg-slate-700/50 rounded-xl p-3 hover:bg-slate-700 transition-all duration-200 cursor-pointer border border-transparent hover:border-[#ffc93c]/40 hover:-translate-y-0.5 hover:shadow-md hover:shadow-[#ffc93c]/10"
                     >
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <img src={crypto.image} alt={crypto.name} className="w-6 h-6 flex-shrink-0 rounded-full" loading="lazy" />
+                      {/* Logo + ticker + name */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={crypto.image} alt={crypto.name} className="w-9 h-9 flex-shrink-0 rounded-full" loading="lazy" />
                         <div className="min-w-0">
-                          <div className="font-bold text-xs truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
+                          <div className="font-bold text-sm truncate group-hover:text-[#ffc93c] transition-colors">{crypto.symbol.toUpperCase()}</div>
                           <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
                         </div>
                       </div>
-                      <div className="text-xs font-bold text-white">
-                        ${crypto.current_price < 0.001
-                          ? crypto.current_price.toFixed(6)
-                          : crypto.current_price < 1
-                          ? crypto.current_price.toFixed(4)
-                          : crypto.current_price >= 1000
-                          ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                          : crypto.current_price.toFixed(2)}
-                      </div>
-                      <div className={`flex items-center gap-0.5 text-xs font-semibold mt-0.5 ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-                        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                      {/* Price + % change on one line */}
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs font-bold text-white whitespace-nowrap">
+                          ${crypto.current_price < 0.001
+                            ? crypto.current_price.toFixed(6)
+                            : crypto.current_price < 1
+                            ? crypto.current_price.toFixed(4)
+                            : crypto.current_price >= 1000
+                            ? crypto.current_price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                            : crypto.current_price.toFixed(2)}
+                        </span>
+                        <span className={`flex items-center gap-0.5 text-xs font-semibold whitespace-nowrap ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                        </span>
                       </div>
                     </div>
                   ))}
