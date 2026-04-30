@@ -28,7 +28,10 @@ export default function CryptoAggregator() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
   const touchStartX = useRef(null);
+  const currentSwipeX = useRef(0);
 
   const pricesRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -535,12 +538,24 @@ export default function CryptoAggregator() {
     openChart(list[newIndex], newIndex);
   };
 
-  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e) => {
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    currentSwipeX.current = 0;
+    setIsSwiping(true);
+  };
+  const handleTouchMove = (e) => {
     if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) navigateCrypto(diff > 0 ? 1 : -1);
+    const diff = e.touches[0].clientX - touchStartX.current;
+    currentSwipeX.current = diff;
+    setSwipeOffset(diff);
+  };
+  const handleTouchEnd = () => {
+    const diff = currentSwipeX.current;
+    setIsSwiping(false);
+    setSwipeOffset(0);
     touchStartX.current = null;
+    currentSwipeX.current = 0;
+    if (Math.abs(diff) > 60) navigateCrypto(diff < 0 ? 1 : -1);
   };
 
   const changeChartTimeframe = (days) => {
@@ -590,21 +605,19 @@ export default function CryptoAggregator() {
         <div ref={pricesRef} className="bg-slate-800/50 backdrop-blur rounded-xl px-4 pt-3 pb-4 mb-4">
 
           {/* ── Controls row ── */}
-          <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-2 mb-3">
 
-            {/* Mobile: single dropdown. Desktop: dropdown + flat buttons */}
-
-            {/* Dropdown (visible on both; on desktop it's the first item) */}
-            <div className="relative flex-shrink-0" ref={dropdownRef}>
+            {/* Mobile only: dropdown */}
+            <div className="relative flex-shrink-0 md:hidden" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(o => !o)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap ${['all','utility','ai','meme','stable'].includes(activeCategory) ? 'bg-[#ffc93c] text-black' : 'bg-slate-700/50 text-white hover:bg-slate-700'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold text-xs transition whitespace-nowrap bg-[#ffc93c] text-black`}
               >
                 {dropdownLabel}
                 <ChevronDown size={12} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {dropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-30 min-w-[140px]">
+                <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl min-w-[150px]" style={{ zIndex: 9999 }}>
                   {[
                     { key: 'all', label: 'Market Cap' },
                     { key: 'utility', label: 'Utility Coins' },
@@ -614,8 +627,14 @@ export default function CryptoAggregator() {
                   ].map(({ key, label }) => (
                     <button
                       key={key}
-                      onClick={() => { setPriceCategory(key); setSearchQuery(''); setSearchResults([]); setDropdownOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-700 transition first:rounded-t-lg last:rounded-b-lg ${activeCategory === key ? 'text-[#ffc93c]' : 'text-white'}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setPriceCategory(key);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                        setDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-700 transition first:rounded-t-lg last:rounded-b-lg ${activeCategory === key ? 'text-[#ffc93c]' : 'text-white'}`}
                     >
                       {label}
                     </button>
@@ -624,9 +643,10 @@ export default function CryptoAggregator() {
               )}
             </div>
 
-            {/* Desktop-only flat buttons */}
-            <div className="hidden md:flex gap-1.5 flex-shrink-0">
+            {/* Desktop only: flat buttons for all categories */}
+            <div className="hidden md:flex gap-1.5 flex-shrink-0 flex-wrap">
               {[
+                { key: 'all', label: 'Market Cap' },
                 { key: 'utility', label: 'Utility Coins' },
                 { key: 'ai', label: 'AI Coins' },
                 { key: 'meme', label: 'Meme Coins' },
@@ -737,148 +757,185 @@ export default function CryptoAggregator() {
         </div>
       </div>
 
-      {/* Chart Modal with swipe navigation */}
+      {/* Chart Modal with smooth swipe */}
       {selectedCrypto && (
         <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center p-3 z-50"
           onClick={closeChart}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative" onClick={(e) => e.stopPropagation()}>
-            {/* Prev / Next nav arrows */}
-            {selectedCryptoIndex !== null && (
-              <>
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigateCrypto(-1); }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-gray-100 hover:bg-[#ffc93c] rounded-full transition z-10"
-                  aria-label="Previous coin"
-                >
-                  <ChevronLeft size={20} className="text-black" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigateCrypto(1); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gray-100 hover:bg-[#ffc93c] rounded-full transition z-10"
-                  aria-label="Next coin"
-                >
-                  <ChevronRight size={20} className="text-black" />
-                </button>
-              </>
-            )}
-
-            <div className="flex items-center justify-between mb-4">
-              <button onClick={closeChart} className="p-2 hover:bg-gray-100 rounded-lg ml-auto">
-                <X size={24} className="text-black" />
+          <div
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[93vh] overflow-y-auto relative shadow-2xl"
+            style={{
+              transform: `translateX(${swipeOffset}px)`,
+              transition: isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)',
+              willChange: 'transform',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ── Top bar: prev / close / next ── */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); navigateCrypto(-1); }}
+                className="p-2 rounded-full bg-gray-100 hover:bg-[#ffc93c] transition"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={18} className="text-black" />
+              </button>
+              <button onClick={closeChart} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                <X size={18} className="text-black" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigateCrypto(1); }}
+                className="p-2 rounded-full bg-gray-100 hover:bg-[#ffc93c] transition"
+                aria-label="Next"
+              >
+                <ChevronRight size={18} className="text-black" />
               </button>
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10" />
-                <div>
-                  <h2 className="text-2xl font-bold text-black">{selectedCrypto.name}</h2>
-                  <p className="text-gray-600 text-xs">{selectedCrypto.symbol.toUpperCase()}</p>
+            <div className="px-5 pb-6">
+              {/* ── Hero: logo + ticker + price ── */}
+              <div className="flex flex-col items-center text-center mb-5">
+                <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-20 h-20 rounded-full mb-3 shadow-lg" />
+                <div className="text-3xl font-extrabold text-black tracking-tight leading-none">{selectedCrypto.symbol.toUpperCase()}</div>
+                <div className="text-sm text-gray-500 font-medium mb-2">{selectedCrypto.name}</div>
+                <div className="text-4xl font-extrabold text-black tracking-tight">
+                  ${selectedCrypto.current_price >= 1000
+                    ? selectedCrypto.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    : selectedCrypto.current_price < 0.001
+                    ? selectedCrypto.current_price.toFixed(6)
+                    : selectedCrypto.current_price < 1
+                    ? selectedCrypto.current_price.toFixed(4)
+                    : selectedCrypto.current_price.toFixed(2)}
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-black">${selectedCrypto.current_price.toLocaleString()}</div>
-                <div className={`flex items-center justify-end gap-1 text-sm ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`flex items-center gap-1 text-base font-semibold mt-1 ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {selectedCrypto.price_change_percentage_24h > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  {Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
+                  {selectedCrypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(selectedCrypto.price_change_percentage_24h).toFixed(2)}% (24h)
                 </div>
               </div>
-            </div>
 
-            {/* Token Utility Information */}
-            {tokenUtility[selectedCrypto.symbol.toUpperCase()] && (
-              <div className="mb-4 space-y-3">
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-gray-600 mb-2">PRIMARY UTILITY / REAL-WORLD USE CASE</p>
-                  <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].utility}</p>
+              {/* ── Chart timeframe buttons ── */}
+              <div className="flex gap-1.5 mb-3 justify-center">
+                {['1', '7', '30', '90', '365'].map((days) => (
+                  <button
+                    key={days}
+                    onClick={() => changeChartTimeframe(days)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition ${chartTimeframe === days ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  >
+                    {days === '1' ? '24H' : days === '7' ? '7D' : days === '30' ? '30D' : days === '90' ? '90D' : '1Y'}
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Price chart ── */}
+              {chartLoading ? (
+                <div className="flex items-center justify-center h-40">
+                  <RefreshCw className="animate-spin text-gray-400" size={28} />
                 </div>
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-gray-600 mb-2">KEY ADOPTION HIGHLIGHTS (2025-2026)</p>
-                  <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].adoption}</p>
+              ) : (
+                <div className="mb-5">
+                  <ResponsiveContainer width="100%" height={160}>
+                    <LineChart data={chartData}>
+                      <XAxis dataKey="time" tick={{ fontSize: 9, fill: '#9ca3af' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
+                      <YAxis domain={['auto', 'auto']} tick={{ fontSize: 9, fill: '#9ca3af' }} width={55} tickFormatter={(v) => `$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v.toFixed(2)}`} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{ background: '#111', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                        formatter={(value) => [`$${value.toLocaleString()}`, 'Price']}
+                      />
+                      <Line type="monotone" dataKey="price" stroke="#000000" dot={false} strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                {tokenUtility[selectedCrypto.symbol.toUpperCase()].founders && (
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <p className="text-xs font-semibold text-gray-600 mb-2">FOUNDER(S) / CREATOR(S)</p>
-                    <p className="text-sm text-black">{tokenUtility[selectedCrypto.symbol.toUpperCase()].founders}</p>
-                  </div>
-                )}
-                {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships && (
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <p className="text-xs font-semibold text-gray-600 mb-2">TOP PARTNERSHIPS & COLLABORATIONS (2025-2026)</p>
-                    <div className="text-sm text-black">
-                      {tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.slice(0, 10).map((partner, idx) => (
-                        <span key={idx}>{partner}{idx < Math.min(9, tokenUtility[selectedCrypto.symbol.toUpperCase()].partnerships.length - 1) ? ', ' : ''}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {tokenUtility[selectedCrypto.symbol.toUpperCase()].backers && (
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <p className="text-xs font-semibold text-gray-600 mb-2">NOTABLE BACKERS & INVESTORS</p>
-                    <div className="text-sm text-black">
-                      {tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.map((backer, idx) => (
-                        <span key={idx}>{backer}{idx < tokenUtility[selectedCrypto.symbol.toUpperCase()].backers.length - 1 ? ', ' : ''}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-              <div className="bg-[#ffc93c] rounded-lg p-3">
-                <p className="text-black text-xs mb-1 font-semibold">Market Cap</p>
-                <p className="font-bold text-black">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</p>
+              {/* ── Stats grid: outlined boxes ── */}
+              <div className="grid grid-cols-2 gap-2 mb-5">
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Market Cap</p>
+                  <p className="text-base font-bold text-black">${(selectedCrypto.market_cap / 1e9).toFixed(2)}B</p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">In Circulation</p>
+                  <p className="text-base font-bold text-black">
+                    {selectedCrypto.circulating_supply
+                      ? selectedCrypto.circulating_supply >= 1e9
+                        ? (selectedCrypto.circulating_supply / 1e9).toFixed(2) + 'B'
+                        : selectedCrypto.circulating_supply >= 1e6
+                        ? (selectedCrypto.circulating_supply / 1e6).toFixed(2) + 'M'
+                        : selectedCrypto.circulating_supply.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                      : '—'}
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">24h Volume</p>
+                  <p className={`text-base font-bold ${selectedCrypto.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${selectedCrypto.total_volume >= 1e9
+                      ? (selectedCrypto.total_volume / 1e9).toFixed(2) + 'B'
+                      : selectedCrypto.total_volume >= 1e6
+                      ? (selectedCrypto.total_volume / 1e6).toFixed(2) + 'M'
+                      : selectedCrypto.total_volume?.toLocaleString('en-US', { maximumFractionDigits: 0 }) ?? '—'}
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">All-Time High</p>
+                  <p className="text-base font-bold text-black">${selectedCrypto.ath?.toLocaleString()}</p>
+                </div>
               </div>
-              <div className="bg-[#ffc93c] rounded-lg p-3">
-                <p className="text-black text-xs mb-1 font-semibold">24h High</p>
-                <p className="font-bold text-black">${selectedCrypto.high_24h?.toLocaleString()}</p>
-              </div>
-              <div className="bg-[#ffc93c] rounded-lg p-3">
-                <p className="text-black text-xs mb-1 font-semibold">24h Low</p>
-                <p className="font-bold text-black">${selectedCrypto.low_24h?.toLocaleString()}</p>
-              </div>
-              <div className="bg-[#ffc93c] rounded-lg p-3">
-                <p className="text-black text-xs mb-1 font-semibold">All-Time High</p>
-                <p className="font-bold text-black">${selectedCrypto.ath?.toLocaleString()}</p>
-              </div>
+
+              {/* ── Info sections ── */}
+              {tokenUtility[selectedCrypto.symbol.toUpperCase()] && (() => {
+                const info = tokenUtility[selectedCrypto.symbol.toUpperCase()];
+                return (
+                  <div className="space-y-4">
+                    {info.utility && (
+                      <div>
+                        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Utility Use Case</h3>
+                        <p className="text-sm text-gray-800 leading-relaxed">{info.utility}</p>
+                      </div>
+                    )}
+                    {info.adoption && (
+                      <div>
+                        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Key Adoption</h3>
+                        <p className="text-sm text-gray-800 leading-relaxed">{info.adoption}</p>
+                      </div>
+                    )}
+                    {info.partnerships && info.partnerships.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Top Partnerships</h3>
+                        <div className="flex flex-wrap gap-1.5">
+                          {info.partnerships.slice(0, 10).map((p, i) => (
+                            <span key={i} className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">{p}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {info.founders && (
+                      <div>
+                        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Founders / Creators</h3>
+                        <p className="text-sm text-gray-800 leading-relaxed">{info.founders}</p>
+                      </div>
+                    )}
+                    {info.backers && info.backers.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Notable Backers & Investors</h3>
+                        <div className="flex flex-wrap gap-1.5">
+                          {info.backers.map((b, i) => (
+                            <span key={i} className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">{b}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {selectedCryptoIndex !== null && (
+                <p className="text-center text-xs text-gray-300 mt-6 md:hidden">← swipe to navigate →</p>
+              )}
             </div>
-
-            <div className="flex gap-2 mb-4">
-              {['1', '7', '30', '90', '365'].map((days) => (
-                <button
-                  key={days}
-                  onClick={() => changeChartTimeframe(days)}
-                  className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${chartTimeframe === days ? 'bg-[#ffc93c] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-                >
-                  {days === '1' ? '24H' : days === '7' ? '7D' : days === '30' ? '30D' : days === '90' ? '90D' : '1Y'}
-                </button>
-              ))}
-            </div>
-
-            {chartLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <RefreshCw className="animate-spin text-[#ffc93c]" size={32} />
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={chartData}>
-                  <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10 }} width={60} tickFormatter={(v) => `$${v.toLocaleString()}`} />
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Price']} />
-                  <Line type="monotone" dataKey="price" stroke="#ffc93c" dot={false} strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-
-            {/* Swipe hint on mobile */}
-            {selectedCryptoIndex !== null && (
-              <p className="text-center text-xs text-gray-400 mt-3 md:hidden">← Swipe to navigate →</p>
-            )}
           </div>
         </div>
       )}
