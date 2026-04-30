@@ -1151,7 +1151,7 @@ function MobileCard({ crypto, onClick }) {
     >
       <img src={crypto.image} alt={crypto.name} className="w-10 h-10 rounded-full mb-1.5" loading="lazy" />
       <div className="font-extrabold text-base leading-tight group-hover:text-[#ffc93c] transition-colors mb-1">{crypto.symbol.toUpperCase()}</div>
-      <div className="text-sm font-extrabold text-white mb-0.5">${formatPrice(crypto.current_price)}</div>
+      <div className="text-lg font-extrabold text-[#ffc93c] mb-0.5 text-center">${formatPrice(crypto.current_price)}</div>
       <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
         {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
@@ -1178,10 +1178,10 @@ function DesktopCard({ crypto, onClick }) {
           <div className="text-gray-400 text-xs truncate leading-tight">{crypto.name}</div>
         </div>
       </div>
-      {/* Price — dominant, full width */}
-      <div className="text-sm font-extrabold text-white mb-1 truncate">${formatPrice(crypto.current_price)}</div>
+      {/* Price — yellow, larger, centered */}
+      <div className="text-lg font-extrabold text-[#ffc93c] text-center mb-1 truncate">${formatPrice(crypto.current_price)}</div>
       {/* % change — smaller, secondary */}
-      <div className={`flex items-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+      <div className={`flex items-center justify-center gap-0.5 text-xs font-semibold ${crypto.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
         {crypto.price_change_percentage_24h > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
         {crypto.price_change_percentage_24h > 0 ? '+' : ''}{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
       </div>
